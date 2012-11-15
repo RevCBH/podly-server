@@ -1,0 +1,29 @@
+/static StaticR Static getStatic
+/auth   AuthR   Auth   getAuth
+
+/favicon.ico FaviconR GET
+/robots.txt RobotsR GET
+
+/ HomeR GET POST
+
+/test TestR GET
+/echo.json EchoJsonR POST
+/reset NukeR GET
+
+-- podcasts
+/podcasts PodcastIndexR GET
+-- /podcasts/#Text PodcastR GET
+/podcasts/#Text/episodes PodcastR GET
+/podcasts/#Text/episodes/#Int PodcastEpisodeR GET
+
+-- episodes
+
+/episodes EpisodesR POST
+/episodes/new NewEpisodeR GET
+/episodes.json EpisodesJsonR GET
+
+-- nodes
+/nodes/#NodeId NodeR GET
+
+-- users
+/users UsersR GET

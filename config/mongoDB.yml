@@ -1,0 +1,24 @@
+Default: &defaults
+  user: podly-server-hs
+  password: podly-server-hs
+  host: localhost
+  database: podly-server-hs
+  connections: 10
+
+Development:
+  <<: *defaults
+
+Testing:
+  database: podly-server-hs_test
+  <<: *defaults
+
+Staging:
+  database: podly-server-hs_staging
+  connections: 100
+  <<: *defaults
+
+Production:
+  database: podly-server-hs_production
+  connections: 100
+  host: localhost
+  <<: *defaults

@@ -1,0 +1,1 @@
+$(function(){var i=document.getElementById("h6");if(i.type!="date")$(i).datepicker({dateFormat:'yy-mm-dd',changeMonth:false,changeYear:true,numberOfMonths:1,yearRange:"1980:-1"})})

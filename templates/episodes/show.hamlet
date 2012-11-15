@@ -1,0 +1,10 @@
+<h1>
+  <a href=@{PodcastR name}>#{name}
+  ##{pack $ show number} - #{episodeTitle episode}
+<ul>
+  $forall n <- docEpisodeNodes episodeDoc
+    <li>
+      <h3>
+        #{docNodeTime n}
+        <img src="/static/img/#{docNodeTypeIcon $ docNodeNodeType n}.png">
+        <a href=@{NodeR $ fromJust $ docNode_id n}>#{docNodeTitle n}

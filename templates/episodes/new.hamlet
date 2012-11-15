@@ -1,0 +1,4 @@
+<h1>New Episode
+<form method=post action=@{EpisodesR} enctype=#{enctype}>
+    ^{formWidget}
+    <input type=submit>

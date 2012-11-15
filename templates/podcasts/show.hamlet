@@ -1,0 +1,7 @@
+<h1>#{name}
+<h4>#{length episodes} episodes
+<hr>
+<ul>
+  $forall Entity tid x <- episodes
+    <li>
+      <a href=@{PodcastEpisodeR name $ episodeNumber x}>##{episodeNumber x} - #{episodeTitle x}

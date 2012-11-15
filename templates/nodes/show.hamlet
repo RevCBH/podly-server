@@ -1,0 +1,7 @@
+<h1>Node - #{nodeTitle node}
+<h3>Referenced In
+<ul>
+  $forall Entity tid x <- episodes
+    <li>
+      <a href=@{PodcastEpisodeR (episodePodcast x) (episodeNumber x)}>
+        #{episodePodcast x} ##{episodeNumber x}: #{episodeTitle x}
