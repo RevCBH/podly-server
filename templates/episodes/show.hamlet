@@ -1,9 +1,12 @@
 <h1>
   <a href=@{PodcastR name}>#{name}
   ##{pack $ show number} - #{episodeTitle episode}
+<hr>
 <h2>
   Nodes
-  [<a href>Add</a>]
+<form method=post action=@{NodeInstanceR name number} enctype=#{enctype}>
+    ^{formWidget}
+    <input type=submit>
 <ul>
   $forall n <- docEpisodeNodes episodeDoc
     <li>

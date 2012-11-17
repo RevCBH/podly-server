@@ -15,6 +15,7 @@
 -- /podcasts/#Text PodcastR GET
 /podcasts/#Text/episodes PodcastR GET
 /podcasts/#Text/episodes/#Int PodcastEpisodeR GET
+/podcasts/#Text/episodes/#Int/node NodeInstanceR POST
 
 -- episodes
 

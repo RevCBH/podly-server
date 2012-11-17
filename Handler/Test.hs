@@ -97,15 +97,37 @@ getEpisodesJsonR = do
     docs <- runDB $ mapM documentFromEpisode episodes
     jsonToRepJson docs
 
+newNodeInstanceForm :: EpisodeId -> [Entity Node] -> Form NodeInstance
+newNodeInstanceForm episodeId nodes = renderDivs $ NodeInstance
+    <$> areq (selectFieldList nodes') "Node" Nothing
+    <*> aopt hiddenField "" Nothing
+    <*> areq hiddenField "" (Just episodeId)
+    <*> areq textField "Time" (Just "00:00:00")
+  where
+    nodes' = (flip map) nodes (\(Entity tid x) -> (nodeTitle x, tid))
+
 getPodcastEpisodeR :: Text -> Int -> Handler RepHtmlJson
 getPodcastEpisodeR name number = do
-    entity@(Entity _ episode) <- runDB $ getBy404 $ UniqueEpisodeNumber name number
+    entity@(Entity episodeId episode) <- runDB $ getBy404 $ UniqueEpisodeNumber name number
     episodeDoc <- runDB $ documentFromEpisode entity
+    nodes <- runDB $ selectList [] [Asc NodeTitle]
+    (formWidget, enctype) <- generateFormPost $ newNodeInstanceForm episodeId nodes
     let widget = do
         setTitle $ toHtml $ name <> " #" <> (pack $ show number) <> " - " <> (episodeTitle episode)
         $(widgetFile "episodes/show")
     let json = episodeDoc
     defaultLayoutJson widget json
+
+postNodeInstanceR :: Text -> Int -> Handler RepHtml
+postNodeInstanceR podcast number = do
+    (Entity episodeId _) <- runDB $ getBy404 $ UniqueEpisodeNumber podcast number
+    nodes <- runDB $ selectList [] [Asc NodeTitle]
+    (source, nodeInstance) <- fromJsonOrFormPost $ newNodeInstanceForm episodeId nodes
+    runDB $ insert nodeInstance
+    ----case source of
+    ----    PostJson -> jsonToRepJson entity
+    --    PostForm -> redirect $ PodcastEpisodeR (episodePodcast episode) (episodeNumber episode)
+    redirect $ PodcastEpisodeR podcast number
 
 instance FromJSON Day where
     parseJSON val = do

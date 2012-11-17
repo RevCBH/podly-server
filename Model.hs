@@ -14,7 +14,6 @@ import Control.Applicative ((<$>), (<*>))
 share [mkPersist MkPersistSettings { mpsBackend = ConT ''Action }, mkMigrate "migrateAll"]
     $(persistFileWith lowerCaseSettings "config/models")
 
-
 instance ToJSON (Entity Event) where
   toJSON (Entity tid (Event title data_ created)) = object
     [ "_id" .= tid,
@@ -28,12 +27,6 @@ instance FromJSON (NodeTypeGeneric t) where
     o .: "icon"
   parseJSON _  = error "Object expected when parsing NodeType"
 
-{-
-    title Text
-    url Text -- TODO - URL datatype?
-    linkTitle Text
-    nodeTypeId NodeTypeId Eq
-    -}
 instance FromJSON (NodeGeneric t) where
   parseJSON (Object o) = Node <$>
     o .: "title"              <*>
@@ -41,6 +34,14 @@ instance FromJSON (NodeGeneric t) where
     o .: "linkTitle"          <*>
     o .: "nodeTypeId"
   parseJSON _  = error "Object expected when parsing Node"
+
+instance FromJSON (NodeInstanceGeneric t) where
+  parseJSON (Object o) = NodeInstance <$>
+    o .: "nodeId"                     <*>
+    o .: "nodeTypeId"                 <*>
+    o .: "episodeId"                  <*>
+    o .: "time"
+  parseJSON _ = error "Object expected when parsing NodeInstance"
 
 instance ToJSON (Entity Node) where
   toJSON (Entity tid n) = object
