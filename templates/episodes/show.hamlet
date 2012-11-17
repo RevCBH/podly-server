@@ -1,6 +1,9 @@
 <h1>
   <a href=@{PodcastR name}>#{name}
   ##{pack $ show number} - #{episodeTitle episode}
+<h2>
+  Nodes
+  [<a href>Add</a>]
 <ul>
   $forall n <- docEpisodeNodes episodeDoc
     <li>

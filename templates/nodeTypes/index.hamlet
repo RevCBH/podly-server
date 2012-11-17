@@ -1,0 +1,8 @@
+<h1>All Node Types
+<h3>
+  [<a href=@{NewNodeTypeR}>new</a>]
+<hr>
+  <ul>
+    $forall Entity tid n <- nodeTypes
+      <li>
+        <a href=@{NodeTypeR tid}>#{nodeTypeTitle n}

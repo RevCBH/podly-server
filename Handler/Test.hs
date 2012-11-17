@@ -2,30 +2,25 @@
 module Handler.Test where
 
 import Import
-import Data.Aeson (Result(..), ToJSON(..))
-import Data.List (nub)
+import Data.Aeson (Result(..), ToJSON(..), FromJSON(..), fromJSON)
+import Data.Aeson.TH (deriveJSON)
 import Data.Maybe
 import Data.Time(addUTCTime, getCurrentTime, Day, UTCTime(..), secondsToDiffTime)
 import Data.Text (pack)
 import qualified Data.HashMap.Strict as Map
-import Network.Wai (requestHeaders)
 
 import Fixtures
 import Document
+import Handler.Util
 
 import Yesod.Form.Jquery
-
-isJsonBody :: Handler Bool
-isJsonBody = do
-    req <- waiRequest
-    return $ ("Content-type", "application/json") `elem` (requestHeaders req)    
 
 getTestR :: Handler RepJson
 getTestR = do
     now <- liftIO getCurrentTime
     _ <- runDB $ insert $ Event "foo" "bar" now
     events <- runDB $ selectList [EventCreated >. fiveHoursBefore now] []
-    jsonToRepJson events 
+    jsonToRepJson events
   where
     fiveHoursBefore = addUTCTime (-5*60*60)
 
@@ -59,18 +54,6 @@ getNukeR = do
     runDB $ loadEpisodes "episodes"
 
     jsonToRepJson ("OK" :: String)
-
-getNodeR :: NodeId -> Handler RepHtmlJson
-getNodeR nid = do
-    node <- runDB $ get404 nid
-    refs <- runDB $ selectList [NodeInstanceNodeId ==. nid] []
-    let episodeIds = nub $ (flip map) refs (\(Entity _ x) -> nodeInstanceEpisodeId x)
-    episodes <- runDB $ selectList [EpisodeId <-. episodeIds] [Asc EpisodePodcast, Desc EpisodeNumber]
-    let widget = do
-        setTitle $ toHtml $ "Node - " <> (nodeTitle node)
-        $(widgetFile "nodes/show")
-    let json = Entity nid node
-    defaultLayoutJson widget json
 
 countEpisodesFor (Entity _ podcast) = do
     runDB $ count $ [EpisodePodcast ==. podcastName podcast]
@@ -124,11 +107,32 @@ getPodcastEpisodeR name number = do
     let json = episodeDoc
     defaultLayoutJson widget json
 
-data EpisodeHACK = EpisodeHACK Text Text Int Text Day Bool
+instance FromJSON Day where
+    parseJSON val = do
+        let res = (fromJSON val) :: (Result UTCTime)
+        case res of
+            (Success utc) -> return $ utctDay utc
+            (Error msg) -> error msg
 
-newEpisodeForm :: Form EpisodeHACK
-newEpisodeForm = renderDivs $ EpisodeHACK
-    <$> areq textField "Podcast" Nothing
+instance ToJSON Day where
+    toJSON d = toJSON $ UTCTime d $ secondsToDiffTime 0
+
+data EpisodeHACK = EpisodeHACK {
+    hack__id :: Maybe String,
+    hack_podcast :: Text,
+    hack_title :: Text,
+    hack_number :: Int,
+    hack_searchSlug :: Text,
+    hack_airDate :: Day,
+    hack_published :: Bool
+} deriving (Show, Generic)
+
+$(deriveJSON (removePrefix "hack_") ''EpisodeHACK)
+
+newEpisodeForm :: Maybe Text -> Form EpisodeHACK
+newEpisodeForm maybePodcast = renderDivs $ EpisodeHACK
+    <$> aopt hiddenField "" Nothing
+    <*> areq textField "Podcast" maybePodcast
     <*> areq textField "Title" Nothing
     <*> areq intField "Number" Nothing
     <*> areq textField "Search slug" Nothing
@@ -138,54 +142,31 @@ newEpisodeForm = renderDivs $ EpisodeHACK
                 }) "Air date" Nothing
     <*> areq checkBoxField "Published" (Just False)
 
-getNewEpisodeR :: Handler RepHtml
-getNewEpisodeR = do
-    (formWidget, enctype) <- generateFormPost newEpisodeForm
-    defaultLayout $ do 
+getNewEpisodeR :: Text -> Handler RepHtml
+getNewEpisodeR podcast = do
+    (formWidget, enctype) <- generateFormPost $ newEpisodeForm $ Just podcast
+    defaultLayout $ do
         setTitle "New Episode"
         $(widgetFile "episodes/new")
 
-ensurePodcast name = do
-    mPodcast <- runDB $ getBy $ UniquePodcastName name
-    case mPodcast of
-        Just entity@(Entity _ _) -> return entity
-        Nothing -> do
-            let pc = Podcast name Nothing Nothing Nothing
-            tid <- runDB $ insert pc
-            return (Entity tid pc)
-
-ensureEpisode ep = do
-    _ <- ensurePodcast $ episodePodcast ep
-    mEpisode <- runDB $ getBy $ UniqueEpisodeNumber (episodePodcast ep) (episodeNumber ep)
-    case mEpisode of
-        Just entity -> return entity
-        Nothing -> do
-            tid <- runDB $ insert ep
-            return $ Entity tid ep
-
-data PostSource = PostForm | PostJson
-
 postEpisodesR :: Handler RepJson
 postEpisodesR = do
-    (source, episode) <- episodeFromJsonOrForm
+    (source, episodeHACK) <- fromJsonOrFormPost $ newEpisodeForm Nothing
+    let episode = episodeFromEpisodeHACK episodeHACK
+    _ <- ensurePodcast $ episodePodcast episode
     entity <- ensureEpisode episode
     case source of
         PostJson -> jsonToRepJson entity
         PostForm -> redirect $ PodcastEpisodeR (episodePodcast episode) (episodeNumber episode)
   where
-    -- ISSUE - this is generalizable but needs specific support b/c of EpisodeHACK
-    episodeFromJsonOrForm = do
-        jsonBody <- isJsonBody
-        if jsonBody
-            then do 
-                episode <- parseJsonBody_
-                return (PostJson, episode)
-            else do
-                ((result, widget), enctype) <- runFormPost newEpisodeForm
-                case result of
-                    FormSuccess episode -> return (PostForm, episodeFromEpisodeHACK episode)
-                    _ -> notFound
-    episodeFromEpisodeHACK (EpisodeHACK podcast title number slug date published) =
+    ensurePodcast name =
+        let item = Podcast name Nothing Nothing Nothing
+            constraint = UniquePodcastName name
+        in ensureEntity item constraint
+    ensureEpisode ep =
+        let constraint = UniqueEpisodeNumber (episodePodcast ep) (episodeNumber ep)
+        in ensureEntity ep constraint
+    episodeFromEpisodeHACK (EpisodeHACK _ podcast title number slug date published) =
         let dTime = secondsToDiffTime 0
             utc = UTCTime date dTime
         in Episode podcast title number slug utc published

@@ -1,4 +1,7 @@
-<h1>Node - #{nodeTitle node}
+<h1>
+  Node -
+  <img src="/static/img/#{nodeTypeIcon nodeType}.png">
+  #{nodeTitle node}
 <h3>Referenced In
 <ul>
   $forall Entity tid x <- episodes

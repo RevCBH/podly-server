@@ -1,0 +1,4 @@
+<h1>New Node Title
+<form method=post action=@{NodeTypesR} enctype=#{enctype}>
+    ^{formWidget}
+    <input type=submit>

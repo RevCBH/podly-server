@@ -1,0 +1,9 @@
+<h1>
+  <img src="/static/img/#{nodeTypeIcon nodeType}.png">
+  #{nodeTypeTitle nodeType}
+<h3>Nodes
+<ul>
+  $forall Entity tid x <- nodes
+    <li>
+      <a href=@{NodeR tid}>
+        #{nodeTitle x}

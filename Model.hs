@@ -22,6 +22,26 @@ instance ToJSON (Entity Event) where
       "data" .= data_,
       "created" .= (toJSON created)]
 
+instance FromJSON (NodeTypeGeneric t) where
+  parseJSON (Object o) = NodeType <$>
+    o .: "title"                  <*>
+    o .: "icon"
+  parseJSON _  = error "Object expected when parsing NodeType"
+
+{-
+    title Text
+    url Text -- TODO - URL datatype?
+    linkTitle Text
+    nodeTypeId NodeTypeId Eq
+    -}
+instance FromJSON (NodeGeneric t) where
+  parseJSON (Object o) = Node <$>
+    o .: "title"              <*>
+    o .: "url"                <*>
+    o .: "linkTitle"          <*>
+    o .: "nodeTypeId"
+  parseJSON _  = error "Object expected when parsing Node"
+
 instance ToJSON (Entity Node) where
   toJSON (Entity tid n) = object
     [ "_id" .= tid,

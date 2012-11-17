@@ -1,5 +1,7 @@
 <h1>#{name}
-<h4>#{length episodes} episodes
+<h4>
+  #{length episodes} episodes
+  [<a href=@{NewEpisodeR name}>new</a>]
 <hr>
 <ul>
   $forall Entity tid x <- episodes
