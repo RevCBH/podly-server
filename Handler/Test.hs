@@ -44,11 +44,11 @@ postEchoJsonR = do
 
 getNukeR :: Handler RepJson
 getNukeR = do
-    runDB $ deleteWhere ([] :: [Filter Event])
-    runDB $ deleteWhere ([] :: [Filter Episode])
+    --runDB $ deleteWhere ([] :: [Filter Event])
+    runDB $ deleteWhere ([] :: [Filter NodeInstance])
     runDB $ deleteWhere ([] :: [Filter Node])
     runDB $ deleteWhere ([] :: [Filter NodeType])
-    runDB $ deleteWhere ([] :: [Filter NodeInstance])
+    runDB $ deleteWhere ([] :: [Filter Episode])
     runDB $ deleteWhere ([] :: [Filter Podcast])
 
     runDB $ loadEpisodes "episodes"
