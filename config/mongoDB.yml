@@ -6,6 +6,10 @@ Default: &defaults
   connections: 10
 
 Development:
+  host: ds043027.mongolab.com:43027
+  database: heroku_app9312789
+  user: heroku_app9312789
+  password: nsg86264jmo61824h156p8u59m
   <<: *defaults
 
 Testing:
@@ -20,5 +24,9 @@ Staging:
 Production:
   database: podly-server-hs_production
   connections: 100
-  host: localhost
+  host: ds043027.mongolab.com
+  port: 43027
+  database: heroku_app9312789
+  user: heroku_app9312789
+  password: nsg86264jmo61824h156p8u59m
   <<: *defaults

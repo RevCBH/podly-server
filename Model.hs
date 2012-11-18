@@ -5,13 +5,12 @@ import Yesod
 import Data.Text (Text)
 import Data.Time
 import Database.Persist.Quasi
-import Database.Persist.MongoDB hiding (master)
 import Language.Haskell.TH.Syntax
 
 import Data.Aeson hiding (object)
 import Control.Applicative ((<$>), (<*>))
 
-share [mkPersist MkPersistSettings { mpsBackend = ConT ''Action }, mkMigrate "migrateAll"]
+share [mkPersist sqlSettings, mkMigrate "migrateAll"]
     $(persistFileWith lowerCaseSettings "config/models")
 
 instance ToJSON (Entity Event) where

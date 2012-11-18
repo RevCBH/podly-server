@@ -1,0 +1,24 @@
+Default: &defaults
+  user: podly
+  password: podly
+  host: localhost
+  port: 5432
+  database: podly
+  poolsize: 10
+
+Development:
+  <<: *defaults
+
+Testing:
+  database: podly-server-hs_test
+  <<: *defaults
+
+Staging:
+  database: podly-server-hs_staging
+  poolsize: 100
+  <<: *defaults
+
+Production:
+  database: podly-server-hs_production
+  poolsize: 100
+  <<: *defaults

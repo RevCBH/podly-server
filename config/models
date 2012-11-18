@@ -46,4 +46,4 @@ NodeInstance
 Event
     title Text
     data Text
-    created UTCTime default=CURRENT_TIME
+    created UTCTime
