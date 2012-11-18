@@ -19,6 +19,9 @@ Staging:
   <<: *defaults
 
 Production:
-  database: podly-server-hs_production
+  database: d9ao46d1elv9ms
+  host: ec2-107-22-169-148.compute-1.amazonaws.com
+  user: dojjqveidcdqeo
+  password: EyCxsy55NYSha2FMn-5qMFkY-I
   poolsize: 100
   <<: *defaults
