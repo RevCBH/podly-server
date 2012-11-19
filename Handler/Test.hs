@@ -51,6 +51,7 @@ getNukeR = do
     runDB $ deleteWhere ([] :: [Filter Episode])
     runDB $ deleteWhere ([] :: [Filter Podcast])
 
+    loadNodeTypes "node_types"
     runDB $ loadEpisodes "episodes"
 
     jsonToRepJson ("OK" :: String)

@@ -1,6 +1,6 @@
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE DeriveGeneric #-}
-module Document (NodeTypeDocument(..), NodeDocument(..), EpisodeDocument(..), episodeFromDocument, documentFromEpisode) where
+module Document (NodeTypeDocument(..), NodeDocument(..), EpisodeDocument(..), episodeFromDocument, documentFromEpisode, nodeTypeIdFromDoc) where
 
 import Import
 
@@ -12,7 +12,7 @@ import Control.Monad (filterM)
 
 data NodeTypeDocument = DocNodeT {
   docNodeType_id :: Maybe NodeTypeId,
-  docNodeTypeIcon :: Text, 
+  docNodeTypeIcon :: Text,
   docNodeTypeTitle :: Text
 } deriving (Show, Generic)
 
@@ -21,8 +21,8 @@ $(deriveJSON (removePrefix "docNodeType") ''NodeTypeDocument)
 data NodeDocument = DocNode {
   docNode_id :: Maybe NodeId,
   docNodeTitle :: Text,
-  docNodeUrl :: Text, 
-  docNodeLinkTitle :: Text, 
+  docNodeUrl :: Text,
+  docNodeLinkTitle :: Text,
   docNodeTime :: Text,
   docNodeNodeType :: NodeTypeDocument
 } deriving (Show, Generic)
@@ -41,11 +41,8 @@ data EpisodeDocument = DocEpisode {
 $(deriveJSON (removePrefix "docEpisode") ''EpisodeDocument)
 
 type DB a = PersistUnique backend m => backend m (a backend)
---type DBKey a = PersistUnique backend m => backend m (Key backend (a backend))
 type DBK a backend = Key backend (a backend)
 type DBKey a = DB (DBK a)
-
---type DB a = PersistStore t m => t m a
 
 --documentFromNodeType :: Entity (NodeTypeGeneric t) -> NodeTypeDocument
 documentFromNodeType x = do
@@ -65,14 +62,6 @@ documentFromNodeInstance (Entity _ x) = do
           return $ Just $ DocNode (Just nodeId) title url linkTitle time $ documentFromNodeType (Entity nodeTypeId nt)
         Nothing -> return Nothing
     Nothing -> return Nothing
-
---documentFromEpisodeId episodeId = do
---  mEpisode <- get episodeId
---  case mEpisode of
---    Just episode -> do
---      doc <- documentFromEpisode (Entity episodeId episode)
---      return $ Just doc
---    Nothing -> return Nothing
 
 --documentFromEpisode :: PersistQuery backend m => Entity (EpisodeGeneric backend) -> backend m EpisodeDocument
 documentFromEpisode episode = do
@@ -96,14 +85,14 @@ nodeIdAndTimeFromDoc :: PersistUnique backend m => NodeDocument -> backend m (Ke
 nodeIdAndTimeFromDoc doc = do
   let DocNode nodeId title url linkTitle time ntDoc = doc
   mNode <- getBy $ UniqueNodeTitle title
-  tid <- case mNode of 
+  tid <- case mNode of
     Nothing -> do
       typeId <- nodeTypeIdFromDoc ntDoc
       insert $ Node title url linkTitle typeId
     Just (Entity tid _) -> return tid
   return (tid, time)
 
-nodeInstanceIdFromNodeInEpisode :: PersistUnique backend m => 
+nodeInstanceIdFromNodeInEpisode :: PersistUnique backend m =>
   Text
   -> Key backend (EpisodeGeneric backend)
   -> Key backend (NodeGeneric backend)
@@ -116,19 +105,19 @@ nodeInstanceIdFromNodeInEpisode time episodeId nodeId = do
     Just (Entity tid _) -> return tid
 
 -- episodeAndIdFromDoc :: EpisodeDocument -> (DBKey EpisodeGeneric, Episode)
-episodeAndIdFromDoc :: PersistUnique backend m => 
-  EpisodeDocument 
+episodeAndIdFromDoc :: PersistUnique backend m =>
+  EpisodeDocument
   -> backend m (Key backend (EpisodeGeneric backend), EpisodeGeneric backend)
 
-episodeAndIdFromDoc doc = 
+episodeAndIdFromDoc doc =
   let DocEpisode podcast number airDate title slug _ = doc
   in do
     mPodcast <- getBy $ UniquePodcastName podcast
     case mPodcast of
       Nothing -> do
-        _ <- insert $ Podcast {podcastName = podcast, 
-                               podcastDescription = Nothing, 
-                               podcastImage = Nothing, 
+        _ <- insert $ Podcast {podcastName = podcast,
+                               podcastDescription = Nothing,
+                               podcastImage = Nothing,
                                podcastCategory = Nothing}
         return ()
       _ -> return ()
@@ -147,7 +136,7 @@ episodeFromDocument doc = do
   let nodes = docEpisodeNodes doc
   nodeData <- mapM nodeIdAndTimeFromDoc nodes
   mapM_ (reifyInstances episodeId) nodeData
-  
+
   return episode
  where
   reifyInstances episodeId (nodeId, time) = nodeInstanceIdFromNodeInEpisode time episodeId nodeId

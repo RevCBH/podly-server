@@ -3,7 +3,7 @@
 {-# LANGUAGE NoMonomorphismRestriction #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module Fixtures (readFixture, loadFixture, loadEpisodes) where
+module Fixtures (readFixture, loadFixture, loadEpisodes, loadNodeTypes) where
 
 import Import
 import System.Directory(getCurrentDirectory)
@@ -19,12 +19,12 @@ readFixture f = do
   return $ decode vals
 
 --loadFixture :: (PersistEntity a) => IO [a] -> Handler [Key a]
-loadFixture :: (PersistStore (YesodPersistBackend master) (GHandler sub master), PersistEntity a, YesodPersist master) => 
+loadFixture :: (PersistStore (YesodPersistBackend master) (GHandler sub master), PersistEntity a, YesodPersist master) =>
   IO [a] -> GHandler sub master [Key (YesodPersistBackend master) a]
 loadFixture loader = liftIO loader >>= runDB . (mapM insert)
 
 -- create an action that loads an episode document fixture into the persistent store
-loadEpisodes :: (Control.Monad.IO.Class.MonadIO (backend m), PersistUnique backend m) => 
+loadEpisodes :: (Control.Monad.IO.Class.MonadIO (backend m), PersistUnique backend m) =>
   String -> backend m ()
 loadEpisodes name = do
   docs <- liftIO loadEpisodeDocuments
@@ -35,3 +35,10 @@ loadEpisodes name = do
     case mDocs of
       (Just docs) -> return (docs :: [EpisodeDocument])
       Nothing -> error "Couldn't load episode fixture"
+
+loadNodeTypes name = do
+  mTypes <- liftIO $ readFixture name
+  let loader = case mTypes of
+                (Just types) -> return (types :: [NodeType])
+                Nothing -> error "Couldn't load node type fixture"
+  loadFixture loader
