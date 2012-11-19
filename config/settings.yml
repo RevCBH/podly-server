@@ -15,5 +15,5 @@ Staging:
   <<: *defaults
 
 Production:
-  approot: "http://podly.heroku.com"
+  approot: "http://podly.herokuapp.com"
   <<: *defaults
