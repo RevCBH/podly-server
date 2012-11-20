@@ -86,7 +86,7 @@
 },
 {
   "_id": null,
-  "icon": "People/Comedian2_PPL",
+  "icon": "People/Comedian_PPL",
   "title": "Comedian"
 },
 {
@@ -136,7 +136,7 @@
 },
 {
   "_id": null,
-  "icon": "Products/Health2",
+  "icon": "Products/Health",
   "title": "Health"
 },
 {
@@ -153,6 +153,11 @@
   "_id": null,
   "icon": "Products/Sponsors",
   "title": "Sponsor"
+},
+{
+  "_id": null,
+  "icon": "Products/Sponsors",
+  "title": "Product"
 },
 {
   "_id": null,

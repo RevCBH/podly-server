@@ -1,0 +1,158 @@
+[
+{ "podcast": "The Joe Rogan Experience",
+  "number": 275,
+  "airDate": "2012-11-13T00:14:43.614Z",
+  "title": "Dave Asprey, Brian Redban",
+  "searchSlug": "JRE #275",
+  "nodes": [
+    { "_id": null,
+      "title": "Pantagious Theater",
+      "url": "http://www.broadwayla.org/index.asp",
+      "linkTitle": "BroadwayLa.org",
+      "time": "00:00:48",
+      "nodeType": {
+        "_id": null,
+        "icon": "Products/Locations",
+        "title": "Place"
+      }
+    },
+    { "_id": null,
+      "title": "Joey Diaz",
+      "url": "http://en.wikipedia.org/wiki/Joey_Diaz",
+      "linkTitle": "on Wikipedia",
+      "time": "00:00:50",
+      "nodeType": {
+        "_id": null,
+        "icon": "People/Comedian_PPL",
+        "title": "Comedian"
+      }
+    },
+    { "_id": null,
+      "title": "Brian Redban",
+      "url": "https://twitter.com/redban",
+      "linkTitle": "on Twitter",
+      "time": "00:00:53",
+      "nodeType": {
+        "_id": null,
+        "icon": "People/Comedian_PPL",
+        "title": "Comedian"
+      }
+    },
+    { "_id": null,
+      "title": "Doug Benson",
+      "url": "https://twitter.com/DougBenson",
+      "linkTitle": "on Twitter",
+      "time": "00:00:55",
+      "nodeType": {
+        "_id": null,
+        "icon": "People/Comedian_PPL",
+        "title": "Comedian"
+      }
+    },
+    { "_id": null,
+      "title": "Minneapolis",
+      "url": "http://en.wikipedia.org/wiki/Minneapolis",
+      "linkTitle": "on Wikipedia",
+      "time": "00:01:03",
+      "nodeType": {
+        "_id": null,
+        "icon": "Products/Locations",
+        "title": "Place"
+      }
+    },
+    { "_id": null,
+      "title": "Dave Asprey",
+      "url": "http://www.bulletproofexec.com/author/daveasprey/",
+      "linkTitle": "Bulletproof Executive",
+      "time": "00:14:18",
+      "nodeType": {
+        "_id": null,
+        "icon": "People/Inventor_PPL",
+        "title": "Scientist"
+      }
+    }]
+},
+{ "podcast": "The Joe Rogan Experience",
+  "number": 274,
+  "airDate": "2012-11-13T00:14:43.614Z",
+  "title": "Brian Redban",
+  "searchSlug": "JRE #274",
+  "nodes": [
+    { "_id": null,
+      "title": "Brian Redban",
+      "url": "https://twitter.com/redban",
+      "linkTitle": "on Twitter",
+      "time": "00:00:53",
+      "nodeType": {
+        "_id": null,
+        "icon": "People/Comedian_PPL",
+        "title": "Comedian"
+      }
+    }]
+},
+{ "podcast": "Money Shot",
+  "number": 1,
+  "airDate": "2012-11-13T00:14:43.614Z",
+  "title": "Brian Redban",
+  "searchSlug": "JRE #274",
+  "nodes": [
+    { "_id": null,
+      "title": "Brian Redban",
+      "url": "https://twitter.com/redban",
+      "linkTitle": "on Twitter",
+      "time": "00:00:53",
+      "nodeType": {
+        "_id": null,
+        "icon": "People/Comedian_PPL",
+        "title": "Comedian"
+      }
+    }]
+},
+{ "podcast": "Money Shot",
+  "number": 2,
+  "airDate": "2012-11-13T00:14:43.614Z",
+  "title": "Brian Redban",
+  "searchSlug": "JRE #274",
+  "nodes": [
+    { "_id": null,
+      "title": "Brian Redban",
+      "url": "https://twitter.com/redban",
+      "linkTitle": "on Twitter",
+      "time": "00:00:53",
+      "nodeType": {
+        "_id": null,
+        "icon": "People/Comedian_PPL",
+        "title": "Comedian"
+      }
+    }]
+},
+{ "podcast": "Money Shot",
+  "number": 300,
+  "airDate": "2012-11-13T00:14:43.614Z",
+  "title": "Brian Redban",
+  "searchSlug": "JRE #274",
+  "nodes": [
+    { "_id": null,
+      "title": "Brian Redban",
+      "url": "https://twitter.com/redban",
+      "linkTitle": "on Twitter",
+      "time": "00:00:53",
+      "nodeType": {
+        "_id": null,
+        "icon": "People/Comedian_PPL",
+        "title": "Comedian"
+      }
+    },
+    { "_id": null,
+      "title": "Brian Redban",
+      "url": "https://twitter.com/redban",
+      "linkTitle": "on Twitter",
+      "time": "00:00:57",
+      "nodeType": {
+        "_id": null,
+        "icon": "People/Comedian_PPL",
+        "title": "Comedian"
+      }
+    }]
+}
+]
