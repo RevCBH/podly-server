@@ -33,6 +33,7 @@ Episode
     slug Text
     airDate UTCTime
     published Bool
+    duration Int
     UniqueEpisodeNumber podcast number
     deriving Show
 

@@ -147,7 +147,8 @@ data EpisodeHACK = EpisodeHACK {
     hack_number :: Int,
     hack_searchSlug :: Text,
     hack_airDate :: Day,
-    hack_published :: Bool
+    hack_published :: Bool,
+    hack_duration :: Int
 } deriving (Show, Generic)
 
 $(deriveJSON (removePrefix "hack_") ''EpisodeHACK)
@@ -164,6 +165,7 @@ newEpisodeForm maybePodcast = renderDivs $ EpisodeHACK
                 , jdsYearRange = "1980:-1" -- 1900 till five years ago
                 }) "Air date" Nothing
     <*> areq checkBoxField "Published" (Just False)
+    <*> areq intField "Duration" Nothing
 
 getNewEpisodeR :: Text -> Handler RepHtml
 getNewEpisodeR podcast = do
@@ -189,7 +191,7 @@ postEpisodesR = do
     ensureEpisode ep =
         let constraint = UniqueEpisodeNumber (episodePodcast ep) (episodeNumber ep)
         in ensureEntity ep constraint
-    episodeFromEpisodeHACK (EpisodeHACK _ podcast title number slug date published) =
+    episodeFromEpisodeHACK (EpisodeHACK _ podcast title number slug date published duration) =
         let dTime = secondsToDiffTime 0
             utc = UTCTime date dTime
-        in Episode podcast title number slug utc published
+        in Episode podcast title number slug utc published duration

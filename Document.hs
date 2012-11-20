@@ -35,6 +35,7 @@ data EpisodeDocument = DocEpisode {
   docEpisodeAirDate :: UTCTime,
   docEpisodeTitle :: Text,
   docEpisodeSearchSlug :: Text,
+  docEpisodeDuration :: Int,
   docEpisodeNodes :: [NodeDocument]
 } deriving (Show, Generic)
 
@@ -65,13 +66,13 @@ documentFromNodeInstance (Entity _ x) = do
 
 --documentFromEpisode :: PersistQuery backend m => Entity (EpisodeGeneric backend) -> backend m EpisodeDocument
 documentFromEpisode episode = do
-  let Entity tid (Episode podcast title number slug airDate _) = episode
+  let Entity tid (Episode podcast title number slug airDate _ duration) = episode
   instancesWithIds <- selectList [NodeInstanceEpisodeId ==. tid] [Asc NodeInstanceTime]
   mNodes <- mapM documentFromNodeInstance instancesWithIds
   nodes <- filterM (return . isJust) mNodes
   justNodes <- mapM (return . fromJust) nodes
 
-  return $ DocEpisode podcast number airDate title slug justNodes
+  return $ DocEpisode podcast number airDate title slug duration justNodes
 
 nodeTypeIdFromDoc :: NodeTypeDocument -> DBKey NodeTypeGeneric
 nodeTypeIdFromDoc doc = do
@@ -110,7 +111,7 @@ episodeAndIdFromDoc :: PersistUnique backend m =>
   -> backend m (Key backend (EpisodeGeneric backend), EpisodeGeneric backend)
 
 episodeAndIdFromDoc doc =
-  let DocEpisode podcast number airDate title slug _ = doc
+  let DocEpisode podcast number airDate title slug duration _ = doc
   in do
     mPodcast <- getBy $ UniquePodcastName podcast
     case mPodcast of
@@ -125,7 +126,7 @@ episodeAndIdFromDoc doc =
     mEpisode <- getBy $ UniqueEpisodeNumber podcast number
     case mEpisode of
       Nothing -> do
-        let ep = Episode podcast title number slug airDate True
+        let ep = Episode podcast title number slug airDate True duration
         tid <- insert ep
         return (tid, ep)
       Just (Entity tid ep) -> return (tid, ep)

@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 import Text.CSV
 import Data.Char (toLower)
-import Data.Maybe (fromJust)
+import Data.Maybe (fromJust, isJust)
 import Data.List.Split (splitOn)
 import Control.Applicative ((<$>), (<*>))
 import Control.Exception (bracket)
@@ -14,6 +14,9 @@ import System.Locale (defaultTimeLocale)
 import Network.URI (parseURI, uriAuthority, uriRegName)
 import Data.Aeson (ToJSON(..), encode, (.=), Value(Null), object)
 import System.Environment (getArgs)
+
+-- DEBUG
+import Debug.Trace (trace)
 
 type TimeOffset = Int
 
@@ -63,7 +66,7 @@ instance ToJSON Episode where
     "number" .= number,
     "airDate" .= (toJSON airDate),
     "searchSlug" .= searchSlug,
-    --"duration" .= duration,
+    "duration" .= duration,
     "nodes" .= nodes]
 
 main = do
@@ -85,19 +88,15 @@ main = do
   let json = [podcast]
 
   BL.writeFile toFile $ encode json
-  --bracket (openFile toFile WriteMode) (hClose)
-  --  (\hdl ->
-  --    do x <- hGetChar hdl
-  --       y <- hGetChar hdl
-  --                   print (x,y))
 
   return ()
  --where
 makeColumns :: Record -> [String] -> [Record -> Field]
 makeColumns header titles =
-  let columnNames = filter (`elem` titles) $ map (map toLower) header
-      indicies = flip map titles $ fromJust . flip L.elemIndex columnNames
-  in  map (\n -> (!! n)) indicies
+  let columnNames = map (map toLower) header
+      indicies = map fromJust $ filter isJust $ flip map titles $ flip L.elemIndex columnNames
+  in  trace ("columnNames: " ++ (show columnNames) ++ "\ntitles: " ++ (show titles) ++ "\nindicies: " ++ (show indicies)) $
+      map (\n -> (!! n)) indicies
 
 mkLinkTitle str =
   let mAuth = do uri <- parseURI str
@@ -106,9 +105,3 @@ mkLinkTitle str =
   in case mAuth of
     Just x -> x
     Nothing -> str
-
-  --parseURI str <*> uriAuthority
-  --let mUrl = parseURI str
-  --in case mUrl of
-  --  Just url -> uriAuthority url
-  --  Nothing -> str
