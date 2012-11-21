@@ -103,7 +103,7 @@ newNodeInstanceForm episodeId nodes = renderDivs $ NodeInstance
     <$> areq (selectFieldList nodes') "Node" Nothing
     <*> aopt hiddenField "" Nothing
     <*> areq hiddenField "" (Just episodeId)
-    <*> areq textField "Time" (Just "00:00:00")
+    <*> areq intField "Time" (Just 0)
   where
     nodes' = (flip map) nodes (\(Entity tid x) -> (nodeTitle x, tid))
 

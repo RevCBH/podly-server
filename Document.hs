@@ -23,7 +23,7 @@ data NodeDocument = DocNode {
   docNodeTitle :: Text,
   docNodeUrl :: Text,
   docNodeLinkTitle :: Text,
-  docNodeTime :: Text,
+  docNodeTime :: Int,
   docNodeNodeType :: NodeTypeDocument
 } deriving (Show, Generic)
 
@@ -82,7 +82,7 @@ nodeTypeIdFromDoc doc = do
     Just (Entity tid _) -> return tid
 
 --nodeIdAndTimeFromDoc :: NodeDocument -> (DBKey NodeGeneric, String)
-nodeIdAndTimeFromDoc :: PersistUnique backend m => NodeDocument -> backend m (Key backend (NodeGeneric backend), Text)
+nodeIdAndTimeFromDoc :: PersistUnique backend m => NodeDocument -> backend m (Key backend (NodeGeneric backend), Int)
 nodeIdAndTimeFromDoc doc = do
   let DocNode nodeId title url linkTitle time ntDoc = doc
   mNode <- getBy $ UniqueNodeTitle title
@@ -94,7 +94,7 @@ nodeIdAndTimeFromDoc doc = do
   return (tid, time)
 
 nodeInstanceIdFromNodeInEpisode :: PersistUnique backend m =>
-  Text
+  Int
   -> Key backend (EpisodeGeneric backend)
   -> Key backend (NodeGeneric backend)
   -> backend m (Key backend (NodeInstanceGeneric backend))

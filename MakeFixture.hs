@@ -23,8 +23,8 @@ type TimeOffset = Int
 data NodeRow = NodeRow {
   title :: String,
   nodeType :: String,
-  --time :: TimeOffset,
-  time :: String,
+  time :: TimeOffset,
+  --time :: String,
   url :: String,
   linkTitle :: String
 } deriving (Show)
@@ -81,7 +81,7 @@ main = do
   let podcast = parsePodcast hData
 
   let cTitle:cNodeType:cTime:cUrl:[] = makeColumns rowHeader ["title", "node type", "time", "url"]
-  let parseNode = NodeRow <$> cTitle <*> cNodeType <*> cTime <*> cUrl <*> mkLinkTitle.cUrl
+  let parseNode = NodeRow <$> cTitle <*> cNodeType <*> parseTime.cTime <*> cUrl <*> mkLinkTitle.cUrl
 
   let rows' = filter (\x -> (length . cTime) x > 0) rows
   let podcast = parsePodcast hData $ map parseNode rows'

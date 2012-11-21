@@ -41,7 +41,7 @@ NodeInstance
     nodeId NodeId Eq
     nodeTypeId NodeTypeId Maybe
     episodeId EpisodeId Eq
-    time Text
+    time Int
     UniqueInstanceEpisodeTime episodeId time
 
 Event
