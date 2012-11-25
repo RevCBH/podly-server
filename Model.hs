@@ -48,7 +48,7 @@ instance ToJSON (Entity Node) where
       "title" .= nodeTitle n]
 
 instance ToJSON (Entity Episode) where
-  toJSON (Entity tid (Episode podcast title number slug airDate published duration)) = object
+  toJSON (Entity tid (Episode podcast title number slug airDate published duration streamingUrl)) = object
     [ "_id" .= tid,
       "podcast" .= podcast,
       "title" .= title,
@@ -56,6 +56,7 @@ instance ToJSON (Entity Episode) where
       "searchSlug" .= slug,
       "published" .= published,
       "duration" .= duration,
+      "streamingUrl" .= streamingUrl,
       "airDate" .= (toJSON airDate)]
 
 instance FromJSON (EpisodeGeneric t) where
@@ -66,7 +67,8 @@ instance FromJSON (EpisodeGeneric t) where
     o .: "searchSlug"            <*>
     o .: "airDate"               <*>
     o .: "published"             <*>
-    o .: "duration"
+    o .: "duration"              <*>
+    o .: "streamingUrl"
   parseJSON _  = error "Object expected when parsing Episode"
 
 instance ToJSON (Entity Podcast) where

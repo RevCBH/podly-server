@@ -36,6 +36,7 @@ data Episode = Episode {
   epAirDate :: UTCTime,
   epSearchSlug :: String,
   epDuration :: TimeOffset,
+  epStreamingUrl :: String,
   epNodes :: [NodeRow]
 } deriving (Show)
 
@@ -60,13 +61,14 @@ instance ToJSON NodeRow where
       "icon" .= ("" :: String)]]
 
 instance ToJSON Episode where
-  toJSON (Episode podcast title number airDate searchSlug duration nodes) = object [
+  toJSON (Episode podcast title number airDate searchSlug duration streamingUrl nodes) = object [
     "podcast" .= podcast,
     "title" .= title,
     "number" .= number,
     "airDate" .= (toJSON airDate),
     "searchSlug" .= searchSlug,
     "duration" .= duration,
+    "streamingUrl" .= streamingUrl,
     "nodes" .= nodes]
 
 main = do
@@ -76,8 +78,8 @@ main = do
               Left er -> error $ show er
               Right rows -> rows
 
-  let hPodcast:hEpisodeTitle:hNumber:hAirDate:hSearchSlug:hDuration:[] = makeColumns header ["podcast", "episode title", "number", "air date", "search slug", "duration"]
-  let parsePodcast = Episode <$> hPodcast <*> hEpisodeTitle <*> read.hNumber <*> parseDate.hAirDate <*> hSearchSlug <*> parseTime.hDuration
+  let hPodcast:hEpisodeTitle:hNumber:hAirDate:hSearchSlug:hDuration:hStreamingUrl:[] = makeColumns header ["podcast", "episode title", "number", "air date", "search slug", "duration", "streaming url"]
+  let parsePodcast = Episode <$> hPodcast <*> hEpisodeTitle <*> read.hNumber <*> parseDate.hAirDate <*> hSearchSlug <*> parseTime.hDuration <*> hStreamingUrl
   let podcast = parsePodcast hData
 
   let cTitle:cNodeType:cTime:cUrl:[] = makeColumns rowHeader ["title", "node type", "time", "url"]
