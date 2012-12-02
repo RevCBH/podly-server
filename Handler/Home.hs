@@ -15,6 +15,6 @@ getHomeR :: Handler RepHtml
 getHomeR = do
     defaultLayout $ do
         setTitle "Player control test"
-        addScriptRemote "http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"
-        addScriptRemote "/static/js/froogaloop.js"
+        addScriptRemote "//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"
+        addScriptRemote "//a.vimeocdn.com/js/froogaloop2.min.js"
         $(widgetFile "homepage")
