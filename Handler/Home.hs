@@ -13,32 +13,8 @@ import Yesod.Auth
 -- inclined, or create a single monolithic file.
 getHomeR :: Handler RepHtml
 getHomeR = do
-    maid <- maybeAuthId
-    mauth <- maybeAuth
-    (formWidget, formEnctype) <- generateFormPost sampleForm
-    let submission = Nothing :: Maybe (FileInfo, Text)
-        handlerName = "getHomeR" :: Text
     defaultLayout $ do
-        aDomId <- lift newIdent
-        setTitle "Welcome To Yesod!"
+        setTitle "Player control test"
+        addScriptRemote "http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"
+        addScriptRemote "/static/js/froogaloop.js"
         $(widgetFile "homepage")
-
-postHomeR :: Handler RepHtml
-postHomeR = do
-    maid <- maybeAuthId
-    mauth <- maybeAuth
-    ((result, formWidget), formEnctype) <- runFormPost sampleForm
-    let handlerName = "postHomeR" :: Text
-        submission = case result of
-            FormSuccess res -> Just res
-            _ -> Nothing
-
-    defaultLayout $ do
-        aDomId <- lift newIdent
-        setTitle "Welcome To Yesod!"
-        $(widgetFile "homepage")
-
-sampleForm :: Form (FileInfo, Text)
-sampleForm = renderDivs $ (,)
-    <$> fileAFormReq "Choose a file"
-    <*> areq textField "What's on the file?" Nothing

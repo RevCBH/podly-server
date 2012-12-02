@@ -38,6 +38,11 @@ Episode
     UniqueEpisodeNumber podcast number
     deriving Show
 
+MediaSource
+    episodeId EpisodeId Eq
+    kind MediaKind
+    url Text
+
 NodeInstance
     nodeId NodeId Eq
     nodeTypeId NodeTypeId Maybe

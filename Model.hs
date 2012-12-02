@@ -10,6 +10,13 @@ import Language.Haskell.TH.Syntax
 import Data.Aeson hiding (object)
 import Control.Applicative ((<$>), (<*>))
 
+data MediaKind =
+  AudioMp3
+  | VideoVimeo
+  | VideoYouTube
+ deriving (Show, Read, Eq)
+derivePersistField "MediaKind"
+
 share [mkPersist sqlSettings, mkMigrate "migrateAll"]
     $(persistFileWith lowerCaseSettings "config/models")
 

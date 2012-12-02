@@ -42,4 +42,4 @@ removePrefix p str =
       |> downcaseFirst
  where
   downcaseFirst (x:xs) = (Data.Char.toLower x):xs
-  downcaseFirst [] = [] 
+  downcaseFirst [] = []
