@@ -3,7 +3,8 @@
   var vimeo;
 
   window.PlayerController = function($scope) {
-    var guardPlayer;
+    var guardPlayer, lastNode;
+    lastNode = null;
     $scope.time = 0;
     $scope.mediaPlaybackOffset = 0;
     $scope.nodes = [
@@ -32,9 +33,45 @@
         return p.api('play');
       });
     };
-    return $scope.pause = function() {
+    $scope.pause = function() {
       return guardPlayer(function(p) {
         return p.api('pause');
+      });
+    };
+    $scope.currentNode = function() {
+      var result, t;
+      t = $scope.time - $scope.mediaPlaybackOffset;
+      result = _.chain($scope.nodes).filter(function(n) {
+        return n.time <= t;
+      }).last().value();
+      if (result !== lastNode) {
+        lastNode = result;
+        $scope.scrollTo(result);
+      }
+      return result;
+    };
+    $scope.classesForNode = function(n) {
+      var cur;
+      cur = $scope.currentNode();
+      if ((cur != null ? cur._id : void 0) === n._id) {
+        return "highlighted";
+      } else {
+        return "";
+      }
+    };
+    return $scope.scrollTo = function(n) {
+      var container, scrollAmount, target;
+      target = $("#" + n._id);
+      container = $("#nodes");
+      scrollAmount = target.offset().top - container.offset().top + container.scrollTop() - 40;
+      container.css('overflow', 'hidden');
+      return container.animate({
+        scrollTop: scrollAmount
+      }, {
+        duration: 1000,
+        complete: function() {
+          return container.css('overflow', 'auto');
+        }
       });
     };
   };

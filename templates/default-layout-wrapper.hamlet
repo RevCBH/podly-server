@@ -20,8 +20,9 @@ $newline never
         \<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
         \<![endif]-->
 
-        <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.0.3/angular.min.js"></script>
-        <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.0.3/angular-resource.min.js"></script>
+        <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.0.3/angular.min.js"></script>
+        <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.0.3/angular-resource.min.js"></script>
+        <script src="/static/js/underscore-min.js"></script>
 
         <script>
           document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/,'js');
@@ -30,7 +31,7 @@ $newline never
             <header>
             <div id="main" role="main">
               ^{pageBody pc}
-            <footer>
+            <footer class="center" style="width: 500px">
                 #{extraCopyright $ appExtra $ settings master}
 
         $maybe analytics <- extraAnalytics $ appExtra $ settings master

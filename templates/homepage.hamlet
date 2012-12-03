@@ -1,17 +1,15 @@
+<h1>The Joe Rogan Experience #275
+<h2>Dave Asprey, Brian Redban
 <div ng-app="vimeo" podly-vimeo ng-controller="PlayerController">
-  <iframe id="vimeo-player" src="http://player.vimeo.com/video/51488504?api=1&amp;player_id=vimeo-player" width="500" height="281" frameborder="0" webkitAllowFullScreen mozallowfullscreen allowFullScreen>
-
-  <p>
-    <a href="http://vimeo.com/51488504">JRE #275 - Dave Asprey, Brian Redban</a> from <a href="http://vimeo.com/joeroganexperience">JoeRogan</a> on <a href="http://vimeo.com">Vimeo</a>.
-  <p>
+  <div class="center" style="width: 500px">
+    <iframe id="vimeo-player" src="http://player.vimeo.com/video/51488504?api=1&amp;player_id=vimeo-player" width="500" height="281" frameborder="0" webkitAllowFullScreen mozallowfullscreen allowFullScreen>
+  <!-- <p>
     <a ng-click="play()" href="#">play
-    <br>
     <a ng-click="pause()" href="#">pause
-    <br>
-    <a ng-click="seek(time + 10)" href="#">skip forward
-  <p id="timer">{{time | formatOffset}}
-  <div id="nodes">
+    <a ng-click="seek(time + 10)" href="#">skip forward -->
+  <div id="nodes" class="node-container center">
     <div class="node" ng-repeat="node in nodes">
+      <div class="{{classesForNode(node)}}">
         <a href="#" id="{{node._id}}" ng-click="seek(node.time)">{{node.time | formatOffset}}
         <img src="/static/img/{{node.nodeType.icon}}.png">
         <a href="{{node.url}}" ng-click="pause()" target='_blank'>{{node.title}}

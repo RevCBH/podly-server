@@ -1,3 +1,16 @@
 .highlighted {
-  background-color: blue;
+  background-color: #ddd;
+}
+
+.node-container {
+  overflow: auto;
+  height: 220px;
+  background-color: #bbb;
+
+  width: 500px;
+}
+
+.center {
+  float:none !imporant;
+  margin:auto auto;
 }

@@ -1,4 +1,6 @@
 window.PlayerController = ($scope) ->
+  lastNode = null
+
   $scope.time = 0
   $scope.mediaPlaybackOffset = 0
   $scope.nodes = [{_id: 0, title: "foo", nodeType: {icon: "Fake/Icon"}}]
@@ -16,6 +18,32 @@ window.PlayerController = ($scope) ->
   $scope.pause = -> guardPlayer (p) ->
     p.api 'pause'
 
+# TODO - rate-limit, caching ?
+  $scope.currentNode = ->
+    t = $scope.time - $scope.mediaPlaybackOffset
+    result = _.chain($scope.nodes).filter((n) -> n.time <= t).last().value()
+    if (result != lastNode)
+      lastNode = result
+      $scope.scrollTo result
+    result
+
+  $scope.classesForNode = (n) ->
+    cur = $scope.currentNode()
+    if cur?._id == n._id
+      "highlighted"
+    else
+      ""
+
+  $scope.scrollTo = (n) ->
+    target = ($ "##{n._id}")
+    container = ($ "#nodes")
+    scrollAmount = target.offset().top - container.offset().top + container.scrollTop() - 40
+
+    container.css 'overflow', 'hidden'
+    container.animate {scrollTop: scrollAmount}, {
+      duration: 1000
+      complete: -> container.css 'overflow', 'auto'
+    }
 
 vimeo = angular.module('vimeo', ['ngResource'])
 
