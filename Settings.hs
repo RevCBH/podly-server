@@ -17,7 +17,7 @@ import Control.Applicative
 import Settings.Development
 import Data.Default (def)
 import Text.Hamlet
-import Text.Coffee (coffeeFile, coffeeFileReload)
+--import Text.Coffee (coffeeFile, coffeeFileReload)
 
 -- | Which Persistent backend this site is using.
 type PersistConfig = PostgresConf
@@ -47,10 +47,12 @@ staticRoot conf = [st|#{appRoot conf}/static|]
 
 
 templateLanguages :: HamletSettings -> [TemplateLanguage]
-templateLanguages hset =
-    coffeeFile' : defaultTemplateLanguages hset
-  where
-    coffeeFile' = TemplateLanguage True  "coffee"  coffeeFile   coffeeFileReload
+--templateLanguages hset =
+--    coffeeFile' : defaultTemplateLanguages hset
+--  where
+--    coffeeFile' = TemplateLanguage True  "coffee"  coffeeFile   coffeeFileReload
+
+templateLanguages = defaultTemplateLanguages
 
 -- | Settings for 'widgetFile', such as which template languages to support and
 -- default Hamlet settings.
