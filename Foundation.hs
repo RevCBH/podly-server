@@ -21,6 +21,7 @@ import Text.Jasmine (minifym)
 import Web.ClientSession (getKey)
 import Text.Hamlet (hamletFile)
 import Data.Text (Text())
+import Yesod.Angular
 
 -- | The site argument for your application. This can be a good place to
 -- keep settings and values requiring initialization before your application
@@ -139,6 +140,11 @@ instance YesodAuth App where
     authPlugins _ = [authBrowserId, authGoogleEmail]
 
     authHttpManager = httpManager
+
+instance YesodAngular App --where
+    --urlAngularJs _ = Left $ StaticR $ StaticRoute ["angular", "angular.min.js"] []
+
+type Angular = GAngular App App ()
 
 -- This instance is required to use forms. You can modify renderMessage to
 -- achieve customized and internationalized form validation messages.

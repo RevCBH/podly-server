@@ -5,8 +5,8 @@
 /robots.txt RobotsR GET
 
 / HomeR GET
+/test TestR
 
-/test TestR GET
 /echo.json EchoJsonR POST
 /reset NukeR GET
 

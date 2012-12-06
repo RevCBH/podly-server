@@ -14,15 +14,17 @@ import Document
 import Handler.Util
 
 import Yesod.Form.Jquery
+import Yesod.Angular
 
-getTestR :: Handler RepJson
-getTestR = do
-    now <- liftIO getCurrentTime
-    _ <- runDB $ insert $ Event "foo" "bar" now
-    events <- runDB $ selectList [EventCreated >. fiveHoursBefore now] []
-    jsonToRepJson events
-  where
-    fiveHoursBefore = addUTCTime (-5*60*60)
+handleTestR :: Handler RepHtml
+handleTestR = runAngular $ do
+    let angularMessage = "Angular" :: String
+    --cmdGetPeople <- addCommand $ \() -> do
+    --    people' <- getYesod >>= liftIO . readIORef . ipeople
+    --    return $ map (\(pid, Person name _) -> PersonSummary pid name) $ Map.toList people'
+    $(addCtrl "/" "test")
+
+    setDefaultRoute "/"
 
 getUsersR :: Handler RepHtml
 getUsersR = do

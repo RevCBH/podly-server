@@ -28,6 +28,7 @@ library
                      Settings
                      Settings.StaticFiles
                      Settings.Development
+                     Yesod.Angular
                      Handler.Util
                      Handler.Home
                      Handler.Test
@@ -68,6 +69,7 @@ library
                  , yesod-default
                  , yesod-form
                  , yesod-test
+                 , yesod-json                    >= 1.1        && < 1.2
                  , clientsession
                  , bytestring
                  , text
@@ -82,8 +84,10 @@ library
                  , monad-control
                  , wai-extra
                  , yaml
-                 , http-conduit
-                 , directory
+                 , http-conduit                  >= 1.5        && < 1.7
+                 , directory                     >= 1.1        && < 1.3
+                 , containers                    >= 0.4.2      && < 0.5
+                 , transformers                  >= 0.3        && < 0.4
                  , warp
                  , time
                  , aeson
@@ -93,8 +97,9 @@ library
                  , wai
                  , unordered-containers
                  , blaze-markup
-                 -- , fay                           >= 0.10       && < 0.11
-                 -- , yesod-fay                     >= 0.1        && < 0.2
+                 , yesod-fay                     >= 0.1
+                 , fay                           >= 0.9
+                 , aeson                         >= 0.6        && < 0.7
                  , ghc-prim
                  , data-default
 
