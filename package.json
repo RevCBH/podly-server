@@ -1,0 +1,9 @@
+{
+  "name": "podly-server-hs-support",
+  "version": "0.0.0",
+  "description": "Coffeescript support for podly-server-hs",
+  "dependencies": {
+    "coffee-script": "1.3.x"
+  },
+  "engine": "node >= 0.8"
+}
