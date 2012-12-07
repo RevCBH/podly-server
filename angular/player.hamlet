@@ -49,7 +49,7 @@
             <div class="wordyBits">
               <div class="category">{{node.nodeType.title}}
               <div class="wordLinks">
-                <a href="#">{{node.title}}
+                <a href="{{node.url}}" target="_blank">{{node.title}}
             <!--End Wordy Bits -->
           <!--End Node Elements-->
       <!--End Row 1-->
