@@ -1,0 +1,5 @@
+  <h1>Episodes</h1>
+  found {{episodes.length}} episodes
+  <ul>
+    <!-- <li ng-repeat="episode in episodes | orderBy:'number'">
+      <a href="#/episodes/{{episode.number}}">#{{episode.number}} - {{episode.title}} -->

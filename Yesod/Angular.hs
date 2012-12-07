@@ -22,6 +22,7 @@ import           Data.Monoid                (First (..), Monoid (..))
 import           Data.Text                  (Text)
 import           Text.Hamlet                (HtmlUrl, hamletFile)
 import           Text.Julius                (JavascriptUrl, julius, juliusFile)
+import           Text.Coffee.Bare           (coffeeBareFile, coffeeBareFileReload)
 import           Yesod.Core                 (GHandler, GWidget, RepHtml,
                                              RepHtml (RepHtml), Route, Yesod,
                                              addScriptEither, defaultLayout,
@@ -129,7 +130,9 @@ addCtrl :: Text -- ^ route pattern
         -> Q Exp
 addCtrl route name = do
     let name' = T.filter isAlpha name
-    [|addCtrlRaw $(liftT name') $(liftT route) $(hamletFile $ fn "hamlet") $(juliusFile $ fn "julius")|]
+    --[|addCtrlRaw $(liftT name') $(liftT route) $(hamletFile $ fn "hamlet") $(juliusFile $ fn "julius")|]
+    --[|addCtrlRaw $(liftT name') $(liftT route) $(hamletFile $ fn "hamlet") $(coffeeFile $ fn "coffee")|]
+    [|addCtrlRaw $(liftT name') $(liftT route) $(hamletFile $ fn "hamlet") $(coffeeBareFileReload $ fn "coffee")|]
   where
     liftT t = do
         p <- [|T.pack|]
