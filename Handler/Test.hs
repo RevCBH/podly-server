@@ -7,7 +7,6 @@ import Data.Aeson.TH (deriveJSON)
 import Data.Maybe
 import Data.Time(addUTCTime, getCurrentTime, Day, UTCTime(..), secondsToDiffTime)
 import Data.Text (pack)
-import qualified Data.ByteString.Lazy.Char8 as L8
 import Text.Coffee (coffeeFile)
 import qualified Data.HashMap.Strict as Map
 
@@ -16,22 +15,6 @@ import Document
 import Handler.Util
 
 import Yesod.Form.Jquery
-import Yesod.Angular
-
-handleTestR :: Handler RepHtml
-handleTestR = do
-    episode:_ <- runDB $ selectList [EpisodeNumber ==. 275] [Desc EpisodeAirDate]
-    doc <- runDB $ documentFromEpisode episode
-    let epJson = L8.unpack $ encode doc
-    runNgModule (Just "playerMod") $ do
-        let angularMessage = "Angular" :: String
-        --cmdGetPeople <- addCommand $ \() -> do
-        --    people' <- getYesod >>= liftIO . readIORef . ipeople
-        --    return $ map (\(pid, Person name _) -> PersonSummary pid name) $ Map.toList people'
-        $(addCtrl "/" "episodeList")
-        $(addCtrl "/player/:episodeNumber" "player")
-
-        setDefaultRoute "/player/275"
 
 getUsersR :: Handler RepHtml
 getUsersR = do
@@ -101,11 +84,13 @@ getEpisodesR = do
     let json = episodes
     defaultLayoutJson widget json
 
+{-
 getEpisodesJsonR :: Handler RepJson
 getEpisodesJsonR = do
     episodes <- runDB $ selectList [] [Desc EpisodeAirDate]
     docs <- runDB $ mapM documentFromEpisode episodes
     jsonToRepJson docs
+-}
 
 newNodeInstanceForm :: EpisodeId -> [Entity Node] -> Form NodeInstance
 newNodeInstanceForm episodeId nodes = renderDivs $ NodeInstance
@@ -128,6 +113,7 @@ getPodcastEpisodeR name number = do
     let json = episodeDoc
     defaultLayoutJson widget json
 
+{-
 postNodeInstanceR :: Text -> Int -> Handler RepHtml
 postNodeInstanceR podcast number = do
     (Entity episodeId _) <- runDB $ getBy404 $ UniqueEpisodeNumber podcast number
@@ -138,6 +124,7 @@ postNodeInstanceR podcast number = do
     ----    PostJson -> jsonToRepJson entity
     --    PostForm -> redirect $ PodcastEpisodeR (episodePodcast episode) (episodeNumber episode)
     redirect $ PodcastEpisodeR podcast number
+-}
 
 instance FromJSON Day where
     parseJSON val = do
@@ -178,12 +165,14 @@ newEpisodeForm maybePodcast = renderDivs $ EpisodeHACK
     <*> areq intField "Duration" Nothing
     <*> areq textField "Streaming URL" Nothing
 
+{-
 getNewEpisodeR :: Text -> Handler RepHtml
 getNewEpisodeR podcast = do
     (formWidget, enctype) <- generateFormPost $ newEpisodeForm $ Just podcast
     defaultLayout $ do
         setTitle "New Episode"
         $(widgetFile "episodes/new")
+-}
 
 postEpisodesR :: Handler RepJson
 postEpisodesR = do

@@ -47,6 +47,7 @@ supportedIcons = map (\x -> (x,x)) [
   "Products/Health", "Products/Health2", "Products/Interest!", "Products/Locations", "Products/Money",
   "Products/Sponsors", "Products/Tech"]
 
+{-
 newNodeTypeForm :: Form NodeType
 newNodeTypeForm = renderDivs $ NodeType
     <$> areq textField "Title" Nothing
@@ -70,3 +71,4 @@ postNodeTypesR = do
   redirect $ NodeTypeR tid
  where
   ensureNodeType nt = ensureEntity nt $ UniqueTypeTitle $ nodeTypeTitle nt
+-}

@@ -3,18 +3,22 @@ module Handler.Home where
 
 import Import
 import Yesod.Auth
+import Yesod.Angular
+import qualified Data.ByteString.Lazy.Char8 as L8
 
--- This is a handler function for the GET request method on the HomeR
--- resource pattern. All of your resource patterns are defined in
--- config/routes
---
--- The majority of the code you will write in Yesod lives in these handler
--- functions. You can spread them across multiple files if you are so
--- inclined, or create a single monolithic file.
-getHomeR :: Handler RepHtml
-getHomeR = do
-    defaultLayout $ do
-        setTitle "Player control test"
-        addScriptRemote "//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"
-        addScriptRemote "//a.vimeocdn.com/js/froogaloop2.min.js"
-        $(widgetFile "homepage")
+import Document
+
+handleHomeR :: Handler RepHtml
+handleHomeR = do
+    episode:_ <- runDB $ selectList [EpisodeNumber ==. 275] [Desc EpisodeAirDate]
+    doc <- runDB $ documentFromEpisode episode
+    let epJson = L8.unpack $ encode doc
+    runNgModule (Just "playerMod") $ do
+        let angularMessage = "Angular" :: String
+        --cmdGetPeople <- addCommand $ \() -> do
+        --    people' <- getYesod >>= liftIO . readIORef . ipeople
+        --    return $ map (\(pid, Person name _) -> PersonSummary pid name) $ Map.toList people'
+        $(addCtrl "/episodes" "episodeList")
+        $(addCtrl "/player/:podcastName/:episodeNumber" "player")
+
+        setDefaultRoute "/player/The Joe Rogan Experience/275"

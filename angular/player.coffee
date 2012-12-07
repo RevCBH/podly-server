@@ -70,6 +70,8 @@
           scope.$apply "time = #{data.seconds}"
 
   return ($scope, $routeParams, scrollManager) ->
+    window.sc = $scope
+    window.sm = scrollManager
     $scope.episode = %{epJson}
 
     scrollManager.watch (jQuery '#listOfNodes')
@@ -115,8 +117,9 @@
       result
 
     $scope.currentNodeTitle = -> ($scope.currentNode() or {title: "Now Playing"}).title
-    $scope.shouldShowSnapButton = ->
-      scrollManager.getShouldAutoScroll() and $scope.currentNode()?.title
+    $scope.shouldHideSnapButton = ->
+      return true unless $scope.currentNode()
+      scrollManager.getShouldAutoScroll()
 
     $scope.classesForNode = (n) ->
       cur = $scope.currentNode()

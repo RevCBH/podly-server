@@ -36,6 +36,7 @@ newNodeForm nodeTypes = renderDivs $ Node
   where
     nodeTypes' = (flip map) nodeTypes (\(Entity tid x) -> (nodeTypeTitle x, tid))
 
+{-
 getNewNodeR :: Handler RepHtml -- RepHtmlJson
 getNewNodeR = do
     nodeTypes <- runDB $ selectList [] [Asc NodeTypeTitle]
@@ -43,6 +44,7 @@ getNewNodeR = do
     defaultLayout $ do
         setTitle "New Node"
         $(widgetFile "nodes/new")
+-}
 
 postNodesR :: Handler RepHtml
 postNodesR = do

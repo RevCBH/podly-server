@@ -4,9 +4,10 @@
 <hr>
 <h2>
   Nodes
-<form method=post action=@{NodeInstanceR name number} enctype=#{enctype}>
+<!--
+<form method=post action=@ {NodeInstanceR name number} enctype=#{enctype}>
     ^{formWidget}
-    <input type=submit>
+    <input type=submit> -->
 <ul>
   $forall n <- docEpisodeNodes episodeDoc
     <li>

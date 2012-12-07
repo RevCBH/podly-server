@@ -15,7 +15,7 @@
     <!--List Controls Top-->
       <tr>
         <td id="listControlTop">
-          <a class="btn" ng-click="scrollToCurrent()" ng-hide="shouldShowSnapButton()">{{currentNodeTitle()}}
+          <a class="btn" ng-click="scrollToCurrent()" ng-hide="shouldHideSnapButton()">{{currentNodeTitle()}}
 
           <form class="navbar-search pull-right">
             <input type="text" class="search-query" placeholder="Search this episode" ng-model="nodeFilter">

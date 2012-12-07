@@ -4,10 +4,8 @@
 /favicon.ico FaviconR GET
 /robots.txt RobotsR GET
 
-/ HomeR GET
-/test TestR
+/ HomeR
 
-/echo.json EchoJsonR POST
 /reset NukeR GET
 
 -- podcasts
@@ -15,23 +13,23 @@
 -- /podcasts/#Text PodcastR GET
 /podcasts/#Text/episodes PodcastR GET
 /podcasts/#Text/episodes/#Int PodcastEpisodeR GET
-/podcasts/#Text/episodes/#Int/node NodeInstanceR POST
+-- /podcasts/#Text/episodes/#Int/node NodeInstanceR POST
 
 -- episodes
 
-/episodes EpisodesR POST
-/podcasts/#Text/episodes.new NewEpisodeR GET
-/episodes.json EpisodesJsonR GET
+-- /episodes EpisodesR POST
+-- /podcasts/#Text/episodes.new NewEpisodeR GET
+-- /episodes.json EpisodesJsonR GET
 
 -- nodes
-/nodes NodesR GET POST
+/nodes NodesR GET -- POST
 /nodes/#NodeId NodeR GET
-/nodes.new NewNodeR GET
+-- /nodes.new NewNodeR GET
 
 -- node types
-/nodetypes NodeTypesR GET POST
+/nodetypes NodeTypesR GET -- POST
 /nodetypes/#NodeTypeId NodeTypeR GET
-/nodetypes.new NewNodeTypeR GET
+-- /nodetypes.new NewNodeTypeR GET
 
 -- users
-/users UsersR GET
+-- /users UsersR GET

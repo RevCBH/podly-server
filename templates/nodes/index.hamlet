@@ -1,6 +1,7 @@
 <h1>All Nodes
+<!--
 <h3>
-  [<a href=@{NewNodeR}>new</a>]
+  [<a href=@ {NewNodeR}>new</a>] -->
 <hr>
   <ul>
     $forall Entity tid n <- nodes
