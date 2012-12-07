@@ -1,0 +1,329 @@
+body{
+/* IE10 Consumer Preview */
+
+background-image: -ms-linear-gradient(bottom, #FFFFFF 0%, #F4F4F4 100%);
+
+/* Mozilla Firefox */
+background-image: -moz-linear-gradient(bottom, #FFFFFF 0%, #F4F4F4 100%);
+
+/* Opera */
+background-image: -o-linear-gradient(bottom, #FFFFFF 0%, #F4F4F4 100%);
+
+/* Webkit (Safari/Chrome 10) */
+background-image: -webkit-gradient(linear, left bottom, left top, color-stop(0, #FFFFFF), color-stop(1, #F4F4F4));
+
+/* Webkit (Chrome 11+) */
+background-image: -webkit-linear-gradient(bottom, #FFFFFF 0%, #F4F4F4 100%);
+
+/* W3C Markup, IE10 Release Preview */
+background-image: linear-gradient(to top, #FFFFFF 0%, #F4F4F4 100%);
+
+padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
+}
+
+#tweet{;}
+
+#twitterFollow{;}
+
+.fb-like
+{
+  z-index: 101;
+}
+
+#contentContainerLeft
+{
+  width: 650px;
+  float: left;
+}
+
+#topContent{
+  margin-top:30px;
+  border: 1px solid #cccccc;
+  border-bottom: 0px;
+  background-color: #000000;
+}
+
+#videoContainer
+{
+  margin:-20px;
+  padding:0px;
+
+}
+
+#nowPlayingTitle{
+  white-space: nowrap;
+  font-family: sans-serif;
+  font-weight: bold;
+  vertical-align: center;
+  overflow:hidden;
+  text-overflow: ellipsis;
+  font-size: 30px;
+  padding-top: 5px;
+  margin:0px 0px -5px 0px;
+  width: 650px;
+  height: 30px;
+  border: 0px dashed gray;
+}
+
+#nowPlayingSubTitle{
+  white-space: nowrap;
+  font-family: sans-serif;
+  font-weight: bold;
+  vertical-align: top;
+  overflow:hidden;
+  text-overflow: ellipsis;
+  font-size: 14px;
+  padding: 0px 5px 10px 0px;
+  margin: 0px 0px -30px 0px;
+  width: 650px;
+  height: 15px;
+  border: 0px dashed gray;
+}
+
+#listControlTop
+{
+  background-color: #e8e8e8;
+  vertical-align: middle;
+  width: 656px;
+  height: 30px;
+  padding-top: 10px;
+  padding-right: 10px;
+}
+
+#listControlTop .btn
+{
+  margin-top: -1px;
+}
+
+#listControlTop .navbar-search
+{
+  margin-top: 0px;
+}
+
+#episodeNavBar .navbar-search{
+  float: right;
+  margin: 12px 15px 0px 0px;
+}
+
+.listControlsBottom
+{
+  background-color: #cccccc;
+  vertical-align: middle;
+  width: 656px;
+  height: 40px;
+  margin-top: -20px;
+  padding: 0px;
+  color: #333333;
+  border: 1px solid #cccccc;
+  position: relative;
+  z-index: 1;
+
+}
+
+
+#listOfNodes{
+  margin-top: -20px;
+  width: 656px;
+  height: 190px;
+  overflow: scroll;
+  border: 1px solid #cccccc;
+  z-index: 0;
+  position: relative;
+  background-color: white;
+}
+
+#loadingNodesOut{
+  margin-top: -20px;
+  width: 656px;
+  height: 190px;
+  overflow: scroll;
+  border: 1px solid #cccccc;
+  z-index: 0;
+  position: relative;
+  background-color: #F4F4F4;
+}
+
+#loadingNodesIn{
+  margin-top: 40px;
+  margin-left: auto;
+  margin-right: auto;
+  vertical-align: center;
+  width: 600px;
+  z-index: 0;
+  position: relative;
+}
+
+/*Node Elements*/
+.nodeElements{
+  display: block;
+  /*width: 650px;*/
+  padding: 0px;
+  /*height: 60px;*/
+
+  /*border: 2px dashed black; */
+}
+
+/*Play Time Controls*/
+.playTime{
+  width: 50px;
+  height: 50px;
+  margin: 0px;
+  vertical-align: top;
+  display: inline-block;
+  text-align: center;
+  /*border: 2px dashed purple;*/
+}
+
+.playButton{
+  display: inline;
+  margin: 0px;
+}
+.playButtonTime
+{
+  font-weight: bold;
+  margin-top: 0px;
+  display: inline;
+}
+
+.icon{
+  display: inline-block;
+  width: 50px;
+  height: 50px;
+  margin: 0px 10px 0px 10px;
+  padding: 0px;
+  vertical-align: top;
+  /*border: 2px dashed green;*/
+}
+
+/*
+Wordy Bits
+*/
+.wordyBits {
+  width: 500px;
+  display: inline-block;
+  /*border: 2px dashed blue;*/
+}
+
+
+.category
+{
+  font-size: 12px;
+  font-weight: bold;
+  color: black;
+}
+
+
+/*Links*/
+
+/*a:link, a:visited, a:hover
+{
+  color: #333333;
+}
+*/
+.wordLinks
+{
+  font-size: 25px;
+  border: 0px dashed gray;
+  margin-left: 0px;
+  color: green;
+  text-decoration: none;
+}
+
+
+a.wordLinks:link
+{
+  font-size: 25px;
+  border: 0px dashed gray;
+  margin-left: 0px;
+  text-decoration: none;
+  color: blue;
+}
+
+a.wordLinks:visited
+{
+  font-size: 25px;
+  border: 0px dashed gray;
+  margin-left: 0px;
+  text-decoration: none;
+  color: blue;
+}
+
+a.wordLinks:hover
+{
+  font-size: 25px;
+  border: 0px dashed gray;
+  margin-left: 0px;
+  text-decoration: none;
+  color: blue;
+}
+
+
+
+.listControlLinks > a:link
+{
+  color:333333;
+}
+
+.listControlLinks > a:visited
+{
+  color:#333333;
+}
+
+.listControlLinks > a:hover
+{
+  color:#333333;
+}
+
+.red a:link{
+  color:#333333;
+}
+
+.red a:visited{
+  color:#333333;
+}
+
+.red a:hover{
+  color:#333333;
+  text-decoration: underline;
+}
+
+
+.episodeList{
+  width: 241px;
+  float:right;
+  white-space: nowrap;
+  overflow:hidden;
+  text-overflow: ellipsis;
+  /*font-family: sans-serif;
+  border: 1px solid gray;*/
+  margin-top: 10px;
+  margin-right: 12px;
+  /*padding-right: -20px;*/
+}
+.episodeList li a{
+
+  background-color: white;
+
+}
+
+/*
+Nav Bar Brand
+*/
+.navbar .brand2 {
+  display: block;
+  float: left;
+  padding: 10px 20px 10px;
+  margin-left: -10px;
+  font-size: 20px;
+  font-weight: bold;
+  color: #777777;
+  /*text-shadow: 0 1px 0 #ffffff;*/
+}
+
+.navbar .brand2:hover {
+  text-decoration: none;
+}
+
+/*
+Nav Hover
+*/

@@ -39,19 +39,14 @@ import System.FilePath(FilePath)
 import Text.Shakespeare
 import Text.Julius
 
+import GHC.Base
+
 -- Begin WTF section
---infixr 9  .
-infixr 0  $
+--infixr 0  $
 
---flip f a b = f b a
-
---{-# INLINE (.) #-}
---(.)    :: (b -> c) -> (a -> b) -> a -> c
---(.) f g = \x -> f (g x)
-
-{-# INLINE ($) #-}
-($)                     :: (a -> b) -> a -> b
-f $ x                   =  f x
+--{-# INLINE ($) #-}
+--($)                     :: (a -> b) -> a -> b
+--f $ x                   =  f x
 -- End WTF section
 
 coffeeBareSettings :: Q ShakespeareSettings

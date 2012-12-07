@@ -20,6 +20,7 @@ $(deriveJSON (removePrefix "docNodeType") ''NodeTypeDocument)
 
 data NodeDocument = DocNode {
   docNode_id :: Maybe NodeId,
+  docNodeRelId :: Maybe NodeInstanceId,
   docNodeTitle :: Text,
   docNodeUrl :: Text,
   docNodeLinkTitle :: Text,
@@ -52,7 +53,7 @@ documentFromNodeType x = do
   DocNodeT (Just tid) icon title
 
 --documentFromNodeInstance :: PersistStore t m => Entity (NodeInstanceGeneric t) -> t m (Maybe NodeDocument)
-documentFromNodeInstance (Entity _ x) = do
+documentFromNodeInstance (Entity relId x) = do
   let nodeId = nodeInstanceNodeId x
   maybeNode <- get nodeId
   case maybeNode of
@@ -61,7 +62,7 @@ documentFromNodeInstance (Entity _ x) = do
       case maybeType of
         Just nt -> do
           let time = nodeInstanceTime x
-          return $ Just $ DocNode (Just nodeId) title url linkTitle time $ documentFromNodeType (Entity nodeTypeId nt)
+          return $ Just $ DocNode (Just nodeId) (Just relId) title url linkTitle time $ documentFromNodeType (Entity nodeTypeId nt)
         Nothing -> return Nothing
     Nothing -> return Nothing
 
@@ -85,7 +86,7 @@ nodeTypeIdFromDoc doc = do
 --nodeIdAndTimeFromDoc :: NodeDocument -> (DBKey NodeGeneric, String)
 nodeIdAndTimeFromDoc :: PersistUnique backend m => NodeDocument -> backend m (Key backend (NodeGeneric backend), Int)
 nodeIdAndTimeFromDoc doc = do
-  let DocNode nodeId title url linkTitle time ntDoc = doc
+  let DocNode nodeId _ title url linkTitle time ntDoc = doc
   mNode <- getBy $ UniqueNodeTitle title
   tid <- case mNode of
     Nothing -> do

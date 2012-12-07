@@ -7,6 +7,8 @@ import Data.Aeson.TH (deriveJSON)
 import Data.Maybe
 import Data.Time(addUTCTime, getCurrentTime, Day, UTCTime(..), secondsToDiffTime)
 import Data.Text (pack)
+import qualified Data.ByteString.Lazy.Char8 as L8
+import Text.Coffee (coffeeFile)
 import qualified Data.HashMap.Strict as Map
 
 import Fixtures
@@ -17,14 +19,19 @@ import Yesod.Form.Jquery
 import Yesod.Angular
 
 handleTestR :: Handler RepHtml
-handleTestR = runAngular $ do
-    let angularMessage = "Angular" :: String
-    --cmdGetPeople <- addCommand $ \() -> do
-    --    people' <- getYesod >>= liftIO . readIORef . ipeople
-    --    return $ map (\(pid, Person name _) -> PersonSummary pid name) $ Map.toList people'
-    $(addCtrl "/" "test")
+handleTestR = do
+    episode:_ <- runDB $ selectList [EpisodeNumber ==. 275] [Desc EpisodeAirDate]
+    doc <- runDB $ documentFromEpisode episode
+    let epJson = L8.unpack $ encode doc
+    runNgModule (Just "playerMod") $ do
+        let angularMessage = "Angular" :: String
+        --cmdGetPeople <- addCommand $ \() -> do
+        --    people' <- getYesod >>= liftIO . readIORef . ipeople
+        --    return $ map (\(pid, Person name _) -> PersonSummary pid name) $ Map.toList people'
+        $(addCtrl "/" "episodeList")
+        $(addCtrl "/player/:episodeNumber" "player")
 
-    setDefaultRoute "/"
+        setDefaultRoute "/player/275"
 
 getUsersR :: Handler RepHtml
 getUsersR = do

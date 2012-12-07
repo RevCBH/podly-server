@@ -1,0 +1,81 @@
+<div podly-vimeo id="contentContainerLeft">
+  <div id="nowPlayingTitle">
+    Joe Rogan Experience &#35;{{episode.number}}
+  <div id="nowPlayingSubTitle">
+      {{episode.title}}
+
+  <!--Table holding Video & List Controls-->
+  <table class="table" id="topContent">
+    <!--Video Container-->
+    <div id="videoContainer">
+      <tr>
+        <td>
+          <iframe id="vimeo-player" src="http://player.vimeo.com/video/51488504?api=1&amp;player_id=vimeo-player" width="640" height="360" frameborder="0" webkitAllowFullScreen mozallowfullscreen allowFullScreen>
+    <!--End Video Container-->
+    <!--List Controls Top-->
+      <tr>
+        <td id="listControlTop">
+          <a class="btn" ng-click="scrollToCurrent()" ng-hide="shouldShowSnapButton()">{{currentNodeTitle()}}
+
+          <form class="navbar-search pull-right">
+            <input type="text" class="search-query" placeholder="Search this episode" ng-model="nodeFilter">
+    <!--End List Controls Top-->
+  <!--End Table holding Video & List Controls-->
+
+  <!--List o' Nodes-->
+  <div id="listOfNodes">
+    <table class="table table-striped">
+      <!--Node Elements Row 1-->
+      <tr ng-repeat="node in episode.nodes | filter:nodeFilter" data-node-id="{{node.relId}}" ng-class="classesForNode(node)">
+        <td>
+          <div class="nodeElements">
+            <!--Play Time-->
+            <div class="playTime">
+              <!--Button -->
+              <div class="playButton">
+                <button type="submit" class="btn" ng-click="seek(node.time)">
+                  <i class="icon-play icon-black">
+
+              <!--Time Test-->
+              <div class="playButtonTime">{{node.time | formatOffset}}
+            <!--End Play Time-->
+
+            <!--Icon-->
+            <div class="icon">
+              <img ng-src="/static/img/{{node.nodeType.icon}}.png">
+            <!--End Icon-->
+
+            <!--Wordy Bits -->
+            <div class="wordyBits">
+              <div class="category">{{node.nodeType.title}}
+              <div class="wordLinks">
+                <a href="#">{{node.title}}
+            <!--End Wordy Bits -->
+          <!--End Node Elements-->
+      <!--End Row 1-->
+<!--
+  <div podly-vimeo>
+    <div class="center" style="width: 500px">
+      <iframe id="vimeo-player" src="http://player.vimeo.com/video/51488504?api=1&amp;player_id=vimeo-player" width="500" height="281" frameborder="0" webkitAllowFullScreen mozallowfullscreen allowFullScreen>
+
+    <form class="form-inline" style="display: none">
+      <a class="btn btn-primary" href="#" ng-click="showNew()">New
+      <span id="add-form">
+        <a class="btn btn-success" href="#" ng-click="insertNew()">Add
+        <input type="text" placeholder="Node name..." ng-model="newNodeName">
+        at {{time | formatOffset}}
+      <a class="btn btn-danger" href="#" ng-click="sync()">Sync Players
+
+    <div id="nodes-header" class="center">
+      <a id="now-playing-btn" class="btn" ng-click="scrollToCurrent()" ng-hide="isAutoScrolling()">
+        {{currentNodeTitle()}}
+      {{time | formatOffset}}
+      <a class="btn" style="visibility: hidden">Placeholder
+      <input type="text" class="search-query pull-right" placeholder="Search..." ng-model="nodeFilter">
+
+    <div id="nodes" class="node-container center">
+      <div class="node" ng-repeat="node in episode.nodes | filter:nodeFilter">
+        <div class="{{classesForNode(node)}}">
+          <a id="{{node._id}}" ng-click="seek(node.time)">{{node.time | formatOffset}}
+          <img ng-src="/static/img/{{node.nodeType.icon}}.png">
+          <a href="{{node.url}}" ng-click="pause()" target='_blank'>{{node.title}}-->

@@ -5,6 +5,7 @@
 module Yesod.Angular
     ( YesodAngular (..)
     , runAngular
+    , runNgModule
     , addCommand
     , addCtrl
     , addCtrlRaw
@@ -36,21 +37,7 @@ import qualified Data.Text as T
 import Data.Char (isAlpha)
 import Data.Either (Either(..))
 import Control.Monad
-
--- Begin WTF section
-infixr 9  .
-infixr 0  $
-
-flip f a b = f b a
-
-{-# INLINE (.) #-}
-(.)    :: (b -> c) -> (a -> b) -> a -> c
-(.) f g = \x -> f (g x)
-
-{-# INLINE ($) #-}
-($)                     :: (a -> b) -> a -> b
-f $ x                   =  f x
--- End WTF section
+import GHC.Base
 
 class Yesod master => YesodAngular master where
     urlAngularJs :: master -> Either (Route master) Text
@@ -82,7 +69,13 @@ type GAngular sub master = WriterT (AngularWriter sub master) (GHandler sub mast
 runAngular :: YesodAngular master
            => GAngular sub master ()
            -> GHandler sub master RepHtml
-runAngular ga = do
+runAngular ga = runNgModule Nothing ga
+
+runNgModule :: YesodAngular master
+            => Maybe Text
+            -> GAngular sub master ()
+            -> GHandler sub master RepHtml
+runNgModule mModname ga = do
     master <- getYesod
     ((), AngularWriter{..}) <- runWriterT ga
     mc <- lookupGetParam "command"
@@ -92,7 +85,10 @@ runAngular ga = do
         Nothing -> return ()
         Just htmlurl -> getUrlRenderParams >>= sendResponse . RepHtml . toContent . htmlurl
 
-    modname <- newIdent
+    modname <- do
+        case mModname of
+            Just name -> return name
+            Nothing -> newIdent
 
     let defaultRoute =
             case awDefaultRoute of
@@ -132,7 +128,7 @@ addCtrl route name = do
     let name' = T.filter isAlpha name
     --[|addCtrlRaw $(liftT name') $(liftT route) $(hamletFile $ fn "hamlet") $(juliusFile $ fn "julius")|]
     --[|addCtrlRaw $(liftT name') $(liftT route) $(hamletFile $ fn "hamlet") $(coffeeFile $ fn "coffee")|]
-    [|addCtrlRaw $(liftT name') $(liftT route) $(hamletFile $ fn "hamlet") $(coffeeBareFileReload $ fn "coffee")|]
+    [|addCtrlRaw $(liftT name') $(liftT route) $(hamletFile $ fn "hamlet") $(coffeeBareFile $ fn "coffee")|]
   where
     liftT t = do
         p <- [|T.pack|]
