@@ -51,6 +51,7 @@ parseDate = readTime defaultTimeLocale "%F"
 instance ToJSON NodeRow where
   toJSON (NodeRow title nodeType time url linkTitle) = object [
     "_id" .= Null,
+    "relId" .= Null,
     "title" .= title,
     "time" .= time,
     "url" .= url,
