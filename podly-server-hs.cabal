@@ -100,8 +100,8 @@ library
                  , wai
                  , unordered-containers
                  , blaze-markup
-                 , yesod-fay                     >= 0.1
-                 , fay                           >= 0.9
+                 -- , yesod-fay                     >= 0.1
+                 -- , fay                           >= 0.9
                  , aeson                         >= 0.6        && < 0.7
                  , ghc-prim
                  , data-default
