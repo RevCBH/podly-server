@@ -68,6 +68,7 @@
       scope.player.addEvent 'ready', (x) ->
         scope.player.addEvent 'playProgress', (data, id) ->
           scope.$apply "time = #{data.seconds}"
+        scope.play()
 
   return ($scope, $routeParams, scrollManager) ->
     window.sc = $scope
