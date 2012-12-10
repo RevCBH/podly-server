@@ -1,8 +1,13 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE DeriveGeneric #-}
+
+--import Import
+
+import Import
 import Text.CSV
 import Data.Char (toLower)
 import Data.Maybe (fromJust, isJust)
 import Data.List.Split (splitOn)
+import Data.Text (Text, pack, unpack)
 import Control.Applicative ((<$>), (<*>))
 import Control.Exception (bracket)
 import qualified Data.List as L
@@ -13,98 +18,91 @@ import Data.Time.Format (readTime)
 import System.Locale (defaultTimeLocale)
 import Network.URI (parseURI, uriAuthority, uriRegName)
 import Data.Aeson (ToJSON(..), encode, (.=), Value(Null), object)
+import Data.Aeson.TH (deriveJSON)
 import System.Environment (getArgs)
 
+import Document
+
 -- DEBUG
-import Debug.Trace (trace)
+import Debug.Trace
 
-type TimeOffset = Int
 
-data NodeRow = NodeRow {
-  title :: String,
-  nodeType :: String,
-  time :: TimeOffset,
-  --time :: String,
-  url :: String,
-  linkTitle :: String
-} deriving (Show)
-
-data Episode = Episode {
-  epPodcast :: String,
-  epTitle :: String,
-  epNumber :: Int,
-  epAirDate :: UTCTime,
-  epSearchSlug :: String,
-  epDuration :: TimeOffset,
-  epStreamingUrl :: String,
-  epNodes :: [NodeRow]
-} deriving (Show)
-
-parseTime :: String -> TimeOffset
+parseTime :: Text -> Int
 parseTime str =
-  let hh:mm:ss:[] = map read $ splitOn ":" str :: [Int]
+  let hh:mm:ss:[] = map read $ splitOn ":" (unpack str) :: [Int]
   in ss + (60 * mm) + (60 * 60 * hh)
 
-parseDate :: String -> UTCTime
-parseDate = readTime defaultTimeLocale "%F"
+parseDate :: Text -> UTCTime
+parseDate = readTime defaultTimeLocale "%F" . unpack
 
-instance ToJSON NodeRow where
-  toJSON (NodeRow title nodeType time url linkTitle) = object [
-    "_id" .= Null,
-    "relId" .= Null,
-    "title" .= title,
-    "time" .= time,
-    "url" .= url,
-    "linkTitle" .= linkTitle,
-    "nodeType" .= object [
-      "_id" .= Null,
-      "title" .= nodeType,
-      "icon" .= ("" :: String)]]
+parsePodcast header =
+  let cols = makeColumns header ["podcast", "episode title", "number", "air date", "search slug", "duration"]
+      hPodcast:hEpisodeTitle:hNumber:hAirDate:hSearchSlug:hDuration:[] = cols
+  in  DocEpisode              <$>
+      hPodcast                <*>
+      read.unpack.hNumber     <*>
+      Main.parseDate.hAirDate <*>
+      hEpisodeTitle           <*>
+      hSearchSlug             <*>
+      Main.parseTime.hDuration
 
-instance ToJSON Episode where
-  toJSON (Episode podcast title number airDate searchSlug duration streamingUrl nodes) = object [
-    "podcast" .= podcast,
-    "title" .= title,
-    "number" .= number,
-    "airDate" .= (toJSON airDate),
-    "searchSlug" .= searchSlug,
-    "duration" .= duration,
-    "streamingUrl" .= streamingUrl,
-    "nodes" .= nodes]
+parseNode rowHeader =
+  let cols = makeColumns rowHeader ["title", "node type", "time", "url"]
+      cTitle:cNodeType:cTime:cUrl:[] = cols
+  in  (DocNode Nothing Nothing) <$>
+      cTitle                    <*>
+      cUrl                      <*>
+      mkLinkTitle.cUrl          <*>
+      Main.parseTime.cTime      <*>
+      (DocNodeT Nothing "").cNodeType
 
+parseMedia header =
+  let cols = makeColumns header ["kind", "url", "offset"]
+      hKind:hUrl:hOffset:[] = cols
+  in  DocMediaSource      <$>
+      read.unpack.hKind   <*>
+      hUrl                <*>
+      read.unpack.hOffset
+
+main :: IO ()
 main = do
-  fromFile:toFile:[] <- getArgs
-  csv <- parseCSVFromFile fromFile
+  fromSrc:toFile:[] <- getArgs
+  let nodesFile = fromSrc ++ ".Nodes.csv"
+  let mediaFile = fromSrc ++ ".Media.csv"
+  csv <- parseCSVFromFile nodesFile
   let header:hData:rowHeader:rows = case csv of
               Left er -> error $ show er
               Right rows -> rows
 
-  let hPodcast:hEpisodeTitle:hNumber:hAirDate:hSearchSlug:hDuration:hStreamingUrl:[] = makeColumns header ["podcast", "episode title", "number", "air date", "search slug", "duration", "streaming url"]
-  let parsePodcast = Episode <$> hPodcast <*> hEpisodeTitle <*> read.hNumber <*> parseDate.hAirDate <*> hSearchSlug <*> parseTime.hDuration <*> hStreamingUrl
-  let podcast = parsePodcast hData
+  csv2 <- parseCSVFromFile mediaFile
+  let mediaHeader:mediaRows = case csv2 of
+              Left er -> error $ show er
+              Right rows -> rows
 
-  let cTitle:cNodeType:cTime:cUrl:[] = makeColumns rowHeader ["title", "node type", "time", "url"]
-  let parseNode = NodeRow <$> cTitle <*> cNodeType <*> parseTime.cTime <*> cUrl <*> mkLinkTitle.cUrl
+  --let podcast = parsePodcast header hData
+  --let podcast = parsePodcast hData
 
-  let rows' = filter (\x -> (length . cTime) x > 0) rows
-  let podcast = parsePodcast hData $ map parseNode rows'
+  --let rows' = filter (\x -> (length . cTime) x > 0) rows
+  let mediaSources = map (parseMedia mediaHeader) mediaRows
+  let podcast = parsePodcast header hData mediaSources $ map (parseNode rowHeader) rows
   let json = [podcast]
 
   BL.writeFile toFile $ encode json
 
   return ()
  --where
-makeColumns :: Record -> [String] -> [Record -> Field]
+makeColumns :: Record -> [String] -> [Record -> Text]
 makeColumns header titles =
   let columnNames = map (map toLower) header
       indicies = map fromJust $ filter isJust $ flip map titles $ flip L.elemIndex columnNames
   in  trace ("columnNames: " ++ (show columnNames) ++ "\ntitles: " ++ (show titles) ++ "\nindicies: " ++ (show indicies)) $
-      map (\n -> (!! n)) indicies
+      map (\n -> pack . (!! n)) indicies
 
+mkLinkTitle :: Text -> Text
 mkLinkTitle str =
-  let mAuth = do uri <- parseURI str
+  let mAuth = do uri <- parseURI $ unpack str
                  auth <- uriAuthority uri
                  return $ uriRegName auth
   in case mAuth of
-    Just x -> x
+    Just x -> pack x
     Nothing -> str

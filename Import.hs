@@ -16,6 +16,7 @@ import           Settings             as Import
 import           Settings.Development as Import
 import           Settings.StaticFiles as Import
 import           GHC.Generics          as Import (Generic)
+import           Util.TH              as Import
 
 #if __GLASGOW_HASKELL__ >= 704
 import           Data.Monoid          as Import
@@ -29,17 +30,3 @@ infixr 5 <>
 (<>) :: Monoid m => m -> m -> m
 (<>) = mappend
 #endif
-
-import Data.Char(toLower)
-
-infixl 0 |>
-(|>) :: t -> (t -> u) -> u
-a |> b = b a
-
-removePrefix :: String -> String -> String
-removePrefix p str =
-  str |> (drop . length) p
-      |> downcaseFirst
- where
-  downcaseFirst (x:xs) = (Data.Char.toLower x):xs
-  downcaseFirst [] = []

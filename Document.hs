@@ -1,6 +1,13 @@
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE DeriveGeneric #-}
-module Document (NodeTypeDocument(..), NodeDocument(..), EpisodeDocument(..), episodeFromDocument, documentFromEpisode, nodeTypeIdFromDoc) where
+module Document (
+  NodeTypeDocument(..),
+  NodeDocument(..), EpisodeDocument(..),
+  MediaSourceDocument(..),
+  episodeFromDocument,
+  documentFromEpisode,
+  nodeTypeIdFromDoc,
+  documentFromNodeType) where
 
 import Import
 
@@ -30,6 +37,15 @@ data NodeDocument = DocNode {
 
 $(deriveJSON (removePrefix "docNode") ''NodeDocument)
 
+data MediaSourceDocument = DocMediaSource {
+  docSourceKind :: MediaKind,
+  docSourceUrl :: Text,
+  docSourceOffset :: Int
+
+} deriving (Show, Generic)
+
+$(deriveJSON (removePrefix "docSource") ''MediaSourceDocument)
+
 data EpisodeDocument = DocEpisode {
   docEpisodePodcast :: Text,
   docEpisodeNumber :: Int,
@@ -37,7 +53,7 @@ data EpisodeDocument = DocEpisode {
   docEpisodeTitle :: Text,
   docEpisodeSearchSlug :: Text,
   docEpisodeDuration :: Int,
-  docEpisodeStreamingUrl :: Text,
+  docEpisodeMediaSources :: [MediaSourceDocument],
   docEpisodeNodes :: [NodeDocument]
 } deriving (Show, Generic)
 
@@ -66,15 +82,20 @@ documentFromNodeInstance (Entity relId x) = do
         Nothing -> return Nothing
     Nothing -> return Nothing
 
+documentFromMediaSource (Entity tid (MediaSource _ kind offset url)) = do
+  DocMediaSource kind url offset
+
 --documentFromEpisode :: PersistQuery backend m => Entity (EpisodeGeneric backend) -> backend m EpisodeDocument
 documentFromEpisode episode = do
-  let Entity tid (Episode podcast title number slug airDate _ duration streamingUrl) = episode
+  let Entity tid (Episode podcast title number slug airDate _ duration) = episode
   instancesWithIds <- selectList [NodeInstanceEpisodeId ==. tid] [Asc NodeInstanceTime]
   mNodes <- mapM documentFromNodeInstance instancesWithIds
   nodes <- filterM (return . isJust) mNodes
   justNodes <- mapM (return . fromJust) nodes
 
-  return $ DocEpisode podcast number airDate title slug duration streamingUrl justNodes
+  mediaSources <- mapM (return . documentFromMediaSource) =<< selectList [MediaSourceEpisodeId ==. tid] []
+
+  return $ DocEpisode podcast number airDate title slug duration mediaSources justNodes
 
 nodeTypeIdFromDoc :: NodeTypeDocument -> DBKey NodeTypeGeneric
 nodeTypeIdFromDoc doc = do
@@ -128,7 +149,7 @@ episodeAndIdFromDoc doc =
     mEpisode <- getBy $ UniqueEpisodeNumber podcast number
     case mEpisode of
       Nothing -> do
-        let ep = Episode podcast title number slug airDate True duration streamingUrl
+        let ep = Episode podcast title number slug airDate True duration
         tid <- insert ep
         return (tid, ep)
       Just (Entity tid ep) -> return (tid, ep)

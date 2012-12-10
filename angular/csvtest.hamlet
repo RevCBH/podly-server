@@ -1,0 +1,37 @@
+<h1>CSV Paste Test
+<form class="form-horizontal">
+  <div class="control-group">
+    <label class="control-label" for="episodePodcastTitle">Podcast
+    <div class="controls">
+      <input type="text" id="episodePodcastTitle" ng-model="episode.podcast" required>
+
+  <div class="control-group">
+    <label class="control-label" for="episodeTitle">Title
+    <div class="controls">
+      <input type="text" id="episodeTitle" ng-model="episode.title" required>
+
+  <div class="control-group">
+    <label class="control-label" for="episodeNumber">Number
+    <div class="controls">
+      <input type="number" id="episodeNumber" ng-model="episode.number" required>
+
+  <div class="control-group">
+    <label class="control-label" for="episodeAirDate">Air Date
+    <div class="controls">
+      <input type="text" id="episodeAirDate" ng-model="episode.airDate" required>
+
+  <div class="control-group">
+    <label class="control-label" for="episodeSearchSlug">Search Slug
+    <div class="controls">
+      <input type="text" id="episodeSearchSlug" ng-model="episode.searchSlug">
+
+  <div class="control-group">
+    <label class="control-label" for="mediaSource">Media URL
+    <div class="controls">
+      <input type="text" id="mediaSource" ng-model="mediaSource">
+
+<textarea ng-model="csvData">
+
+<!-- <div>{{episodeJson()}} -->
+<div ng-repeat="node in episode.nodes">
+  {{node.time}} <img ng-src="/static/img/{{node.nodeType.icon}}.png"> <a href="{{node.url}}">{{node.title}}

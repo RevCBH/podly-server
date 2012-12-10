@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveGeneric #-}
 module Model where
 
 import Prelude
@@ -5,17 +6,21 @@ import Yesod
 import Data.Text (Text)
 import Data.Time
 import Database.Persist.Quasi
-import Language.Haskell.TH.Syntax
 
 import Data.Aeson hiding (object)
+import Data.Aeson.TH (deriveJSON)
 import Control.Applicative ((<$>), (<*>))
+
+import GHC.Generics (Generic)
 
 data MediaKind =
   AudioMp3
   | VideoVimeo
   | VideoYouTube
- deriving (Show, Read, Eq)
+ deriving (Show, Read, Eq, Generic, Enum)
 derivePersistField "MediaKind"
+
+$(deriveJSON id ''MediaKind)
 
 share [mkPersist sqlSettings, mkMigrate "migrateAll"]
     $(persistFileWith lowerCaseSettings "config/models")
@@ -32,6 +37,12 @@ instance FromJSON (NodeTypeGeneric t) where
     o .: "title"                  <*>
     o .: "icon"
   parseJSON _  = error "Object expected when parsing NodeType"
+
+--instance ToJSON (Entity NodeType) where
+--  toJSON (Entity tid (NodeType title icon)) = object
+--    [ "_id" .= tid,
+--      "title" .= title,
+--      "icon" .= icon]
 
 instance FromJSON (NodeGeneric t) where
   parseJSON (Object o) = Node <$>
@@ -55,7 +66,7 @@ instance ToJSON (Entity Node) where
       "title" .= nodeTitle n]
 
 instance ToJSON (Entity Episode) where
-  toJSON (Entity tid (Episode podcast title number slug airDate published duration streamingUrl)) = object
+  toJSON (Entity tid (Episode podcast title number slug airDate published duration)) = object
     [ "_id" .= tid,
       "podcast" .= podcast,
       "title" .= title,
@@ -63,7 +74,6 @@ instance ToJSON (Entity Episode) where
       "searchSlug" .= slug,
       "published" .= published,
       "duration" .= duration,
-      "streamingUrl" .= streamingUrl,
       "airDate" .= (toJSON airDate)]
 
 instance FromJSON (EpisodeGeneric t) where
@@ -74,8 +84,7 @@ instance FromJSON (EpisodeGeneric t) where
     o .: "searchSlug"            <*>
     o .: "airDate"               <*>
     o .: "published"             <*>
-    o .: "duration"              <*>
-    o .: "streamingUrl"
+    o .: "duration"
   parseJSON _  = error "Object expected when parsing Episode"
 
 instance ToJSON (Entity Podcast) where

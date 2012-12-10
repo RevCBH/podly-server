@@ -16,7 +16,7 @@ Node
     title Text
     url Text -- TODO - URL datatype?
     linkTitle Text
-    nodeTypeId NodeTypeId Eq
+    nodeTypeId NodeTypeId Eq -- Maybe
     UniqueNodeTitle title
 
 Podcast
@@ -34,13 +34,13 @@ Episode
     airDate UTCTime
     published Bool
     duration Int
-    streamingUrl Text
     UniqueEpisodeNumber podcast number
     deriving Show
 
 MediaSource
     episodeId EpisodeId Eq
     kind MediaKind
+    offset Int
     url Text
 
 NodeInstance

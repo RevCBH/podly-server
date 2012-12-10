@@ -194,4 +194,4 @@ postEpisodesR = do
     episodeFromEpisodeHACK (EpisodeHACK _ podcast title number slug date published duration streamingUrl) =
         let dTime = secondsToDiffTime 0
             utc = UTCTime date dTime
-        in Episode podcast title number slug utc published duration streamingUrl
+        in Episode podcast title number slug utc published duration

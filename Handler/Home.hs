@@ -12,7 +12,11 @@ handleHomeR :: Handler RepHtml
 handleHomeR = do
     episode:_ <- runDB $ selectList [EpisodeNumber ==. 275] [Desc EpisodeAirDate]
     doc <- runDB $ documentFromEpisode episode
+    nodeTypes <- runDB $ selectList [] [Asc NodeTypeTitle]
+
     let epJson = L8.unpack $ encode doc
+    let nodeTypesJson = L8.unpack $ encode $ map documentFromNodeType nodeTypes
+
     runNgModule (Just "playerMod") $ do
         let angularMessage = "Angular" :: String
         --cmdGetPeople <- addCommand $ \() -> do
@@ -20,5 +24,6 @@ handleHomeR = do
         --    return $ map (\(pid, Person name _) -> PersonSummary pid name) $ Map.toList people'
         $(addCtrl "/episodes" "episodeList")
         $(addCtrl "/player/:podcastName/:episodeNumber" "player")
+        $(addCtrl "/csv" "csvtest")
 
         setDefaultRoute "/player/The Joe Rogan Experience/275"
