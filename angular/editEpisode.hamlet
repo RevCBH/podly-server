@@ -45,21 +45,12 @@
             <tbody data-selector="i.icon-info-sign" data-placement="right" data-trigger="hover" data-title="Errors" data-html="true">
               <tr ng-repeat="x in nodeParseResults" ng-class="x.cssRowClass">
                 <td><i ng-class=x.rowIcon data-content="{{x.popoverContent()}}"> {{x.statusText}}
-                <td>{{x.node.time}}
+                <td>{{x.node.time | formatOffset}}
                 <td>
-                  <div in-place type="text" model=x.node.title>
-                    <a>{{x.node.title}}</a>
+                  <div in-place type="text" model=x.node.title on-update="x.validate()">
+                    <a>{{x.node.title || '&lt;none&gt;'}}</a>
                 <td>{{x.node.nodeType.title}}
-                <td>{{x.node.url}}
-
-      <!-- Debug title list -->
-      <div class="row" ng-show=nodeParseResults>
-        <div class="span12">
-          <h5>nodeParseResults
-          <div ng-repeat="x in nodeParseResults">{{x.node.title}}
-
-      <div class="row" ng-show=episode.nodes>
-        <div class="span12">
-          <h5>episode.nodes
-          <div ng-repeat="x in episode.nodes">{{x.title}}
+                <td>
+                  <div in-place type="url" model=x.node.url on-update="x.validate()">
+                    <a>{{x.node.url || '&lt;none&gt;'}}</a>
 

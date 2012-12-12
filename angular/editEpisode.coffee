@@ -1,5 +1,22 @@
 app = angular.module('admin')
 
+# TODO - move to common module
+app.filter 'formatOffset', -> (input) ->
+  n = parseInt input
+  c = [
+    (n / 3600) % 60, #hh
+    (n / 60) % 60, #mm
+    n % 60 #ss
+  ]
+
+  c = c.map (x) ->
+    x = Math.floor x
+    x = "0#{x}" if x < 10
+    return x
+
+  c.join ':'
+
+
 app.directive 'episodeEditor', ($routeParams, $http)->
   (scope, element, attrs) ->
     haveErrored = false
@@ -13,14 +30,15 @@ app.directive 'episodeEditor', ($routeParams, $http)->
 
     ($ 'table tbody[data-selector]').popover()
 
-app.directive 'inPlace', ->
+app.directive 'inPlace', ($parse) ->
   nxtId = 0
   return {
     transclude: true
-    scope: {model: '='}
+    scope:
+      model: '='
     compile: (tElement, tAttrs, transclude) ->
       inputElement = "<input id='xxx-#{nxtId++}
-      ' class='in-place-input' type=text ng-show=isEditing ng-model=model>"
+      ' class='in-place-input' type='#{tAttrs.type}' ng-show=isEditing ng-model=model>"
       previewElement = "<span ng-hide=isEditing ng-click='beginEditing()' ng-transclude></span>"
 
       tElement.html "<div class='in-place-wrapper'></div>"
@@ -31,15 +49,23 @@ app.directive 'inPlace', ->
         originalValue = null
         inputElement = $(elem).find('input.in-place-input')
 
+        onUpdate = $parse(attrs.onUpdate)
+        # model = $parse(attrs.model)
+
         scope.isEditing = false
         scope.beginEditing = ->
-          originalValue = JSON.stringify scope.model
+          originalValue = JSON.stringify scope.model #(scope.$parent)
           scope.isEditing = true
           setTimeout (->
             inputElement.focus()), 1000
 
         scope.endEditing = (revert=false) ->
-          scope.model = JSON.parse originalValue if revert
+          if revert
+            # model.assign(scope.$parent, JSON.parse originalValue)
+            scope.model = JSON.parse originalValue
+          else
+            res = onUpdate(scope.$parent)
+
           originalValue = null
           scope.isEditing = false
 
@@ -110,9 +136,10 @@ escapeHtml = (str) ->
     "/": '&#x2F;'
   String(str).replace /[&<>"'\/]/g, (s) -> entityMap[s]
 
-window.NPR = NodeParseResult = (n) ->
+NodeParseResult = (n) ->
   @node = n
-  @validate = ->
+  @validate = =>
+    console.log "validate:", @node
     @errors = []
     @errors.push "title is required" unless @node.title?.length > 0
     @errors.push "time is required" unless @node.time
@@ -121,7 +148,11 @@ window.NPR = NodeParseResult = (n) ->
     @errors.push "Invalid nodeType: '#{escapeHtml(@node.nodeType)}'" if _(@node.nodeType).isString()
     @errors.push "Missing URL" unless @node.url
 
-    unless @errors.length
+    if @errors.length
+      @isValid = false
+      @cssRowClass = "error"
+      @rowIcon = "icon-info-sign"
+    else
       @isValid = true
       @cssRowClass = "success"
       @rowIcon = "icon-ok"
@@ -137,9 +168,6 @@ window.NPR = NodeParseResult = (n) ->
   return this
 
 return ($scope, $routeParams, $http, nodeCsvParser) ->
-  window.sc = $scope
-  window.cparse = nodeCsvParser
-
   $scope.csvData = null
 
   $scope.episode = {
