@@ -100,7 +100,7 @@ runNgModule mModname ga = do
         [whamlet|<div ng-view>|]
         toWidget [julius|
 angular
-    .module("#{modname}", [])
+    .module("#{modname}", ['ngResource']) // TODO - parameterize included modules
     .config(["$routeProvider", function($routeProvider) {
         $routeProvider ^{awRoutes} ^{defaultRoute} ;
     }]);
@@ -126,8 +126,6 @@ addCtrl :: Text -- ^ route pattern
         -> Q Exp
 addCtrl route name = do
     let name' = T.filter isAlpha name
-    --[|addCtrlRaw $(liftT name') $(liftT route) $(hamletFile $ fn "hamlet") $(juliusFile $ fn "julius")|]
-    --[|addCtrlRaw $(liftT name') $(liftT route) $(hamletFile $ fn "hamlet") $(coffeeFile $ fn "coffee")|]
     [|addCtrlRaw $(liftT name') $(liftT route) $(hamletFile $ fn "hamlet") $(coffeeBareFile $ fn "coffee")|]
   where
     liftT t = do
@@ -145,7 +143,7 @@ addCtrlRaw name' route template controller = do
     tell mempty
         { awPartials = Map.singleton name template
         , awRoutes = [julius|.when("#{route}", {controller:#{name}, templateUrl:"?partial=#{name}"})|]
-        , awControllers = [julius|var #{name} = ^{controller};|]
+        , awControllers = [julius|var #{name} = (function (){^{controller}})();|]
         }
 
 setDefaultRoute :: Text -> GAngular sub master ()

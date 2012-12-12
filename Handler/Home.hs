@@ -4,26 +4,93 @@ module Handler.Home where
 import Import
 import Yesod.Auth
 import Yesod.Angular
+
+import Handler.Util
+
 import qualified Data.ByteString.Lazy.Char8 as L8
+import qualified Data.Vector as V
+import qualified Data.Aeson as A
+import Data.Maybe (fromJust)
 
 import Document
 
 handleHomeR :: Handler RepHtml
 handleHomeR = do
-    episode:_ <- runDB $ selectList [EpisodeNumber ==. 275] [Desc EpisodeAirDate]
-    doc <- runDB $ documentFromEpisode episode
-    nodeTypes <- runDB $ selectList [] [Asc NodeTypeTitle]
+  episode:_ <- runDB $ selectList [EpisodeNumber ==. 275] [Desc EpisodeAirDate]
+  doc <- runDB $ documentFromEpisode episode
+  nodeTypes <- runDB $ selectList [] [Asc NodeTypeTitle]
 
-    let epJson = L8.unpack $ encode doc
-    let nodeTypesJson = L8.unpack $ encode $ map documentFromNodeType nodeTypes
+  let epJson = L8.unpack $ encode doc
+  let nodeTypesJson = L8.unpack $ encode $ map documentFromNodeType nodeTypes
 
-    runNgModule (Just "playerMod") $ do
-        let angularMessage = "Angular" :: String
-        --cmdGetPeople <- addCommand $ \() -> do
-        --    people' <- getYesod >>= liftIO . readIORef . ipeople
-        --    return $ map (\(pid, Person name _) -> PersonSummary pid name) $ Map.toList people'
-        $(addCtrl "/episodes" "episodeList")
-        $(addCtrl "/player/:podcastName/:episodeNumber" "player")
-        $(addCtrl "/csv" "csvtest")
+  runNgModule (Just "playerMod") $ do
+    let angularMessage = "Angular" :: String
+    --cmdGetPeople <- addCommand $ \() -> do
+    --    people' <- getYesod >>= liftIO . readIORef . ipeople
+    --    return $ map (\(pid, Person name _) -> PersonSummary pid name) $ Map.toList people'
+    $(addCtrl "/episodes" "episodeList")
+    $(addCtrl "/player/:podcastName/:episodeNumber" "player")
+    $(addCtrl "/csv" "csvtest")
 
-        setDefaultRoute "/player/The Joe Rogan Experience/275"
+    setDefaultRoute "/player/The Joe Rogan Experience/275"
+
+newtype Singleton a = Singleton { unSingleton :: a }
+instance A.ToJSON a => A.ToJSON (Singleton a) where
+    toJSON = Array . V.singleton . A.toJSON . unSingleton
+instance A.FromJSON a => A.FromJSON (Singleton a) where
+    parseJSON (Array a) =
+        case V.toList a of
+            [x] -> Singleton <$> A.parseJSON x
+            _ -> fail "Not a single-element array"
+    parseJSON _ = fail "Not an array"
+
+
+tryInsertEpisode :: Episode -> Handler (Entity Episode)
+tryInsertEpisode episode = do
+  _ <- ensurePodcast $ episodePodcast episode
+  ensureEpisode episode
+ where
+  ensurePodcast name =
+      let item = Podcast name Nothing Nothing Nothing
+          constraint = UniquePodcastName name
+      in ensureEntity item constraint
+  ensureEpisode ep =
+      let constraint = UniqueEpisodeNumber (episodePodcast ep) (episodeNumber ep)
+      in ensureEntity ep constraint
+
+handleAdminR :: Handler RepHtml
+handleAdminR = do
+  (Entity _ user) <- requireAuth
+  runNgModule (Just "admin") $ do
+    cmdCreateEpisode <- addCommand $ \ep -> do
+      episode <- tryInsertEpisode ep
+      return episode
+
+    cmdDeleteNode <- addCommand $ \(Singleton rel) -> do
+      runDB $ delete (rel :: NodeInstanceId)
+      return $ Singleton ("OK" :: String)
+
+    --cmdDeleteAllNodesForEpisode <- addCommand $ \ep -> do
+    --  numMatching <- runDB $ do
+    --    (Entity tid _) <- getBy404 $ UniqueEpisodeNumber (docEpisodePodcast ep) (docEpisodeNumber ep)
+    --    c <- count [NodeInstanceEpisodeId ==. tid]
+    --    deleteWhere [NodeInstanceEpisodeId ==. tid]
+    --    return c
+    --  return $ Singleton (numMatching)
+
+     --cmdAddNode <- addCommand $ \epId, nodeDoc -> do
+
+
+    cmdReplaceNodes <- addCommand $ \ep -> do
+      (Entity tid _) <- runDB $ getBy404 $ UniqueEpisodeNumber (docEpisodePodcast ep) (docEpisodeNumber ep)
+      runDB $ deleteWhere [NodeInstanceEpisodeId ==. tid]
+      episode <- runDB $ episodeFromDocument ep
+      doc <- runDB $ documentFromEpisode (Entity tid episode)
+      return doc
+
+    $(addCtrl "/podcasts" "podcastIndex")
+    $(addCtrl "/podcasts/:podcastName" "showPodcast")
+    $(addCtrl "/podcasts/:podcastName/episodes.new" "newEpisode")
+    $(addCtrl "/podcasts/:podcastName/episodes/:episodeNumber" "editEpisode")
+
+    setDefaultRoute "/podcasts"

@@ -1,0 +1,4 @@
+<h1>Podcasts</h1>
+<ul podcast-list>
+  <li ng-repeat="podcast in podcasts | orderBy:'name'">
+    <a href="#/podcasts/{{podcast.name}}">{{podcast.name}}

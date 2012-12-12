@@ -75,6 +75,7 @@ instance Yesod App where
     defaultLayout widget = do
         master <- getYesod
         mmsg <- getMessage
+        mauth <- maybeAuth
 
         -- We break up the default layout into two components:
         -- default-layout is the contents of the body tag, and
@@ -84,6 +85,7 @@ instance Yesod App where
 
         pc <- widgetToPageContent $ do
             -- $(widgetFile "normalize")
+            let toolbar = $(widgetFile "toolbar")
             addStylesheet $ StaticR css_bootstrap_css
             $(widgetFile "default-layout")
         hamletToRepHtml $(hamletFile "templates/default-layout-wrapper.hamlet")

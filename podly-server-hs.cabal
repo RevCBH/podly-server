@@ -34,6 +34,7 @@ library
                      Handler.Home
                      Handler.Test
                      Handler.Node
+                     Handler.Episode
                      Util.TH
                      -- Handler.NodeInstance
                      Handler.NodeType
@@ -97,13 +98,15 @@ library
                  , aeson
                  , attoparsec
                  , old-locale
-                 , transformers
+                 , mtl
                  , wai
                  , unordered-containers
                  , blaze-markup
                  -- , yesod-fay                     >= 0.1
                  -- , fay                           >= 0.9
                  , aeson                         >= 0.6        && < 0.7
+                 , vector                        >= 0.10       && < 0.11
+                 , conduit
                  , ghc-prim
                  , data-default
 

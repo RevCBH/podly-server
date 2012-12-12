@@ -4,14 +4,15 @@
 /favicon.ico FaviconR GET
 /robots.txt RobotsR GET
 
+/admin AdminR
 / HomeR
 
 /reset NukeR GET
 
 -- podcasts
 /podcasts PodcastIndexR GET
--- /podcasts/#Text PodcastR GET
-/podcasts/#Text/episodes PodcastR GET
+/podcasts/#Text PodcastR GET
+/podcasts/#Text/episodes PodcastEpisodeIndexR GET
 /podcasts/#Text/episodes/#Int PodcastEpisodeR GET
 -- /podcasts/#Text/episodes/#Int/node NodeInstanceR POST
 
@@ -19,7 +20,7 @@
 
 -- /episodes EpisodesR POST
 -- /podcasts/#Text/episodes.new NewEpisodeR GET
--- /episodes.json EpisodesJsonR GET
+/episodes.json EpisodesJsonR GET
 
 -- nodes
 /nodes NodesR GET -- POST

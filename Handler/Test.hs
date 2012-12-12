@@ -64,8 +64,13 @@ getPodcastIndexR = do
                     return $ Map.insert "episodeCount" (toJSON count) o)
     defaultLayoutJson widget json
 
-getPodcastR :: Text -> Handler RepHtmlJson
+getPodcastR :: Text -> Handler RepJson
 getPodcastR name = do
+    podcast <- runDB $ getBy404 $ UniquePodcastName name
+    jsonToRepJson podcast
+
+getPodcastEpisodeIndexR :: Text -> Handler RepHtmlJson
+getPodcastEpisodeIndexR name = do
     episodes <- runDB $ selectList [EpisodePodcast ==. name] [Asc EpisodeNumber]
     let widget = do
         setTitle $ toHtml $ name <> " - Episodes"
@@ -84,34 +89,12 @@ getEpisodesR = do
     let json = episodes
     defaultLayoutJson widget json
 
-{-
+
 getEpisodesJsonR :: Handler RepJson
 getEpisodesJsonR = do
     episodes <- runDB $ selectList [] [Desc EpisodeAirDate]
-    docs <- runDB $ mapM documentFromEpisode episodes
-    jsonToRepJson docs
--}
-
-newNodeInstanceForm :: EpisodeId -> [Entity Node] -> Form NodeInstance
-newNodeInstanceForm episodeId nodes = renderDivs $ NodeInstance
-    <$> areq (selectFieldList nodes') "Node" Nothing
-    <*> aopt hiddenField "" Nothing
-    <*> areq hiddenField "" (Just episodeId)
-    <*> areq intField "Time" (Just 0)
-  where
-    nodes' = (flip map) nodes (\(Entity tid x) -> (nodeTitle x, tid))
-
-getPodcastEpisodeR :: Text -> Int -> Handler RepHtmlJson
-getPodcastEpisodeR name number = do
-    entity@(Entity episodeId episode) <- runDB $ getBy404 $ UniqueEpisodeNumber name number
-    episodeDoc <- runDB $ documentFromEpisode entity
-    nodes <- runDB $ selectList [] [Asc NodeTitle]
-    (formWidget, enctype) <- generateFormPost $ newNodeInstanceForm episodeId nodes
-    let widget = do
-        setTitle $ toHtml $ name <> " #" <> (pack $ show number) <> " - " <> (episodeTitle episode)
-        $(widgetFile "episodes/show")
-    let json = episodeDoc
-    defaultLayoutJson widget json
+    --docs <- runDB $ mapM documentFromEpisode episodes
+    jsonToRepJson episodes
 
 {-
 postNodeInstanceR :: Text -> Int -> Handler RepHtml
@@ -125,73 +108,3 @@ postNodeInstanceR podcast number = do
     --    PostForm -> redirect $ PodcastEpisodeR (episodePodcast episode) (episodeNumber episode)
     redirect $ PodcastEpisodeR podcast number
 -}
-
-instance FromJSON Day where
-    parseJSON val = do
-        let res = (fromJSON val) :: (Result UTCTime)
-        case res of
-            (Success utc) -> return $ utctDay utc
-            (Error msg) -> error msg
-
-instance ToJSON Day where
-    toJSON d = toJSON $ UTCTime d $ secondsToDiffTime 0
-
-data EpisodeHACK = EpisodeHACK {
-    hack__id :: Maybe String,
-    hack_podcast :: Text,
-    hack_title :: Text,
-    hack_number :: Int,
-    hack_searchSlug :: Text,
-    hack_airDate :: Day,
-    hack_published :: Bool,
-    hack_duration :: Int,
-    hack_streamingUrl :: Text
-} deriving (Show, Generic)
-
-$(deriveJSON (removePrefix "hack_") ''EpisodeHACK)
-
-newEpisodeForm :: Maybe Text -> Form EpisodeHACK
-newEpisodeForm maybePodcast = renderDivs $ EpisodeHACK
-    <$> aopt hiddenField "" Nothing
-    <*> areq textField "Podcast" maybePodcast
-    <*> areq textField "Title" Nothing
-    <*> areq intField "Number" Nothing
-    <*> areq textField "Search slug" Nothing
-    <*> areq (jqueryDayField def
-                { jdsChangeYear = True -- give a year dropdown
-                , jdsYearRange = "1980:-1" -- 1900 till five years ago
-                }) "Air date" Nothing
-    <*> areq checkBoxField "Published" (Just False)
-    <*> areq intField "Duration" Nothing
-    <*> areq textField "Streaming URL" Nothing
-
-{-
-getNewEpisodeR :: Text -> Handler RepHtml
-getNewEpisodeR podcast = do
-    (formWidget, enctype) <- generateFormPost $ newEpisodeForm $ Just podcast
-    defaultLayout $ do
-        setTitle "New Episode"
-        $(widgetFile "episodes/new")
--}
-
-postEpisodesR :: Handler RepJson
-postEpisodesR = do
-    (source, episodeHACK) <- fromJsonOrFormPost $ newEpisodeForm Nothing
-    let episode = episodeFromEpisodeHACK episodeHACK
-    _ <- ensurePodcast $ episodePodcast episode
-    entity <- ensureEpisode episode
-    case source of
-        PostJson -> jsonToRepJson entity
-        PostForm -> redirect $ PodcastEpisodeR (episodePodcast episode) (episodeNumber episode)
-  where
-    ensurePodcast name =
-        let item = Podcast name Nothing Nothing Nothing
-            constraint = UniquePodcastName name
-        in ensureEntity item constraint
-    ensureEpisode ep =
-        let constraint = UniqueEpisodeNumber (episodePodcast ep) (episodeNumber ep)
-        in ensureEntity ep constraint
-    episodeFromEpisodeHACK (EpisodeHACK _ podcast title number slug date published duration streamingUrl) =
-        let dTime = secondsToDiffTime 0
-            utc = UTCTime date dTime
-        in Episode podcast title number slug utc published duration

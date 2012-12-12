@@ -1,0 +1,19 @@
+<div class="navbar navbar-inverse navbar-fixed-top">
+  <div class="navbar-inner">
+    <div class="container">
+      <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      <a class="brand" href="#">Podly
+      <div class="nav-collapse collapse">
+      <ul class="nav pull-right">
+        $maybe Entity _ auth <- mauth
+          <li> <a id='toolbar-logout-link' data-placement='bottom' rel='tooltip' title="#{userIdent auth}" href=@{AuthR LogoutR}>Logout</a>
+
+          <!-- TODO - move this to somewhere sensible -->
+          <script type="text/javascript">
+            jQuery("#toolbar-logout-link").tooltip();
+        $nothing
+          <li>
+            <a href=@{AuthR LoginR}>Login

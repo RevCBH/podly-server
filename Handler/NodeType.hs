@@ -4,6 +4,8 @@ module Handler.NodeType where
 import Import
 
 import Handler.Util
+
+import Document
 --import Data.Aeson (Result(..), ToJSON(..))
 --import Data.List (nub)
 --import Data.Maybe
@@ -17,12 +19,13 @@ import Handler.Util
 
 --import Yesod.Form.Jquery
 
-getNodeTypesR :: Handler RepHtml
+getNodeTypesR :: Handler RepHtmlJson
 getNodeTypesR = do
   nodeTypes <- runDB $ selectList [] [Asc NodeTypeTitle]
-  defaultLayout $ do
-    setTitle "All Node Types"
-    $(widgetFile "nodeTypes/index")
+  let widget = do
+      setTitle "All Node Types"
+      $(widgetFile "nodeTypes/index")
+  defaultLayoutJson widget (map documentFromNodeType nodeTypes)
 
 getNodeTypeR :: NodeTypeId -> Handler RepHtml
 getNodeTypeR tid = do

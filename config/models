@@ -30,10 +30,10 @@ Episode
     podcast Text
     title Text
     number Int
-    slug Text
-    airDate UTCTime
+    slug Text Maybe
+    airDate UTCTime Maybe
     published Bool
-    duration Int
+    duration Int Maybe
     UniqueEpisodeNumber podcast number
     deriving Show
 

@@ -39,7 +39,7 @@ $(deriveJSON (removePrefix "docNode") ''NodeDocument)
 
 data MediaSourceDocument = DocMediaSource {
   docSourceKind :: MediaKind,
-  docSourceUrl :: Text,
+  docSourceResource :: Text,
   docSourceOffset :: Int
 
 } deriving (Show, Generic)
@@ -47,12 +47,13 @@ data MediaSourceDocument = DocMediaSource {
 $(deriveJSON (removePrefix "docSource") ''MediaSourceDocument)
 
 data EpisodeDocument = DocEpisode {
+  docEpisode_id :: Maybe EpisodeId,
   docEpisodePodcast :: Text,
   docEpisodeNumber :: Int,
-  docEpisodeAirDate :: UTCTime,
+  docEpisodeAirDate :: Maybe UTCTime,
   docEpisodeTitle :: Text,
-  docEpisodeSearchSlug :: Text,
-  docEpisodeDuration :: Int,
+  docEpisodeSearchSlug :: Maybe Text,
+  docEpisodeDuration :: Maybe Int,
   docEpisodeMediaSources :: [MediaSourceDocument],
   docEpisodeNodes :: [NodeDocument]
 } deriving (Show, Generic)
@@ -95,7 +96,7 @@ documentFromEpisode episode = do
 
   mediaSources <- mapM (return . documentFromMediaSource) =<< selectList [MediaSourceEpisodeId ==. tid] []
 
-  return $ DocEpisode podcast number airDate title slug duration mediaSources justNodes
+  return $ DocEpisode (Just tid) podcast number airDate title slug duration mediaSources justNodes
 
 nodeTypeIdFromDoc :: NodeTypeDocument -> DBKey NodeTypeGeneric
 nodeTypeIdFromDoc doc = do
@@ -134,7 +135,7 @@ episodeAndIdFromDoc :: PersistUnique backend m =>
   -> backend m (Key backend (EpisodeGeneric backend), EpisodeGeneric backend)
 
 episodeAndIdFromDoc doc =
-  let DocEpisode podcast number airDate title slug duration streamingUrl _ = doc
+  let DocEpisode _ podcast number airDate title slug duration _ _ = doc
   in do
     mPodcast <- getBy $ UniquePodcastName podcast
     case mPodcast of
@@ -154,7 +155,7 @@ episodeAndIdFromDoc doc =
         return (tid, ep)
       Just (Entity tid ep) -> return (tid, ep)
 
-episodeFromDocument :: EpisodeDocument -> DB EpisodeGeneric
+--episodeFromDocument :: EpisodeDocument -> DB EpisodeGeneric
 episodeFromDocument doc = do
   (episodeId, episode) <- episodeAndIdFromDoc doc
   let nodes = docEpisodeNodes doc
