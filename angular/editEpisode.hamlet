@@ -41,7 +41,7 @@
                 <td>Time
                 <td>Title
                 <td>Category
-                <td>Link
+                <td class="span2">Link
             <tbody data-selector="i.icon-info-sign" data-placement="right" data-trigger="hover" data-title="Errors" data-html="true">
               <tr ng-repeat="x in nodeParseResults" ng-class="x.cssRowClass">
                 <td><i ng-class=x.rowIcon data-content="{{x.popoverContent()}}"> {{x.statusText}}

@@ -49,7 +49,7 @@ app.directive 'episodeEditor', ($routeParams, $http, dataService)->
         dataService.nodeTypes.push(data)
         dataService.nodeTypes = _(dataService.nodeTypes.uniq false, (x) -> x._id)
         _(scope.nodeParseResults).each (x) ->
-          if x.node.nodeType is scope.originalNewNodeTitle
+          if _.isString(x.node.nodeType) && (x.node.nodeType.toLowerCase() == scope.originalNewNodeTitle.toLowerCase())
             x.node.nodeType = scope.newNodeType
           # if _.isString(x.node.nodeType)
           #   x.node.nodeType = dataService.nodeTypeNamed(x.node.nodeType) || x.node.nodeType
