@@ -79,17 +79,6 @@ handleAdminR = do
       runDB $ delete (rel :: NodeInstanceId)
       return $ Singleton ("OK" :: String)
 
-    --cmdDeleteAllNodesForEpisode <- addCommand $ \ep -> do
-    --  numMatching <- runDB $ do
-    --    (Entity tid _) <- getBy404 $ UniqueEpisodeNumber (docEpisodePodcast ep) (docEpisodeNumber ep)
-    --    c <- count [NodeInstanceEpisodeId ==. tid]
-    --    deleteWhere [NodeInstanceEpisodeId ==. tid]
-    --    return c
-    --  return $ Singleton (numMatching)
-
-     --cmdAddNode <- addCommand $ \epId, nodeDoc -> do
-
-
     cmdReplaceNodes <- addCommand $ \ep -> do
       (Entity tid _) <- runDB $ getBy404 $ UniqueEpisodeNumber (docEpisodePodcast ep) (docEpisodeNumber ep)
       runDB $ deleteWhere [NodeInstanceEpisodeId ==. tid]

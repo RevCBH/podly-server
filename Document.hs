@@ -98,7 +98,7 @@ documentFromEpisode episode = do
   mediaSources <- mapM (return . documentFromMediaSource) =<< selectList [MediaSourceEpisodeId ==. tid] []
   return $ DocEpisode (Just tid) podcast number airDate title slug duration mediaSources justNodes
 
-nodeTypeIdFromDoc :: NodeTypeDocument -> DBKey NodeTypeGeneric
+--nodeTypeIdFromDoc :: NodeTypeDocument -> DBKey NodeTypeGeneric
 nodeTypeIdFromDoc doc = do
   mNT <- getBy $ UniqueTypeTitle $ docNodeTypeTitle doc
   case mNT of
@@ -106,7 +106,7 @@ nodeTypeIdFromDoc doc = do
     Just (Entity tid _) -> return tid
 
 --nodeIdAndTimeFromDoc :: NodeDocument -> (DBKey NodeGeneric, String)
-nodeIdAndTimeFromDoc :: PersistUnique backend m => NodeDocument -> backend m (Key backend (NodeGeneric backend), Key backend (NodeTypeGeneric backend), Int)
+--nodeIdAndTimeFromDoc :: PersistUnique backend m => NodeDocument -> backend m (Key backend (NodeGeneric backend), Key backend (NodeTypeGeneric backend), Int)
 nodeIdAndTimeFromDoc doc = do
   let DocNode nodeId _ title url linkTitle time ntDoc = doc
   mNode <- getBy $ UniqueNodeTitle title
@@ -122,7 +122,6 @@ nodeInstanceIdFromNodeInEpisode :: PersistUnique backend m =>
   -> Key backend (NodeGeneric backend)
   -> Key backend (NodeTypeGeneric backend)
   -> backend m (Key backend (NodeInstanceGeneric backend))
-
 nodeInstanceIdFromNodeInEpisode time episodeId nodeId nodeTypeId = do
   mNI <- getBy $ UniqueInstanceEpisodeTime episodeId time
   case mNI of
@@ -158,8 +157,7 @@ episodeAndIdFromDoc doc =
 --episodeFromDocument :: EpisodeDocument -> DB EpisodeGeneric
 episodeFromDocument doc = do
   (episodeId, episode) <- episodeAndIdFromDoc doc
-  let nodes = docEpisodeNodes doc
-  nodeData <- mapM nodeIdAndTimeFromDoc nodes
+  nodeData <- mapM nodeIdAndTimeFromDoc $ docEpisodeNodes doc
   mapM_ (reifyInstances episodeId) nodeData
 
   return episode

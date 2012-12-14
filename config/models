@@ -12,6 +12,7 @@ NodeType
     title Text
     icon Text
     UniqueTypeTitle title
+    deriving Show
 Node
     title Text
     url Text -- TODO - URL datatype?

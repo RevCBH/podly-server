@@ -51,8 +51,7 @@ return ($scope, $routeParams, $http, mediaService) ->
 
     q = $http.post("%{cmdCreateEpisode}", $scope.episode)
     q.success (data) ->
-      console.log "ep:", data
-      # window.location.hash = "#/podcasts/#{$routeParams.podcastName}/episodes/#{data.number}"
+      window.location.hash = "#/podcasts/#{$routeParams.podcastName}/episodes/#{data.number}"
 
     # $http.post("%{cmdSum}", [1, 2]).success (data) ->
       # console.log "+:", data

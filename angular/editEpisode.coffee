@@ -44,19 +44,25 @@ app.directive 'episodeEditor', ($routeParams, $http, dataService)->
       ($ '#node-type-creator').modal('hide')
 
     scope.saveNewNodeType = ->
+      cleanup = ->
+        scope.newNodeType = {}
+        scope.originalNewNodeTitle = null
+        scope.hideNodeTypeModal()
+
       q = $http.post("%{cmdCreateNodeType}", scope.newNodeType)
       q.success (data) ->
+        console.log "got new nodeType:", data
+        console.log "\tJSON:", JSON.stringify data
         dataService.nodeTypes.push(data)
         dataService.nodeTypes = _(dataService.nodeTypes.uniq false, (x) -> x._id)
+        window.ds = dataService
         _(scope.nodeParseResults).each (x) ->
           if _.isString(x.node.nodeType) && (x.node.nodeType.toLowerCase() == scope.originalNewNodeTitle.toLowerCase())
-            x.node.nodeType = scope.newNodeType
-          # if _.isString(x.node.nodeType)
-          #   x.node.nodeType = dataService.nodeTypeNamed(x.node.nodeType) || x.node.nodeType
+            x.node.nodeType = data
           x.validate()
-        scope.hideNodeTypeModal()
+        cleanup()
       q.error ->
-        scope.hideNodeTypeModal()
+        cleanup()
 
 InPlaceEditor = (scope) ->
   originalValue = null
@@ -179,7 +185,6 @@ app.directive 'inPlace', ($parse) ->
 app.service 'dataService', ($http) ->
   @nodeTypes = _([])
   @icons = %{L8.unpack $ encode icons}
-  console.log "icons:", @icons
 
   req = $http.get("/nodetypes")
   req.success (data) => @nodeTypes = _(data)
@@ -289,6 +294,8 @@ return ($scope, $routeParams, $http, nodeCsvParser) ->
 
   $scope.nodeParseResults = null
 
+  window.sc = $scope
+
   $scope.deleteNode = (node) ->
     console.log "tryna deleteit:", node
     original = $scope.episode.nodes.slice(0)
@@ -330,6 +337,7 @@ return ($scope, $routeParams, $http, nodeCsvParser) ->
       "btn-warning"
 
   $scope.saveCSV = (opts={overwrite: false}) ->
+    console.log "saveCSV"
     originalResults = $scope.nodeParseResults.slice 0
     originalEp = JSON.stringify $scope.episode
 
@@ -340,6 +348,8 @@ return ($scope, $routeParams, $http, nodeCsvParser) ->
 
     $scope.episode.nodes = _(nodes).values()
     $scope.nodeParseResults = $scope.errorNodes()
+
+    console.log "\tsending ep:", JSON.parse JSON.stringify($scope.episode)
 
     q = $http.post("%{cmdReplaceNodes}", $scope.episode)
     q.error ->

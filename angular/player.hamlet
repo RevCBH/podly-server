@@ -42,7 +42,7 @@
 
             <!--Icon-->
             <div class="icon">
-              <img ng-src="/static/img/{{node.nodeType.icon}}.png">
+              <img ng-src="/static/img/{{node.nodeType.icon}}">
             <!--End Icon-->
 
             <!--Wordy Bits -->

@@ -13,5 +13,5 @@
     <li>
       <h3>
         #{docNodeTime n}
-        <img src="/static/img/#{docNodeTypeIcon $ docNodeNodeType n}.png">
+        <img src="/static/img/#{docNodeTypeIcon $ docNodeNodeType n}">
         <a href=@{NodeR $ fromJust $ docNode_id n}>#{docNodeTitle n}
