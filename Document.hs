@@ -16,6 +16,9 @@ import Data.Maybe (isJust, fromJust)
 import Data.Time(UTCTime)
 
 import Control.Monad (filterM)
+import Control.Monad.Trans.Maybe
+
+type MaybeDB = (PersistStore backend m) => MaybeT (backend m)
 
 data NodeTypeDocument = DocNodeT {
   docNodeType_id :: Maybe NodeTypeId,
@@ -70,18 +73,17 @@ documentFromNodeType x = do
   DocNodeT (Just tid) icon title
 
 --documentFromNodeInstance :: PersistStore t m => Entity (NodeInstanceGeneric t) -> t m (Maybe NodeDocument)
+--documentFromNodeInstance :: Entity NodeInstance -> MaybeDB NodeDocument
 documentFromNodeInstance (Entity relId x) = do
   let nodeId = nodeInstanceNodeId x
-  maybeNode <- get nodeId
-  case maybeNode of
-    Just (Node title url linkTitle nodeTypeId) -> do
-      maybeType <- get nodeTypeId
-      case maybeType of
-        Just nt -> do
-          let time = nodeInstanceTime x
-          return $ Just $ DocNode (Just nodeId) (Just relId) title url linkTitle time $ documentFromNodeType (Entity nodeTypeId nt)
-        Nothing -> return Nothing
-    Nothing -> return Nothing
+  (Node title url linkTitle mNodeTypeId) <- (MaybeT . get) nodeId
+  defNodeTypeId <- liftMaybe mNodeTypeId
+  nt <- (MaybeT . get) defNodeTypeId
+  let time = nodeInstanceTime x
+  let docFromNT = documentFromNodeType (Entity defNodeTypeId nt)
+  return $ DocNode (Just nodeId) (Just relId) title url linkTitle time $ docFromNT
+ where
+  liftMaybe = MaybeT . return --maybe mzero return
 
 documentFromMediaSource (Entity tid (MediaSource _ kind offset url)) = do
   DocMediaSource kind url offset
@@ -90,12 +92,10 @@ documentFromMediaSource (Entity tid (MediaSource _ kind offset url)) = do
 documentFromEpisode episode = do
   let Entity tid (Episode podcast title number slug airDate _ duration) = episode
   instancesWithIds <- selectList [NodeInstanceEpisodeId ==. tid] [Asc NodeInstanceTime]
-  mNodes <- mapM documentFromNodeInstance instancesWithIds
+  mNodes <- mapM (runMaybeT . documentFromNodeInstance) instancesWithIds
   nodes <- filterM (return . isJust) mNodes
   justNodes <- mapM (return . fromJust) nodes
-
   mediaSources <- mapM (return . documentFromMediaSource) =<< selectList [MediaSourceEpisodeId ==. tid] []
-
   return $ DocEpisode (Just tid) podcast number airDate title slug duration mediaSources justNodes
 
 nodeTypeIdFromDoc :: NodeTypeDocument -> DBKey NodeTypeGeneric
@@ -106,27 +106,27 @@ nodeTypeIdFromDoc doc = do
     Just (Entity tid _) -> return tid
 
 --nodeIdAndTimeFromDoc :: NodeDocument -> (DBKey NodeGeneric, String)
-nodeIdAndTimeFromDoc :: PersistUnique backend m => NodeDocument -> backend m (Key backend (NodeGeneric backend), Int)
+nodeIdAndTimeFromDoc :: PersistUnique backend m => NodeDocument -> backend m (Key backend (NodeGeneric backend), Key backend (NodeTypeGeneric backend), Int)
 nodeIdAndTimeFromDoc doc = do
   let DocNode nodeId _ title url linkTitle time ntDoc = doc
   mNode <- getBy $ UniqueNodeTitle title
+  typeId <- nodeTypeIdFromDoc ntDoc
   tid <- case mNode of
-    Nothing -> do
-      typeId <- nodeTypeIdFromDoc ntDoc
-      insert $ Node title url linkTitle typeId
+    Nothing -> insert $ Node title url linkTitle (Just typeId)
     Just (Entity tid _) -> return tid
-  return (tid, time)
+  return (tid, typeId, time)
 
 nodeInstanceIdFromNodeInEpisode :: PersistUnique backend m =>
   Int
   -> Key backend (EpisodeGeneric backend)
   -> Key backend (NodeGeneric backend)
+  -> Key backend (NodeTypeGeneric backend)
   -> backend m (Key backend (NodeInstanceGeneric backend))
 
-nodeInstanceIdFromNodeInEpisode time episodeId nodeId = do
+nodeInstanceIdFromNodeInEpisode time episodeId nodeId nodeTypeId = do
   mNI <- getBy $ UniqueInstanceEpisodeTime episodeId time
   case mNI of
-    Nothing -> insert $ NodeInstance nodeId Nothing episodeId time
+    Nothing -> insert $ NodeInstance nodeId nodeTypeId episodeId time
     Just (Entity tid _) -> return tid
 
 -- episodeAndIdFromDoc :: EpisodeDocument -> (DBKey EpisodeGeneric, Episode)
@@ -164,5 +164,5 @@ episodeFromDocument doc = do
 
   return episode
  where
-  reifyInstances episodeId (nodeId, time) = nodeInstanceIdFromNodeInEpisode time episodeId nodeId
+  reifyInstances episodeId (nodeId, nodeTypeId, time) = nodeInstanceIdFromNodeInEpisode time episodeId nodeId nodeTypeId
 

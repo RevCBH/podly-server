@@ -30,7 +30,7 @@ getNodeTypesR = do
 getNodeTypeR :: NodeTypeId -> Handler RepHtml
 getNodeTypeR tid = do
   nodeType <- runDB $ get404 tid
-  nodes <- runDB $ selectList [NodeNodeTypeId ==. tid] [Asc NodeTitle]
+  --nodes <- runDB $ selectList [NodeNodeTypeId ==. tid] [Asc NodeTitle]
   defaultLayout $ do
     setTitle $ toHtml $ "Node Type - " <> (nodeTypeTitle nodeType)
     $(widgetFile "nodeTypes/show")

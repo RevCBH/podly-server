@@ -16,7 +16,7 @@ Node
     title Text
     url Text -- TODO - URL datatype?
     linkTitle Text
-    nodeTypeId NodeTypeId Eq -- Maybe
+    defaultNodeTypeId NodeTypeId Eq Maybe
     UniqueNodeTitle title
 
 Podcast
@@ -45,7 +45,7 @@ MediaSource
 
 NodeInstance
     nodeId NodeId Eq
-    nodeTypeId NodeTypeId Maybe
+    nodeTypeId NodeTypeId
     episodeId EpisodeId Eq
     time Int
     UniqueInstanceEpisodeTime episodeId time

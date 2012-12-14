@@ -17,7 +17,7 @@ import Document
 newNodeInstanceForm :: EpisodeId -> [Entity Node] -> Form NodeInstance
 newNodeInstanceForm episodeId nodes = renderDivs $ NodeInstance
     <$> areq (selectFieldList nodes') "Node" Nothing
-    <*> aopt hiddenField "" Nothing
+    <*> areq hiddenField "" Nothing
     <*> areq hiddenField "" (Just episodeId)
     <*> areq intField "Time" (Just 0)
   where

@@ -22,7 +22,7 @@ getNodeR nid = do
     episodes <- runDB $ selectList [EpisodeId <-. episodeIds] [Asc EpisodePodcast, Desc EpisodeNumber]
     let widget = do
         setTitle $ toHtml $ "Node - " <> (nodeTitle node)
-        nodeType <- lift $ runDB $ get404 $ nodeNodeTypeId node
+        -- TODO - get default node type
         $(widgetFile "nodes/show")
     let json = Entity nid node
     defaultLayoutJson widget json
@@ -32,7 +32,8 @@ newNodeForm nodeTypes = renderDivs $ Node
     <$> areq textField "Title" Nothing
     <*> areq textField "Link" Nothing
     <*> areq textField "Link title" Nothing
-    <*> areq (selectFieldList nodeTypes') "Node type" Nothing
+    -- TODO - default node type
+    <*> aopt (selectFieldList nodeTypes') "Default node type" Nothing
   where
     nodeTypes' = (flip map) nodeTypes (\(Entity tid x) -> (nodeTypeTitle x, tid))
 

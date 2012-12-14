@@ -57,7 +57,7 @@ iconNames = do
 
 getNukeR :: Handler RepJson
 getNukeR = do
-    --runDB $ deleteWhere ([] :: [Filter Event])
+    runDB $ deleteWhere ([] :: [Filter Icon])
     runDB $ deleteWhere ([] :: [Filter NodeInstance])
     runDB $ deleteWhere ([] :: [Filter Node])
     runDB $ deleteWhere ([] :: [Filter NodeType])
@@ -68,8 +68,8 @@ getNukeR = do
         xs <- liftIO iconNames
         mapM_ insert $ map Icon xs
 
-    loadNodeTypes "node_types"
-    runDB $ loadEpisodes "episodes"
+    --loadNodeTypes "node_types"
+    --runDB $ loadEpisodes "episodes"
 
     jsonToRepJson ("OK" :: String)
 
