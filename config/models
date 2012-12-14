@@ -54,3 +54,6 @@ Event
     title Text
     data Text
     created UTCTime
+
+Icon
+    name Text

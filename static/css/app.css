@@ -327,3 +327,42 @@ Nav Bar Brand
 /*
 Nav Hover
 */
+
+/*
+NodeType creation modal
+*/
+
+#node-type-creator .modal-body {
+  height: 800px;
+}
+
+.icon-pane {
+  margin-left: 23px;
+}
+
+.icon-pane ul {
+  list-style: none;
+  overflow: hidden;
+  width: 432px;
+  height: 800px;
+}
+
+.icon-pane li {
+  display: inline-block;
+  width: 72px;
+  height: 72px;
+  /*min-width: 40px;
+  min-height: 40px;*/
+}
+
+.icon-pane li img {
+  max-width: 70px;
+  max-height: 70px;
+}
+
+.icon-pane li.active-icon {
+  background-color: yellow;
+  border-width: 1px;
+  border-color: black;
+  border-radius: 15px;
+}

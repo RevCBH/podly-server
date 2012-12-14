@@ -17,7 +17,7 @@ app.filter 'formatOffset', -> (input) ->
   c.join ':'
 
 
-app.directive 'episodeEditor', ($routeParams, $http)->
+app.directive 'episodeEditor', ($routeParams, $http, dataService)->
   (scope, element, attrs) ->
     haveErrored = false
     ealert = (msg) ->
@@ -30,38 +30,126 @@ app.directive 'episodeEditor', ($routeParams, $http)->
 
     ($ 'table tbody[data-selector]').popover()
 
+    scope.icons = dataService.icons
+
+    scope.newNodeType = {}
+    scope.originalNewNodeTitle = null
+    scope.showNewNodeTypeModal = (ntTitle=null) ->
+      scope.originalNewNodeTitle = ntTitle
+      scope.newNodeType.title = ntTitle
+      scope.newNodeType.icon = null
+      ($ '#node-type-creator').modal()
+
+    scope.hideNodeTypeModal = ->
+      ($ '#node-type-creator').modal('hide')
+
+    scope.saveNewNodeType = ->
+      q = $http.post("%{cmdCreateNodeType}", scope.newNodeType)
+      q.success (data) ->
+        dataService.nodeTypes.push(data)
+        dataService.nodeTypes = _(dataService.nodeTypes.uniq false, (x) -> x._id)
+        _(scope.nodeParseResults).each (x) ->
+          if x.node.nodeType is scope.originalNewNodeTitle
+            x.node.nodeType = scope.newNodeType
+          # if _.isString(x.node.nodeType)
+          #   x.node.nodeType = dataService.nodeTypeNamed(x.node.nodeType) || x.node.nodeType
+          x.validate()
+        scope.hideNodeTypeModal()
+      q.error ->
+        scope.hideNodeTypeModal()
+
+InPlaceEditor = (scope) ->
+  originalValue = null
+  scope.isEditing = false
+
+  scope.beginEditing = =>
+    originalValue = JSON.stringify @getter(scope)
+    scope.isEditing = true
+
+  @endEditing = (save=true) =>
+    unless save
+      @setter (JSON.parse originalValue)
+    else
+      @onUpdate() if @onUpdate
+
+    originalValue = null
+    scope.isEditing = false
+
+  return this
+
+app.directive 'nodeTypeSelect', (dataService, $parse, $timeout) ->
+  replace: true
+  transclude: true
+  scope:
+    model: '='
+  template: """
+    <div class="in-place-wrapper">
+      <input type=text class="in-place-input" ng-show=isEditing ng-model=nodeTypeTitle>
+      <span ng-hide=isEditing ng-click='beginEditing()'>
+        <a>{{model.title || model || '&lt;none&gt;'}}</a>
+      </span>
+      <span ng-transclude></span>
+    </div>
+    """
+  link: (scope, elem, attrs) ->
+    inputElement = elem.find 'input.in-place-input'
+
+    ipe = new InPlaceEditor(scope)
+    ipe.getter = ->
+      scope.model?.title || scope.model
+    ipe.setter = (val) ->
+      if _.isString(val)
+        val = dataService.nodeTypeNamed(val) || val
+      scope.model = val
+      scope.nodeTypeTitle = ipe.getter()
+      return null
+    ipe.onUpdate = ->
+      @setter(scope.nodeTypeTitle)
+      # ISSUE, HACK - why do we need to defer this?
+      $timeout -> $parse(attrs.onUpdate)(scope.$parent)
+
+    scope.nodeTypeTitle = ipe.getter()
+    scope.save = -> ipe.endEditing(true)
+    scope.revert = -> ipe.endEditing(false)
+
+    inputElement.blur = -> scope.$apply -> scope.save()
+
+    inputElement.keydown (event) ->
+      endWithSave = (s) ->
+        event.preventDefault()
+        scope.$apply -> ipe.endEditing(s)
+      endWithSave(true) if event.which is 13
+      endWithSave(false) if event.keyCode is 27
+
 app.directive 'inPlace', ($parse) ->
-  nxtId = 0
   return {
     transclude: true
     scope:
       model: '='
     compile: (tElement, tAttrs, transclude) ->
-      inputElement = "<input id='xxx-#{nxtId++}
-      ' class='in-place-input' type='#{tAttrs.type}' ng-show=isEditing ng-model=model>"
-      previewElement = "<span ng-hide=isEditing ng-click='beginEditing()' ng-transclude></span>"
+      inputTemplate = """<div class='in-place-input' ng-show=isEditing ng-transclude></div>"""
+      previewTemplate = """
+        <span ng-hide=isEditing ng-click='beginEditing()'>
+          <a>{{model || '&lt;none&gt;'}}</a>
+        </span>"""
 
       tElement.html "<div class='in-place-wrapper'></div>"
-      tElement.append inputElement
-      tElement.append previewElement
+      tElement.append inputTemplate
+      tElement.append previewTemplate
 
       (scope, elem, attrs) ->
         originalValue = null
-        inputElement = $(elem).find('input.in-place-input')
-
+        inputElement = $(elem).find('.in-place-input input')
         onUpdate = $parse(attrs.onUpdate)
-        # model = $parse(attrs.model)
 
         scope.isEditing = false
         scope.beginEditing = ->
-          originalValue = JSON.stringify scope.model #(scope.$parent)
+          originalValue = JSON.stringify scope.model
           scope.isEditing = true
-          setTimeout (->
-            inputElement.focus()), 1000
+          setTimeout (-> inputElement.focus()), 0
 
         scope.endEditing = (revert=false) ->
           if revert
-            # model.assign(scope.$parent, JSON.parse originalValue)
             scope.model = JSON.parse originalValue
           else
             res = onUpdate(scope.$parent)
@@ -78,16 +166,35 @@ app.directive 'inPlace', ($parse) ->
             scope.$apply -> scope.endEditing(r)
 
           endWithRevert false if event.which is 13
-          endWithRevert true if event.keyCode is 27
+          endWithRevert true if event.which is 27
   }
 
-app.service 'nodeCsvParser', ($http) ->
-  @nodeTypes = []
+# class NodeType
+#   constructor: (@obj) ->
+#   toString: -> @obj.title
+#   toJSON: -> @obj.toJSON()
+#   title: @obj.title
+#   @icon: @obj.icon
+
+app.service 'dataService', ($http) ->
+  @nodeTypes = _([])
+  @icons = %{L8.unpack $ encode icons}
+  console.log "icons:", @icons
 
   req = $http.get("/nodetypes")
   req.success (data) => @nodeTypes = _(data)
   req.error -> ealert "Unable to load node type data! Please refresh the page."
 
+  @nodeTypeNamed = (name) =>
+    name = name.toLowerCase()
+    @nodeTypes.find (x) -> x.title?.toLowerCase() == name
+
+  # @icons = =>
+  #   @nodeTypes.map (x) -> x.icon
+
+  return this
+
+app.service 'nodeCsvParser', (dataService) ->
   translateHeader = (x) ->
     x = x.trim().toLowerCase()
     return "time" if _(['time', 'offset']).contains x
@@ -112,7 +219,7 @@ app.service 'nodeCsvParser', ($http) ->
       separator: @separatorCharacter
 
     _(xs).each (x) =>
-      nt = @nodeTypes.find (n) -> n.title.toLowerCase() == x.nodeType?.toLowerCase()
+      nt = dataService.nodeTypes.find (n) -> n.title.toLowerCase() == x.nodeType?.toLowerCase()
       x.nodeType = nt || x.nodeType
       x.time = parseTime(x.time)
       x._id = null
@@ -139,14 +246,14 @@ escapeHtml = (str) ->
 NodeParseResult = (n) ->
   @node = n
   @validate = =>
-    console.log "validate:", @node
+    # console.log "validate:", @node
     @errors = []
-    @errors.push "title is required" unless @node.title?.length > 0
-    @errors.push "time is required" unless @node.time
+    @errors.push {title: "title is required"} unless @node.title?.length > 0
+    @errors.push {time: "time is required"} unless @node.time
     # errors.push "Invalid time #{x.time}" if _(x.time).isString()
-    @errors.push "nodeType is required" unless @node.nodeType
-    @errors.push "Invalid nodeType: '#{escapeHtml(@node.nodeType)}'" if _(@node.nodeType).isString()
-    @errors.push "Missing URL" unless @node.url
+    @errors.push {nodeType: "nodeType is required"} unless @node.nodeType
+    @errors.push {nodeType: "Invalid nodeType: '#{escapeHtml(@node.nodeType)}'"} if _(@node.nodeType).isString()
+    @errors.push {url: "Missing URL"} unless @node.url
 
     if @errors.length
       @isValid = false
@@ -162,8 +269,11 @@ NodeParseResult = (n) ->
   @cssRowClass = "error"
   @rowIcon = "icon-info-sign"
   @popoverContent = ->
-    mid = _(@errors).map((x) -> "<li>#{x}</li>").join("")
+    mid = _(@errors).map((x) -> "<li>#{_(x).values()[0]}</li>").join("")
     "<ul>" + mid + "</ul>"
+  @invalidNodeType = ->
+    x = _(@errors).find (x) -> x.nodeType?.indexOf("Invalid nodeType") == 0
+    return @node.nodeType if x
 
   return this
 

@@ -9,12 +9,16 @@ import Data.Time(addUTCTime, getCurrentTime, Day, UTCTime(..), secondsToDiffTime
 import Data.Text (pack)
 import Text.Coffee (coffeeFile)
 import qualified Data.HashMap.Strict as Map
+import Control.Monad (filterM, liftM, liftM2)
+import Data.List (head)
 
 import Fixtures
 import Document
 import Handler.Util
 
 import Yesod.Form.Jquery
+
+import System.Directory
 
 getUsersR :: Handler RepHtml
 getUsersR = do
@@ -34,6 +38,23 @@ postEchoJsonR = do
         Success (val :: Value) -> jsonToRepJson val
         Error msg -> jsonToRepJson $ object ["error" .= msg]
 
+iconNames :: IO [Text]
+iconNames = do
+    xs <- getDirectoryContents =<< imgRoot
+    iconFolders <- filterM isImageDirectory $ filter isNotDotFile xs
+    icons <- mapM iconsInFolder iconFolders
+    return $ map pack $ concat icons
+  where
+    imgRoot = liftM (++ "/static/img/") getCurrentDirectory
+    isNotDotFile = not . (== '.') . head
+    isImageDirectory = (>>= doesDirectoryExist) . (liftM2 (++) imgRoot . return)
+    iconsInFolder x = do
+        r <- imgRoot
+        files <- filterM (return . isNotDotFile) =<< getDirectoryContents (r ++ x)
+        let x' = (x ++ "/")
+        return $ map (x' ++ ) files
+
+
 getNukeR :: Handler RepJson
 getNukeR = do
     --runDB $ deleteWhere ([] :: [Filter Event])
@@ -42,6 +63,10 @@ getNukeR = do
     runDB $ deleteWhere ([] :: [Filter NodeType])
     runDB $ deleteWhere ([] :: [Filter Episode])
     runDB $ deleteWhere ([] :: [Filter Podcast])
+
+    runDB $ do
+        xs <- liftIO iconNames
+        mapM_ insert $ map Icon xs
 
     loadNodeTypes "node_types"
     runDB $ loadEpisodes "episodes"
@@ -106,5 +131,6 @@ postNodeInstanceR podcast number = do
     ----case source of
     ----    PostJson -> jsonToRepJson entity
     --    PostForm -> redirect $ PodcastEpisodeR (episodePodcast episode) (episodeNumber episode)
-    redirect $ PodcastEpisodeR podcast number
--}
+    redirect $ PodcastEpisodeR podcast number-}
+
+

@@ -95,7 +95,7 @@ instance ToJSON (Entity Podcast) where
       "category" .= category,
       "image" .= image]
 
-
-
-
+instance ToJSON (Entity Icon) where
+  toJSON (Entity _ (Icon name)) = object
+    ["name" .= name]
 

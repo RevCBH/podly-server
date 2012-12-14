@@ -58,13 +58,22 @@ tryInsertEpisode episode = do
       let constraint = UniqueEpisodeNumber (episodePodcast ep) (episodeNumber ep)
       in ensureEntity ep constraint
 
+tryInsertNodeType :: NodeType -> Handler (Entity NodeType)
+tryInsertNodeType nodeType = do
+  ensureEntity nodeType $ UniqueTypeTitle $ nodeTypeTitle nodeType
+
 handleAdminR :: Handler RepHtml
 handleAdminR = do
   (Entity _ user) <- requireAuth
+  icons <- runDB $ selectList [] [Asc IconName]
   runNgModule (Just "admin") $ do
     cmdCreateEpisode <- addCommand $ \ep -> do
       episode <- tryInsertEpisode ep
       return episode
+
+    cmdCreateNodeType <- addCommand $ \nt -> do
+      nodeType <- tryInsertNodeType nt
+      return $ documentFromNodeType nodeType
 
     cmdDeleteNode <- addCommand $ \(Singleton rel) -> do
       runDB $ delete (rel :: NodeInstanceId)

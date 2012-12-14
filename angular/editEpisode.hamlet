@@ -47,10 +47,30 @@
                 <td><i ng-class=x.rowIcon data-content="{{x.popoverContent()}}"> {{x.statusText}}
                 <td>{{x.node.time | formatOffset}}
                 <td>
-                  <div in-place type="text" model=x.node.title on-update="x.validate()">
-                    <a>{{x.node.title || '&lt;none&gt;'}}</a>
-                <td>{{x.node.nodeType.title}}
+                  <div in-place model=x.node.title on-update="x.validate()">
+                    <input type=text ng-model=x.node.title>
                 <td>
-                  <div in-place type="url" model=x.node.url on-update="x.validate()">
-                    <a>{{x.node.url || '&lt;none&gt;'}}</a>
+                  <div node-type-select model=x.node.nodeType on-update="x.validate()">
+                    <a ng-click="showNewNodeTypeModal(x.invalidNodeType())" ng-show="x.invalidNodeType()" style="color: green">
+                      <i class="icon-plus-sign"></i><i>create</i>
+                <td>
+                  <div in-place model=x.node.url on-update="x.validate()">
+                    <input type=url ng-model=x.node.url>
 
+  <!-- NodeType creation modal -->
+  <div id="node-type-creator" class="modal hide fade">
+    <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;
+      <h3>Create Node Type
+    <div class="modal-body">
+      <p>Title: <input type="text" ng-model=newNodeType.title>
+      <p>Icon: {{newNodeType.icon}}
+
+      <div class="icon-pane">
+        <ul>
+          <li ng-repeat="icon in icons" ng-class="{'active-icon': icon == newNodeType.icon}">
+            <a ng-click="newNodeType.icon = icon.name">
+              <img ng-src="/static/img/{{icon.name}}">
+    <div class="modal-footer">
+      <a ng-click="hideNodeTypeModal()" data-dismiss-"modal" class="btn">Cancel</a>
+      <button ng-click="saveNewNodeType()" ng-disabled="!(newNodeType.title && newNodeType.icon)" class="btn btn-primary">Create</button>
