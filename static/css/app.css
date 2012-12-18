@@ -366,3 +366,31 @@ NodeType creation modal
   border-color: black;
   border-radius: 15px;
 }
+
+/*In Place Editing*/
+.in-place-input input {
+  margin-left: -7px;
+  margin-bottom: 0px;
+}
+
+input.in-place-input {
+  margin-left: -7px;
+  margin-bottom: 0px;
+}
+
+.in-place-display {
+  display: inline-block;
+  font-size: 14px;
+  height: 20px;
+  margin-top: 5px;
+}
+
+.in-place-wrapper {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+td .in-place-display {
+  height: 26px;
+}

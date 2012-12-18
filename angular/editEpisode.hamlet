@@ -3,11 +3,27 @@
   <h3>Nodes
 
   <ul class="nav nav-tabs">
-    <li class="active"><a href="#display-nodes" data-toggle="tab">List</a>
-    <li><a href="#csv-import-nodes" data-toggle="tab">Import</a>
+    <li class="active"><a href="#episode-properties" data-toggle="tab">Properties</a>
+    <li><a href="#display-nodes" data-toggle="tab">Nodes</a>
+    <li><a href="#csv-import-nodes" data-toggle="tab">Spreadsheet Import</a>
 
   <div class="tab-content">
-    <div id="display-nodes" class="tab-pane active">
+    <div id="episode-properties" class="tab-pane active">
+      <form class="form-horizontal">
+        <div class="control-group">
+          <label class="control-label" for="episodeTitle">Episode Title
+          <div in-place class="controls" model=episode.title on-update="saveProperty('title')">
+            <input type=text name="episodeTitle" ng-model=episode.title>
+        <div class="control-group">
+          <label class="control-label" for="episodeNumber">Episode Number
+          <div in-place class="controls" model=episode.number on-update="saveProperty('number')">
+            <input type=number name="episodeNumber" ng-model=episode.number>
+        <div class="control-group">
+          <div class="controls">
+            <label class="checkbox">
+              <input type="checkbox" ng-model=episode.published>Published?
+
+    <div id="display-nodes" class="tab-pane">
       <div ng-repeat="node in episode.nodes">
         [<a ng-click="deleteNode(node)">x</a>] {{node.title}}
 
@@ -41,21 +57,21 @@
                 <td>Time
                 <td>Title
                 <td>Category
-                <td class="span2">Link
+                <td>Link
             <tbody data-selector="i.icon-info-sign" data-placement="right" data-trigger="hover" data-title="Errors" data-html="true">
               <tr ng-repeat="x in nodeParseResults" ng-class="x.cssRowClass">
                 <td><i ng-class=x.rowIcon data-content="{{x.popoverContent()}}"> {{x.statusText}}
                 <td>{{x.node.time | formatOffset}}
                 <td>
-                  <div in-place model=x.node.title on-update="x.validate()">
-                    <input type=text ng-model=x.node.title>
+                  <div class="span4" in-place model=x.node.title on-update="x.validate()">
+                    <input class="span4" type=text ng-model=x.node.title>
                 <td>
-                  <div node-type-select model=x.node.nodeType on-update="x.validate()">
+                  <div node-type-select class="span2" model=x.node.nodeType on-update="x.validate()">
                     <a ng-click="showNewNodeTypeModal(x.invalidNodeType())" ng-show="x.invalidNodeType()" style="color: green">
                       <i class="icon-plus-sign"></i><i>create</i>
                 <td>
-                  <div in-place model=x.node.url on-update="x.validate()">
-                    <input type=url ng-model=x.node.url>
+                  <div class="span4 in-place-wrapper" in-place model=x.node.url on-update="x.validate()">
+                    <input class="span4" type=url ng-model=x.node.url>
 
   <!-- NodeType creation modal -->
   <div id="node-type-creator" class="modal hide fade">

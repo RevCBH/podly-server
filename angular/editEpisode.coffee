@@ -88,8 +88,8 @@ app.directive 'nodeTypeSelect', (dataService, $parse, $timeout) ->
     model: '='
   template: """
     <div class="in-place-wrapper">
-      <input type=text class="in-place-input" ng-show=isEditing ng-model=nodeTypeTitle>
-      <span ng-hide=isEditing ng-click='beginEditing()'>
+      <input type=text class="in-place-input span2" ng-show=isEditing ng-model=nodeTypeTitle>
+      <span class="in-place-display" ng-hide=isEditing ng-click='beginEditing()'>
         <a>{{model.title || model || '&lt;none&gt;'}}</a>
       </span>
       <span ng-transclude></span>
@@ -133,12 +133,12 @@ app.directive 'inPlace', ($parse) ->
     compile: (tElement, tAttrs, transclude) ->
       inputTemplate = """<div class='in-place-input' ng-show=isEditing ng-transclude></div>"""
       previewTemplate = """
-        <span ng-hide=isEditing ng-click='beginEditing()'>
+        <span class='in-place-display' ng-hide=isEditing ng-click='beginEditing()'>
           <a>{{model || '&lt;none&gt;'}}</a>
         </span>"""
 
-      tElement.html "<div class='in-place-wrapper'></div>"
-      tElement.append inputTemplate
+      # tElement.html "<div class='in-place-wrapper'></div>"
+      tElement.html inputTemplate
       tElement.append previewTemplate
 
       (scope, elem, attrs) ->
@@ -353,6 +353,19 @@ return ($scope, $routeParams, $http, nodeCsvParser) ->
       "btn-success"
     else
       "btn-warning"
+
+  propertyUpdaters =
+    title: "%{cmdSetEpisodeTitle}"
+    number: "%{cmdSetEpisodeNumber}"
+  $scope.saveProperty = (named) ->
+    q = $http.post(propertyUpdaters[named], [$scope.episode._id, $scope.episode[named]])
+    q.error -> window.location.reload(true)
+    q.success (data) ->
+      # HACK - update url if number changes...
+      if named is 'number'
+        window.location.hash = "#/podcasts/#{$routeParams.podcastName}/episodes/#{data}"
+      else
+        $scope.$apply -> $scope.episode[named] = data
 
   $scope.saveCSV = (opts={overwrite: false}) ->
     originalResults = $scope.nodeParseResults.slice 0

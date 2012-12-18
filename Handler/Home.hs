@@ -71,6 +71,16 @@ handleAdminR = do
       episode <- tryInsertEpisode ep
       return episode
 
+    cmdSetEpisodeTitle <- addCommand $ \(epId, title) -> do
+      runDB $ update epId [EpisodeTitle =. title]
+      episode <- runDB $ get404 epId
+      return $ episodeTitle episode
+
+    cmdSetEpisodeNumber <- addCommand $ \(epId, number) -> do
+      runDB $ update epId [EpisodeNumber =. number]
+      episode <- runDB $ get404 epId
+      return $ episodeNumber episode
+
     cmdCreateNodeType <- addCommand $ \nt -> do
       nodeType <- tryInsertNodeType nt
       return $ documentFromNodeType nodeType
