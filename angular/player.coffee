@@ -1,4 +1,3 @@
-console.log "player.coffee init"
 app = angular.module 'playerMod'
 
 app.service 'scrollManager', () ->

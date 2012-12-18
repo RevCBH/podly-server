@@ -51,8 +51,6 @@ app.directive 'episodeEditor', ($routeParams, $http, dataService)->
 
       q = $http.post("%{cmdCreateNodeType}", scope.newNodeType)
       q.success (data) ->
-        console.log "got new nodeType:", data
-        console.log "\tJSON:", JSON.stringify data
         dataService.nodeTypes.push(data)
         dataService.nodeTypes = _(dataService.nodeTypes.uniq false, (x) -> x._id)
         window.ds = dataService
@@ -209,19 +207,39 @@ app.service 'nodeCsvParser', (dataService) ->
     return x
 
   # TODO - try parse time
-  parseTime = (x) -> _(x.split ':').reduce ((acc, x) -> 60*acc + parseInt(x)), 0
+  parseTime = (x) ->
+    _(x.split ':').reduce ((acc, x) -> 60*acc + parseInt(x)), 0
 
   @separatorCharacter = "\t"
 
   @parse = (newValue) ->
     return null unless newValue
 
+    # ISSUE, HACK - workaround bad quotes in copypasta from google docs
+    esc = (x) ->
+      x.replace(/&/g, '&amp;').replace(/"/g, '&quot;')
+    uesc = (x) ->
+      x.replace(/&quot;/g, '"').replace(/&amp;/g, '&')
+    newValue = esc newValue
+    #####
+
     lines = $.csv.parsers.splitLines(newValue, {separator: @separatorCharacter, delimiter: '"', state: {}})
     head = lines.shift().split(@separatorCharacter)
+    # ISSUE, HACK - workaround bad quotes in copypasta from google docs
+    head = _(head).map uesc
+    #####
     lines.unshift _(head).map(translateHeader).join(@separatorCharacter)
 
     xs = $.csv.toObjects lines.join("\n"),
       separator: @separatorCharacter
+
+    # ISSUE, HACK - workaround bad quotes in copypasta from google docs
+    xs = _(xs).map (x) ->
+      res = {}
+      for own k, v of x
+        res[k] = uesc (v || '')
+      return res
+    #####
 
     _(xs).each (x) =>
       nt = dataService.nodeTypes.find (n) -> n.title.toLowerCase() == x.nodeType?.toLowerCase()
@@ -297,7 +315,6 @@ return ($scope, $routeParams, $http, nodeCsvParser) ->
   window.sc = $scope
 
   $scope.deleteNode = (node) ->
-    console.log "tryna deleteit:", node
     original = $scope.episode.nodes.slice(0)
     $scope.episode.nodes = _(original).without(node)
     q = $http.post("%{cmdDeleteNode}", [node.relId])
@@ -315,6 +332,7 @@ return ($scope, $routeParams, $http, nodeCsvParser) ->
         res.validate()
         res
     catch error
+      throw error
       $scope.parseErrors = [error.message]
 
     # xs = nodeCsvParser.parse newValue
@@ -337,7 +355,6 @@ return ($scope, $routeParams, $http, nodeCsvParser) ->
       "btn-warning"
 
   $scope.saveCSV = (opts={overwrite: false}) ->
-    console.log "saveCSV"
     originalResults = $scope.nodeParseResults.slice 0
     originalEp = JSON.stringify $scope.episode
 
@@ -349,9 +366,17 @@ return ($scope, $routeParams, $http, nodeCsvParser) ->
     $scope.episode.nodes = _(nodes).values()
     $scope.nodeParseResults = $scope.errorNodes()
 
-    console.log "\tsending ep:", JSON.parse JSON.stringify($scope.episode)
+    ep = JSON.parse JSON.stringify($scope.episode)
+    # TODO - proper node toJSON somewhere
+    _(ep.nodes).each (x) ->
+      ks = _(x).keys()
+      for k in ks
+        delete x[k] if k.indexOf('$') == 0 || k == 'notes'
 
-    q = $http.post("%{cmdReplaceNodes}", $scope.episode)
+    console.log "\tsending ep:", JSON.parse JSON.stringify(ep)
+    window.ep = ep
+
+    q = $http.post("%{cmdReplaceNodes}", ep)
     q.error ->
       $scope.episode = JSON.parse originalEp
       $scope.nodeParseResults = originalResults
