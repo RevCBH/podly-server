@@ -1,7 +1,8 @@
 <header>
   ^{toolbar}
 
-<div id="main" role="main">
-  $maybe msg <- mmsg
-      <div #message>#{msg}
-  ^{widget}
+<div class="container">
+  <div id="main" role="main">
+    $maybe msg <- mmsg
+        <div #message>#{msg}
+    ^{widget}

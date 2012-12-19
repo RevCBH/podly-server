@@ -102,6 +102,7 @@ padding-top: 60px; /* 60px to make the container go all the way to the bottom of
 
 #episodeNavBar .navbar-search{
   float: right;
+  /*float: left;*/
   margin: 12px 15px 0px 0px;
 }
 

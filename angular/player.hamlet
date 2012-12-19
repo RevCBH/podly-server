@@ -52,30 +52,30 @@
                 <a href="{{node.url}}" target="_blank">{{node.title}}
             <!--End Wordy Bits -->
           <!--End Node Elements-->
-      <!--End Row 1-->
-<!--
-  <div podly-vimeo>
-    <div class="center" style="width: 500px">
-      <iframe id="vimeo-player" src="http://player.vimeo.com/video/51488504?api=1&amp;player_id=vimeo-player" width="500" height="281" frameborder="0" webkitAllowFullScreen mozallowfullscreen allowFullScreen>
+      <!--End Row -->
 
-    <form class="form-inline" style="display: none">
-      <a class="btn btn-primary" href="#" ng-click="showNew()">New
-      <span id="add-form">
-        <a class="btn btn-success" href="#" ng-click="insertNew()">Add
-        <input type="text" placeholder="Node name..." ng-model="newNodeName">
-        at {{time | formatOffset}}
-      <a class="btn btn-danger" href="#" ng-click="sync()">Sync Players
+<!--Episode Nav Bar-->
+<div id="episodeNavBar">
+  <form class="navbar-search">
+    <input type="text" class="search-query" placeholder="Search any episode">
 
-    <div id="nodes-header" class="center">
-      <a id="now-playing-btn" class="btn" ng-click="scrollToCurrent()" ng-hide="isAutoScrolling()">
-        {{currentNodeTitle()}}
-      {{time | formatOffset}}
-      <a class="btn" style="visibility: hidden">Placeholder
-      <input type="text" class="search-query pull-right" placeholder="Search..." ng-model="nodeFilter">
-
-    <div id="nodes" class="node-container center">
-      <div class="node" ng-repeat="node in episode.nodes | filter:nodeFilter">
-        <div class="{{classesForNode(node)}}">
-          <a id="{{node._id}}" ng-click="seek(node.time)">{{node.time | formatOffset}}
-          <img ng-src="/static/img/{{node.nodeType.icon}}.png">
-          <a href="{{node.url}}" ng-click="pause()" target='_blank'>{{node.title}}-->
+<div class="episodeList">
+  <h5>Episodes
+  <ul class="nav nav-tabs nav-stacked red">
+    <li><a href="#">284 Peter Duesberg, Bryan Callen</a>
+    <li><a href="#">283 Bryan Callen</a>
+    <li><a href="#">282 Philip Coppens</a>
+    <li><a href="#">281 Duncan Trussell</a>
+    <li><a href="#">278 Ari Shaffir</a>
+    <li><a href="#">277 Victor Conte</a>
+    <li><a href="#">276 David Seaman, Abby Martin, Dell Cameron</a>
+    <li class="active"><a href="#">275 Dave Asprey</a>
+    <li>
+      <div class="pagination">
+        <ul>
+          <li><a href="#">Prev</a>
+          <li><a href="#">1</a>
+          <li class="active"><a href="#">2</a>
+          <li><a href="#">3</a>
+          <li><a href="#">4</a>
+          <li><a href="#">Next</a>

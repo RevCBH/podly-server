@@ -15,7 +15,7 @@ $newline never
         <meta name="viewport" content="width=device-width,initial-scale=1">
 
         ^{pageHead pc}
-        <link rel="stylesheet" href="/static/css/bootstrap-responsive.css">
+        <!-- <link rel="stylesheet" href="/static/css/bootstrap-responsive.css"> -->
         <link rel="stylesheet" href="/static/css/app.css">
 
         \<!--[if lt IE 9]>
@@ -34,10 +34,9 @@ $newline never
         <script>
           document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/,'js');
     <body>
-        <div class="container">
-            ^{pageBody pc}
-            <footer class="center" style="width: 500px">
-                #{extraCopyright $ appExtra $ settings master}
+        ^{pageBody pc}
+        <footer class="center" style="width: 500px">
+            #{extraCopyright $ appExtra $ settings master}
 
         $maybe analytics <- extraAnalytics $ appExtra $ settings master
             <script>
