@@ -91,10 +91,10 @@ app.directive 'nodeTypeSelect', (dataService, $parse, $timeout) ->
   scope:
     model: '='
   template: """
-    <div class="in-place-wrapper">
-      <input type=text class="in-place-input span2" ng-show=isEditing ng-model=nodeTypeTitle>
+    <div class="in-place-wrapper" style="min-width: 86px;">
+      <input type=text class="in-place-input" ng-show=isEditing ng-model=nodeTypeTitle style="width: 72px; margin-left: 0px;">
       <span class="in-place-display" ng-hide=isEditing ng-click='beginEditing()'>
-        <a>{{model.title || model || '&lt;none&gt;'}}</a>
+        <a style="margin-left: 7px;">{{model.title || model || '&lt;none&gt;'}}</a>
       </span>
       <span ng-transclude></span>
     </div>
@@ -355,6 +355,8 @@ class NodeRowWrapper extends ModelWrapper
   update: =>
     @validate()
     @storeAttrs()
+    # HACK - clear stuck popups on update...
+    $('td div.popover-thunk + .popover').prev().popover('destroy')
     # if @isValid()
     #   TODO - update backend
 

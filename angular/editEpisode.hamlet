@@ -1,17 +1,18 @@
 <div episode-editor>
+  <div class="affix" style="left:5px; width: 100px">
+    <ul class="nav nav-pills nav-stacked well well-small" style="min-width: 100px; background-color: white;">
+      <li><a href="#/podcasts/{{episode.podcast}}"><i class="icon-chevron-left"></i> Episodes</a>
+      <li><hr style="margin: 3px 0px;">
+      <li class="active"><a href="#display-nodes" data-toggle="tab">Nodes</a>
+      <li><a href="#episode-properties" data-toggle="tab">Properties</a>
+      <li><a href="#csv-import-nodes" data-toggle="tab">Spreadsheet Import</a>
+
   <div id="nowPlayingTitle">
-    Joe Rogan Experience # {{episode.number}}
+    Joe Rogan Experience &#35;{{episode.number}}
   <div id="nowPlayingSubTitle">
     {{episode.title}}
 
-  <ul class="nav nav-pills nav-stacked affix well well-small" style="left: 5px; width: 100px; background-color: white;">
-    <li><a href="#/podcasts/{{episode.podcast}}"><i class="icon-chevron-left"></i> Episodes</a>
-    <li><hr style="margin: 3px 0px;">
-    <li class="active"><a href="#display-nodes" data-toggle="tab">Nodes</a>
-    <li><a href="#episode-properties" data-toggle="tab">Properties</a>
-    <li><a href="#csv-import-nodes" data-toggle="tab">Spreadsheet Import</a>
-
-  <div class="tab-content" style="margin-top: 45px;">
+  <div class="tab-content" style="margin-top: 20px;">
     <div id="episode-properties" class="tab-pane">
       <form class="form-horizontal">
         <div class="control-group">
@@ -87,7 +88,7 @@
                     <input class="span2" type=text ng-model=x.title>
               <td ng-class="x.statusFor('nodeType')">
                 <div class="popover-thunk" data-content="{{x.messagesFor('nodeType', true)}}">
-                  <div node-type-select class="span2" model=x.nodeType on-update="x.update()">
+                  <div node-type-select model=x.nodeType on-update="x.update()">
                     <a ng-click="showNewNodeTypeModal(x.invalidNodeType())" ng-show="x.invalidNodeType()" style="color: green">
                       <i class="icon-plus-sign"></i><i>create</i>
               <td ng-class="x.statusFor('url')">
