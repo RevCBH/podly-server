@@ -10,29 +10,24 @@ import Handler.Util
 import qualified Data.ByteString.Lazy.Char8 as L8
 import qualified Data.Vector as V
 import qualified Data.Aeson as A
+import Data.Text (pack)
 import Data.Maybe (fromJust)
 
 import Document
 
 handleHomeR :: Handler RepHtml
 handleHomeR = do
-  episode:_ <- runDB $ selectList [EpisodeNumber ==. 275] [Desc EpisodeAirDate]
-  doc <- runDB $ documentFromEpisode episode
+  (Entity _ episode):_ <- runDB $ selectList [] [Desc EpisodeNumber]
   nodeTypes <- runDB $ selectList [] [Asc NodeTypeTitle]
-
-  let epJson = L8.unpack $ encode doc
   let nodeTypesJson = L8.unpack $ encode $ map documentFromNodeType nodeTypes
 
   runNgModule (Just "playerMod") $ do
     let angularMessage = "Angular" :: String
-    --cmdGetPeople <- addCommand $ \() -> do
-    --    people' <- getYesod >>= liftIO . readIORef . ipeople
-    --    return $ map (\(pid, Person name _) -> PersonSummary pid name) $ Map.toList people'
-    $(addCtrl "/episodes" "episodeList")
+    -- $(addCtrl "/episodes" "episodeList")
     $(addCtrl "/player/:podcastName/:episodeNumber" "player")
-    $(addCtrl "/csv" "csvtest")
+    -- $(addCtrl "/csv" "csvtest")
 
-    setDefaultRoute "/player/The Joe Rogan Experience/275"
+    setDefaultRoute $ pack $ "/player/The Joe Rogan Experience/" ++ (show $ episodeNumber episode)
 
 newtype Singleton a = Singleton { unSingleton :: a }
 instance A.ToJSON a => A.ToJSON (Singleton a) where

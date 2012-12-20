@@ -60,7 +60,7 @@ app.filter 'formatOffset', -> (input) ->
 
   c.join ':'
 
-app.directive 'podlyVimeo', () ->
+app.directive 'podlyVimeo', ($http) ->
   (scope, element, attrs) ->
     scope.player = $f 'vimeo-player'
     scope.player.addEvent 'ready', (x) ->
@@ -68,10 +68,35 @@ app.directive 'podlyVimeo', () ->
         scope.$apply "time = #{data.seconds}"
       scope.play()
 
-return ($scope, $routeParams, scrollManager) ->
+    scope.episodePages =
+      current: 1
+      max: 1
+      episodes: []
+
+    scope.loadEpisodePage = (n) ->
+      console.log "loadEpisodePage:", n
+      n = Math.max 0, Math.min(n, scope.episodePages?.max)
+      q = $http.get "/episodes?page=#{n}"
+      q.success (data) =>
+        scope.episodePages.current = data.pageInfo?.page
+        scope.episodePages.max = data.pageInfo?.of
+        scope.episodePages.episodes = data.episodes
+
+    scope.loadEpisodePage(1)
+
+app.filter 'range', ->
+  (start, end) ->
+    start = parseInt(start)
+    end = parseInt(end)
+    num for num in [start..end]
+
+return ($scope, $routeParams, $http, scrollManager) ->
   window.sc = $scope
   window.sm = scrollManager
-  $scope.episode = %{epJson}
+  # $scope.episode = %{epJson}
+  $scope.episode = {title: "loading...", number: $routeParams.episodeNumber}
+  q = $http.get "/podcasts/#{$routeParams.podcastName}/episodes/#{$routeParams.episodeNumber}"
+  q.success (data) -> $scope.episode = data
 
   scrollManager.watch (jQuery '#listOfNodes')
 

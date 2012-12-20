@@ -1,8 +1,11 @@
 <header>
   ^{toolbar}
 
-<div class="container">
-  <div id="main" role="main">
+<div .container>
+  <div #main role="main">
     $maybe msg <- mmsg
         <div #message>#{msg}
     ^{widget}
+
+  <!-- <div .row>
+    #{extraCopyright $ appExtra $ settings master} -->

@@ -15,5 +15,5 @@
           <script type="text/javascript">
             jQuery("#toolbar-logout-link").tooltip();
         $nothing
-          <li>
-            <a href=@{AuthR LoginR}>Login
+          <!-- <li>
+            <a href=@{AuthR LoginR}>Login -->

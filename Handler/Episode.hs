@@ -8,7 +8,8 @@ import Data.Aeson (Result(..), FromJSON(..), fromJSON)
 import Data.Aeson.TH (deriveJSON)
 import Data.Maybe
 import Data.Time(Day, UTCTime(..), secondsToDiffTime)
-import Data.Text (pack)
+import Data.Text (pack, unpack)
+import Control.Monad (liftM)
 
 import Yesod.Form.Jquery
 
@@ -104,3 +105,32 @@ postEpisodesR = do
                 d <- date
                 return $ UTCTime d dTime
         in Episode podcast title number slug utc published duration
+
+
+getEpisodesR :: Handler RepHtmlJson
+getEpisodesR = do
+  page <- (paramOr "page" 1) >>= return . max 0 . flip (-) 1
+  limit <- paramOr "limit" 8
+  let resultsPerPage = min (max 1 limit) 20 :: Int
+
+  episodeCount <- runDB $ count ([] :: [Filter Episode])
+  episodes <- runDB $ selectList [] [Desc EpisodeNumber, LimitTo resultsPerPage, OffsetBy (page * resultsPerPage)]
+  let pageCount = (episodeCount `quot` resultsPerPage) + (if episodeCount `mod` resultsPerPage > 0 then 1 else 0)
+
+  let widget = do
+      setTitle $ toHtml ("Episodes" :: String)
+      [whamlet|There are #{length episodes} episodes.|]
+
+  let pageInfo = object [
+        "page" .= (page + 1),
+        "of" .= pageCount]
+
+  let json = object [
+        "pageInfo" .= pageInfo,
+        "episodes" .= episodes]
+
+  defaultLayoutJson widget json
+ where
+  paramOr name defaultValue = do
+    mParam <- lookupGetParam name
+    return $ maybe defaultValue (read . unpack) mParam

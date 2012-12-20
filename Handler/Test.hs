@@ -103,24 +103,6 @@ getPodcastEpisodeIndexR name = do
     let json = episodes
     defaultLayoutJson widget json
 
--- /episodes EpisodesR GET POST
-
-getEpisodesR :: Handler RepHtmlJson
-getEpisodesR = do
-    episodes <- runDB $ selectList [] [Desc EpisodeAirDate]
-    let widget = do
-        setTitle $ toHtml ("Episodes" :: String)
-        [whamlet|There are #{length episodes} episodes.|]
-    let json = episodes
-    defaultLayoutJson widget json
-
-
-getEpisodesJsonR :: Handler RepJson
-getEpisodesJsonR = do
-    episodes <- runDB $ selectList [] [Desc EpisodeAirDate]
-    --docs <- runDB $ mapM documentFromEpisode episodes
-    jsonToRepJson episodes
-
 {-
 postNodeInstanceR :: Text -> Int -> Handler RepHtml
 postNodeInstanceR podcast number = do

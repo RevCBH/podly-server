@@ -55,27 +55,21 @@
       <!--End Row -->
 
 <!--Episode Nav Bar-->
-<div id="episodeNavBar">
+<div id="episodeNavBar" style="visibility: hidden;">
   <form class="navbar-search">
     <input type="text" class="search-query" placeholder="Search any episode">
 
 <div class="episodeList">
   <h5>Episodes
   <ul class="nav nav-tabs nav-stacked red">
-    <li><a href="#">284 Peter Duesberg, Bryan Callen</a>
-    <li><a href="#">283 Bryan Callen</a>
-    <li><a href="#">282 Philip Coppens</a>
-    <li><a href="#">281 Duncan Trussell</a>
-    <li><a href="#">278 Ari Shaffir</a>
-    <li><a href="#">277 Victor Conte</a>
-    <li><a href="#">276 David Seaman, Abby Martin, Dell Cameron</a>
-    <li class="active"><a href="#">275 Dave Asprey</a>
-    <li>
+    <li ng-repeat="ep in episodePages.episodes" ng-class="{active: ep.number == episode.number}">
+      <a href="#/player/{{ep.podcast}}/{{ep.number}}">{{ep.number}} - {{ep.title}}</a>
+    <li ng-hide="episodePages.max < 2">
       <div class="pagination">
         <ul>
-          <li><a href="#">Prev</a>
-          <li><a href="#">1</a>
-          <li class="active"><a href="#">2</a>
-          <li><a href="#">3</a>
-          <li><a href="#">4</a>
-          <li><a href="#">Next</a>
+          <li ng-class="{active: episodePages.current <= 1}">
+            <a ng-click="loadEpisodePage(episodePages.current - 1)">Prev</a>
+          <li ng-repeat="n in 1 | range:episodePages.max" ng-class="{active: n == episodePages.current}">
+            <a ng-click="loadEpisodePage(n)">{{n}}</a>
+          <li ng-class="{active: episodePages.current >= episodePages.max}">
+            <a ng-click="loadEpisodePage(episodePages.current + 1)">Next</a>

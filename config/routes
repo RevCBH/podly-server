@@ -18,9 +18,8 @@
 
 -- episodes
 
--- /episodes EpisodesR POST
+/episodes EpisodesR GET
 -- /podcasts/#Text/episodes.new NewEpisodeR GET
-/episodes.json EpisodesJsonR GET
 
 -- nodes
 /nodes NodesR GET -- POST
