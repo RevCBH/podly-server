@@ -1,4 +1,5 @@
 body{
+background-repeat: no-repeat;
 /* IE10 Consumer Preview */
 
 background-image: -ms-linear-gradient(bottom, #FFFFFF 0%, #F4F4F4 100%);
