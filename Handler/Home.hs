@@ -67,12 +67,12 @@ handleAdminR = do
     cmdSetEpisodeTitle <- addCommand $ \(epId, title) -> do
       runDB $ update epId [EpisodeTitle =. title]
       episode <- runDB $ get404 epId
-      return $ episodeTitle episode
+      return $ Singleton $ episodeTitle episode
 
     cmdSetEpisodeNumber <- addCommand $ \(epId, number) -> do
       runDB $ update epId [EpisodeNumber =. number]
       episode <- runDB $ get404 epId
-      return $ episodeNumber episode
+      return $ Singleton $ episodeNumber episode
 
     cmdCreateNodeType <- addCommand $ \nt -> do
       nodeType <- tryInsertNodeType nt

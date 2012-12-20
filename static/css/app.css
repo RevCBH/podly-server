@@ -1,7 +1,5 @@
 body{
-background-repeat: no-repeat;
 /* IE10 Consumer Preview */
-
 background-image: -ms-linear-gradient(bottom, #FFFFFF 0%, #F4F4F4 100%);
 
 /* Mozilla Firefox */
@@ -20,20 +18,23 @@ background-image: -webkit-linear-gradient(bottom, #FFFFFF 0%, #F4F4F4 100%);
 background-image: linear-gradient(to top, #FFFFFF 0%, #F4F4F4 100%);
 
 padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
+background-repeat: no-repeat;
 }
+
+#aboutUs{;}
 
 #tweet{;}
 
 #twitterFollow{;}
 
-#socialNavTop li{
-  margin-top: 10px;
-  padding-left: 10px;
-}
-
 .fb-like
 {
   z-index: 101;
+}
+
+#socialNavTop li{
+  margin-top: 10px;
+  padding-left: 10px;
 }
 
 #contentContainerLeft
@@ -108,7 +109,6 @@ padding-top: 60px; /* 60px to make the container go all the way to the bottom of
 
 #episodeNavBar .navbar-search{
   float: right;
-  /*float: left;*/
   margin: 12px 15px 0px 0px;
 }
 
@@ -331,9 +331,43 @@ Nav Bar Brand
   text-decoration: none;
 }
 
-/*
-Nav Hover
-*/
+#tableTitleRow{
+  font-weight: bold;
+}
+
+#trashNode{
+  margin-left: 12px;
+  margin-right: auto;
+  vertical-align: center;
+}
+
+#infoStatusBadge
+{
+  position: absolute;
+  margin-left: 60px;
+  z-index: 100;
+  font-weight: bold;
+  text-transform: lowercase;
+  font-family: cursive;
+}
+
+#newNode{
+  float: left;
+  margin-right:0px;
+}
+
+#totalTopics{
+  float: right;
+  margin-top: -15px;
+}
+
+#newNodeNav{
+  border: dashed 0px blue;
+  display: inline-block;
+  margin-bottom: -10px;
+  margin-top: -10px;
+  margin-left: 1px;
+}
 
 /*
 NodeType creation modal
@@ -409,4 +443,21 @@ td .in-place-display {
   text-align: center;
   margin-top: 5px;
   z-index: 1031;
+}
+
+/* Table Cell Styles */
+.table tbody tr td.success {
+  background-color: #dff0d8;
+}
+
+.table tbody tr td.error {
+  background-color: #f2dede;
+}
+
+.table tbody tr td.warning {
+  background-color: #fcf8e3;
+}
+
+.table tbody tr td.info {
+  background-color: #d9edf7;
 }

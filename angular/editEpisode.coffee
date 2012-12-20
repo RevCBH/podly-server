@@ -3,6 +3,8 @@ app = angular.module('admin')
 # TODO - move to common module
 app.filter 'formatOffset', -> (input) ->
   n = parseInt input
+  return '--:--:--' if _.isNaN(n)
+
   c = [
     (n / 3600) % 60, #hh
     (n / 60) % 60, #mm
@@ -300,6 +302,70 @@ NodeParseResult = (n) ->
 
   return this
 
+class ModelWrapper
+  @attr = (a...) -> @attrs = (@attrs || []).concat(a)
+
+  constructor: (@model) -> @loadAttrs()
+  loadAttrs: -> @[a] = @model[a] for a in @constructor.attrs
+  storeAttrs: -> @model[a] = @[a] for a in @constructor.attrs
+  isValid: (k) ->
+    xs = @errors || []
+    xs = @errorsFor(k) if k
+    not (xs.length > 0)
+
+  errorsFor: (k) -> _(@errors || []).filter (x) -> x[k]
+  warningsFor: (k) -> _(@warnings || []).filter (x) -> x[k]
+
+class NodeRowWrapper extends ModelWrapper
+  @attr 'title', 'time', 'url', 'nodeType'
+
+  validate: =>
+    @errors = []
+    @warnings = []
+
+    @errors.push {title: "title is required"} unless @title?.length > 0
+    @errors.push {time: "time is required"} unless @time
+    @errors.push {nodeType: "nodeType is required"} unless @nodeType
+    @errors.push {nodeType: "Invalid nodeType"} if _.isString(@nodeType)
+    @errors.push {url: "URL is required"} unless @url
+    @warnings.push {url: "Invalid URL"} unless /^http(s)?\:\/\/[^.]+\.[^.]+/.test(@url)
+    @isValid()
+
+  invalidNodeType: ->
+    x = _(@errors || []).find (x) -> x?.nodeType?.indexOf("Invalid nodeType") == 0
+    return @nodeType if x
+
+  statusFor: (k) =>
+    return 'status error' if @errorsFor(k).length > 0
+    return 'status warning' if @warningsFor(k).length > 0
+    return ''
+
+  messagesFor: (k, list=false) =>
+    es = _(@errorsFor(k)).map (x) ->
+          console.log "Error:", x
+          "Error: #{x[k]}"
+    ws = _(@warningsFor(k)).map (x) -> "Warn: #{x[k]}"
+    xs = es.concat ws
+    if list
+      xs = "<ul><li>" + xs.join("</li><li>") + "</li></ul>"
+    return xs
+
+  update: =>
+    @validate()
+    @storeAttrs()
+    # if @isValid()
+    #   TODO - update backend
+
+  revert: @loadAttrs
+
+  isNew: => @model._id
+
+# NodeRowWrapper = (n) ->
+#   @node = n
+#   @validate = =>
+
+# window.NodeRowWrapper = NodeRowWrapper
+
 return ($scope, $routeParams, $http, nodeCsvParser) ->
   $scope.csvData = null
 
@@ -311,6 +377,17 @@ return ($scope, $routeParams, $http, nodeCsvParser) ->
   }
 
   $scope.nodeParseResults = null
+  # $scope.nodeRows = []
+  # $scope.nodeRows = ->
+  #   _($scope.episode.nodes).map (x) ->
+  #     x.validate = -> alert('validate node')
+  #     x
+  $scope.$watch "episode.nodes", ((newValue) ->
+        $scope.nodeRows = _($scope.episode.nodes).map (x) ->
+          x = new NodeRowWrapper(x)
+          x.validate()
+          x
+      ), true
 
   window.sc = $scope
 
@@ -321,6 +398,18 @@ return ($scope, $routeParams, $http, nodeCsvParser) ->
     # q.success (data) ->
     q.error () ->
       $scope.episode.nodes = original
+
+  # $scope.$watch 'episode.nodes', (newValue) ->
+  #   console.log "nodes changed:", newValue, "(index:", $scope.$index, ")"
+  #   $scope.nodeRows = _(newValue).map (x) -> x
+
+  $scope.newNodeTitle = "Boo"
+  $scope.createNode = ->
+    return unless $scope.newNodeTitle?.length > 0
+    $scope.episode.nodes.push {
+      title: $scope.newNodeTitle
+    }
+    $scope.newNodeTitle = ""
 
   $scope.$watch 'csvData', (newValue) ->
     $scope.parseErrors = null
@@ -334,11 +423,6 @@ return ($scope, $routeParams, $http, nodeCsvParser) ->
     catch error
       throw error
       $scope.parseErrors = [error.message]
-
-    # xs = nodeCsvParser.parse newValue
-    # original = $scope.episode.nodes.slice 0
-    # $scope.episode.nodes = xs
-    # # q = $http.post("/po")
 
   $scope.nodeRowClass = (node) ->
     if node.nodeType
@@ -363,9 +447,9 @@ return ($scope, $routeParams, $http, nodeCsvParser) ->
     q.success (data) ->
       # HACK - update url if number changes...
       if named is 'number'
-        window.location.hash = "#/podcasts/#{$routeParams.podcastName}/episodes/#{data}"
+        window.location.hash = "#/podcasts/#{$routeParams.podcastName}/episodes/#{data[0]}"
       else
-        $scope.$apply -> $scope.episode[named] = data
+        $scope.episode[named] = data[0]
 
   $scope.saveCSV = (opts={overwrite: false}) ->
     originalResults = $scope.nodeParseResults.slice 0

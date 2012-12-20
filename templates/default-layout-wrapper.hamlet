@@ -46,6 +46,15 @@ $newline never
         <!--End FB Like Button JS SDK-->
         ^{pageBody pc}
 
+        <!--User Voice Widget-->
+        <script type="text/javascript">
+            var uvOptions = {};
+            (function() {
+              var uv = document.createElement('script'); uv.type = 'text/javascript'; uv.async = true;
+              uv.src = ('https:' == document.location.protocol ? 'https://' : 'http://') + 'widget.uservoice.com/qlRprZhYRTniNT3Cnnig.js';
+              var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(uv, s);
+            })();
+
         $maybe analytics <- extraAnalytics $ appExtra $ settings master
             <script>
               if(!window.location.href.match(/localhost/)){

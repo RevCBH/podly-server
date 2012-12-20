@@ -1,14 +1,18 @@
 <div episode-editor>
-  <h1><a href="#/podcasts/{{episode.podcast}}">{{episode.podcast}}</a> <small>{{episode.number}} - {{episode.title}}
-  <h3>Nodes
+  <div id="nowPlayingTitle">
+    Joe Rogan Experience # {{episode.number}}
+  <div id="nowPlayingSubTitle">
+    {{episode.title}}
 
-  <ul class="nav nav-tabs">
-    <li class="active"><a href="#episode-properties" data-toggle="tab">Properties</a>
-    <li><a href="#display-nodes" data-toggle="tab">Nodes</a>
+  <ul class="nav nav-pills nav-stacked affix well well-small" style="left: 5px; width: 100px; background-color: white;">
+    <li><a href="#/podcasts/{{episode.podcast}}"><i class="icon-chevron-left"></i> Episodes</a>
+    <li><hr style="margin: 3px 0px;">
+    <li class="active"><a href="#display-nodes" data-toggle="tab">Nodes</a>
+    <li><a href="#episode-properties" data-toggle="tab">Properties</a>
     <li><a href="#csv-import-nodes" data-toggle="tab">Spreadsheet Import</a>
 
-  <div class="tab-content">
-    <div id="episode-properties" class="tab-pane active">
+  <div class="tab-content" style="margin-top: 45px;">
+    <div id="episode-properties" class="tab-pane">
       <form class="form-horizontal">
         <div class="control-group">
           <label class="control-label" for="episodeTitle">Episode Title
@@ -23,9 +27,78 @@
             <label class="checkbox">
               <input type="checkbox" ng-model=episode.published>Published?
 
-    <div id="display-nodes" class="tab-pane">
-      <div ng-repeat="node in episode.nodes">
-        [<a ng-click="deleteNode(node)">x</a>] {{node.title}}
+    <!-- Node editor -->
+    <div id="display-nodes" class="tab-pane active">
+      <div #contentContainerLeft>
+        <!--Table holding Video & List Controls-->
+        <table class="table" id="topContent">
+          <!--Video Container-->
+          <div id="videoContainer">
+            <tr>
+              <td>
+                <iframe id="vimeo-player" src="http://player.vimeo.com/video/51488504?api=1&amp;player_id=vimeo-player" width="640" height="360" frameborder="0" webkitAllowFullScreen mozallowfullscreen allowFullScreen>
+          <!--End Video Container-->
+        <!--End Table holding Video & List Controls-->
+
+        <div id="newNodeNav">
+          <div id="newNode">
+            <!--Input for Nodes-->
+            <form class="form-inline">
+              <div class="input-prepend input-append">
+                <!--Time Input-->
+                <span class="add-on" type="text" class="input-mini" disabled>
+                  {{100 | formatOffset}}
+                <!--Title Input-->
+                <input type="text" class="span2" placeholder="Topic" ng-model="newNodeTitle">
+                <!--Add Button-->
+                <a class="btn" type="button" ng-click="createNode()"><i class="icon-plus"></i>Add
+            <!--End Input for Nodes-->
+          <!--End newNode-->
+
+          <!--Total Topics:# & "Clear Selected"-->
+          <div id="totalTopics">
+            <h3>
+              <div class="span3">
+                Total topics: {{episode.nodes.length}}
+          <!--End Total Topics:# & "Clear Selected"-->
+        <!--End newNodeNav-->
+
+        <!--Cleaned up Node List-->
+        <table class="table table-bordered table-striped">
+          <thead>
+            <tr>
+              <th>Play
+              <th>Time
+              <th>Title
+              <th>Category
+              <th>Link
+              <th>Delete
+          <tbody data-selector="tr.status .popover-thunk" data-placement="top" data-trigger="hover" data-title="" data-html="true">
+            <tr ng-repeat="x in nodeRows | orderBy:'-time':false">
+              <td style="width: 40px;">
+                <button class="btn">
+                  <i class="icon-play"></i>
+              <td>
+                <a class="btn" ng-class="{'btn-info': x.time || x.time == 0, 'btn-danger': !x.time && x.time != 0}"
+                               ng-click="syncTime(x)">{{x.time | formatOffset}}</a>
+              <td ng-class="x.statusFor('title')">
+                <div class="popover-thunk" data-content="{{x.messagesFor('title', true)}}">
+                  <div class="span2" in-place model=x.title on-update="x.update()">
+                    <input class="span2" type=text ng-model=x.title>
+              <td ng-class="x.statusFor('nodeType')">
+                <div class="popover-thunk" data-content="{{x.messagesFor('nodeType', true)}}">
+                  <div node-type-select class="span2" model=x.nodeType on-update="x.update()">
+                    <a ng-click="showNewNodeTypeModal(x.invalidNodeType())" ng-show="x.invalidNodeType()" style="color: green">
+                      <i class="icon-plus-sign"></i><i>create</i>
+              <td ng-class="x.statusFor('url')">
+                <div class="popover-thunk" data-content="{{x.messagesFor('url', true)}}">
+                  <div class="span4" in-place model=x.url on-update="x.update()">
+                    <input class="span4" type=text ng-model=x.url>
+              <td style="width: 40px;">
+                <!-- <div id="infoStatusBadge">
+                  <span class="badge badge-{{todo.badge}}">i -->
+                <button class="btn btn-danger" ng-click="deleteNode(x.node)"><i class="icon-trash"></i>
+        <!--End Cleaned up Node List-->
 
     <div id="csv-import-nodes" class="tab-pane">
       <!-- CSV ingestion box + error area -->
