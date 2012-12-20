@@ -4,7 +4,9 @@
 <div .container>
   <div #main role="main">
     $maybe msg <- mmsg
-        <div #message>#{msg}
+        <div #message .span4 .offset8 .alert .alert-success>#{msg}
+        <script type="text/javascript">
+            setTimeout(function() {jQuery('#message').fadeOut()}, 4000);
     ^{widget}
 
   <!-- <div .row>

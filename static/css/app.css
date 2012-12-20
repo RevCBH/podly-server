@@ -400,3 +400,12 @@ input.in-place-input {
 td .in-place-display {
   height: 26px;
 }
+
+#message {
+  position: absolute;
+  text-align: center;
+  position: absolute;
+  text-align: center;
+  margin-top: 5px;
+  z-index: 1031;
+}
