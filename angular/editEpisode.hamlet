@@ -28,7 +28,7 @@
               <input type="checkbox" ng-model=episode.published>Published?
 
     <!-- Node editor -->
-    <div id="display-nodes" class="tab-pane active">
+    <div podly-vimeo id="display-nodes" class="tab-pane active">
       <div #contentContainerLeft>
         <!--Table holding Video & List Controls-->
         <table class="table" id="topContent">
@@ -47,7 +47,7 @@
               <div class="input-prepend input-append">
                 <!--Time Input-->
                 <span class="add-on" type="text" class="input-mini" disabled>
-                  {{100 | formatOffset}}
+                  {{time | formatOffset}}
                 <!--Title Input-->
                 <input type="text" class="span2" placeholder="Topic" ng-model="newNodeTitle">
                 <!--Add Button-->

@@ -18,6 +18,14 @@ app.filter 'formatOffset', -> (input) ->
 
   c.join ':'
 
+app.directive 'podlyVimeo', ->
+  (scope, element, attrs) ->
+    scope.time = 0
+    scope.player = $f 'vimeo-player'
+    scope.player.addEvent 'ready', (x) ->
+      scope.player.addEvent 'playProgress', (data, id) ->
+        scope.$apply "time = #{data.seconds}"
+      scope.play()
 
 app.directive 'episodeEditor', ($routeParams, $http, dataService)->
   (scope, element, attrs) ->
@@ -408,8 +416,13 @@ return ($scope, $routeParams, $http, nodeCsvParser) ->
     return unless $scope.newNodeTitle?.length > 0
     $scope.episode.nodes.push {
       title: $scope.newNodeTitle
+      time: $scope.time
     }
     $scope.newNodeTitle = ""
+
+  $scope.syncTime = (n) ->
+    n.time = $scope.time
+    n.update()
 
   $scope.$watch 'csvData', (newValue) ->
     $scope.parseErrors = null
