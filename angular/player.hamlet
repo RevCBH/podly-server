@@ -64,12 +64,11 @@
   <ul class="nav nav-tabs nav-stacked red">
     <li ng-repeat="ep in episodePages.episodes" ng-class="{active: ep.number == episode.number}">
       <a href="#/player/{{ep.podcast}}/{{ep.number}}">{{ep.number}} - {{ep.title}}</a>
-    <li ng-hide="episodePages.max < 2">
-      <div class="pagination">
-        <ul>
-          <li ng-class="{active: episodePages.current <= 1}">
-            <a ng-click="loadEpisodePage(episodePages.current - 1)">Prev</a>
-          <li ng-repeat="n in 1 | range:episodePages.max" ng-class="{active: n == episodePages.current}">
-            <a ng-click="loadEpisodePage(n)">{{n}}</a>
-          <li ng-class="{active: episodePages.current >= episodePages.max}">
-            <a ng-click="loadEpisodePage(episodePages.current + 1)">Next</a>
+  <div class="pagination" ng-hide="episodePages.max < 2">
+    <ul>
+      <li ng-class="{active: episodePages.current <= 1}">
+        <a ng-click="loadEpisodePage(episodePages.current - 1)">Prev</a>
+      <li ng-repeat="n in 1 | range:episodePages.max" ng-class="{active: n == episodePages.current}">
+        <a ng-click="loadEpisodePage(n)">{{n}}</a>
+      <li ng-class="{active: episodePages.current >= episodePages.max}">
+        <a ng-click="loadEpisodePage(episodePages.current + 1)">Next</a>
