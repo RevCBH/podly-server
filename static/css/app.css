@@ -461,3 +461,19 @@ td .in-place-display {
 .table tbody tr td.info {
   background-color: #d9edf7;
 }
+
+.table .span4 .in-place-display a {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 300px;
+  display: inline-block;
+  overflow: hidden;
+}
+
+.table .span2 .in-place-display a {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 140px;
+  display: inline-block;
+  overflow: hidden;
+}

@@ -25,18 +25,12 @@ app.directive 'podlyVimeo', ->
     scope.player.addEvent 'ready', (x) ->
       scope.player.addEvent 'playProgress', (data, id) ->
         scope.$apply "time = #{data.seconds}"
-      scope.play()
 
 app.directive 'episodeEditor', ($routeParams, $http, dataService)->
   (scope, element, attrs) ->
-    haveErrored = false
-    ealert = (msg) ->
-      alert msg unless haveErrored
-      haveErrored = true
-
     req = $http.get("/podcasts/#{$routeParams.podcastName}/episodes/#{$routeParams.episodeNumber}")
     req.success (data) -> scope.episode = data
-    req.error -> ealert "Unable to load episode data! Please refresh the page."
+    # req.error -> TODO - something reasonable
 
     ($ 'table tbody[data-selector]').popover()
 
@@ -196,7 +190,7 @@ app.service 'dataService', ($http) ->
 
   req = $http.get("/nodetypes")
   req.success (data) => @nodeTypes = _(data)
-  req.error -> ealert "Unable to load node type data! Please refresh the page."
+  # req.error -> TODO - something reasonable
 
   @nodeTypeNamed = (name) =>
     name = name.toLowerCase()
@@ -390,12 +384,14 @@ return ($scope, $routeParams, $http, nodeCsvParser) ->
   #   _($scope.episode.nodes).map (x) ->
   #     x.validate = -> alert('validate node')
   #     x
-  $scope.$watch "episode.nodes", ((newValue) ->
-        $scope.nodeRows = _($scope.episode.nodes).map (x) ->
+  # $scope.$watch "episode.nodes[$index]", ((newValue) ->
+  #   console.log "w[] - newValue:", newValue, "$index", $scope.$index), true
+
+  $scope.$watch "episode.nodes", (newValue) ->
+        $scope.nodeRows = _(newValue).map (x) ->
           x = new NodeRowWrapper(x)
           x.validate()
           x
-      ), true
 
   window.sc = $scope
 
@@ -414,10 +410,15 @@ return ($scope, $routeParams, $http, nodeCsvParser) ->
   $scope.newNodeTitle = "Boo"
   $scope.createNode = ->
     return unless $scope.newNodeTitle?.length > 0
-    $scope.episode.nodes.push {
+    n = {
       title: $scope.newNodeTitle
       time: $scope.time
     }
+
+    $scope.episode.nodes.push(n)
+    n = new NodeRowWrapper(n)
+    n.validate()
+    $scope.nodeRows.push(n)
     $scope.newNodeTitle = ""
 
   $scope.syncTime = (n) ->
@@ -490,3 +491,15 @@ return ($scope, $routeParams, $http, nodeCsvParser) ->
     q.error ->
       $scope.episode = JSON.parse originalEp
       $scope.nodeParseResults = originalResults
+
+  guardPlayer = (f) -> f($scope.player) if $scope.player
+
+  $scope.seek = (time) -> guardPlayer (p) ->
+    p.api 'seekTo', time
+    p.api 'play'
+
+  $scope.play = -> guardPlayer (p) ->
+    p.api 'play'
+
+  $scope.pause = -> guardPlayer (p) ->
+    p.api 'pause'

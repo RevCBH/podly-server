@@ -73,10 +73,10 @@
               <th>Category
               <th>Link
               <th>Delete
-          <tbody data-selector="tr.status .popover-thunk" data-placement="top" data-trigger="hover" data-title="" data-html="true">
+          <tbody data-selector="td.status .popover-thunk" data-placement="top" data-trigger="hover" data-title="" data-html="true">
             <tr ng-repeat="x in nodeRows | orderBy:'-time':false">
               <td style="width: 40px;">
-                <button class="btn">
+                <button class="btn" ng-click="seek(x.time)">
                   <i class="icon-play"></i>
               <td>
                 <a class="btn" ng-class="{'btn-info': x.time || x.time == 0, 'btn-danger': !x.time && x.time != 0}"
