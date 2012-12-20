@@ -25,6 +25,11 @@ padding-top: 60px; /* 60px to make the container go all the way to the bottom of
 
 #twitterFollow{;}
 
+#socialNavTop li{
+  margin-top: 10px;
+  padding-left: 10px;
+}
+
 .fb-like
 {
   z-index: 101;

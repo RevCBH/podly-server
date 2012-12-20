@@ -7,13 +7,27 @@
         <span class="icon-bar"></span>
       <a class="brand" href="#">Podly
       <div class="nav-collapse collapse">
-      <ul class="nav pull-right">
-        $maybe Entity _ auth <- mauth
+      $maybe Entity _ auth <- mauth
+        <ul .nav .pull-right>
           <li> <a id='toolbar-logout-link' data-placement='bottom' rel='tooltip' title="#{userIdent auth}" href=@{AuthR LogoutR}>Logout</a>
-
           <!-- TODO - move this to somewhere sensible -->
           <script type="text/javascript">
             jQuery("#toolbar-logout-link").tooltip();
-        $nothing
-          <!-- <li>
-            <a href=@{AuthR LoginR}>Login -->
+      $nothing
+        <ul #socialNavTop .nav .pull-right>
+          <!--Facebook Like Button-->
+          <li>
+            <div class="fb-like" data-href="http://ThePodly.com" data-send="false" data-layout="button_count" data-width="450" data-show-faces="false">
+          <!--End Facebook Like Button-->
+
+          <!--Twitter 'Follow ThePodly'-->
+          <li>
+              <a href="https://twitter.com/thePodly" class="twitter-follow-button" data-show-count="false">Follow @thePodly</a>
+              <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+          <!--End Twitter 'Follow ThePodly'-->
+
+          <!--Twitter 'Share a link'-->
+          <li>
+              <a href="https://twitter.com/share" class="twitter-share-button" data-url="http://thePodly.com" data-via="thePodly">Tweet</a>
+              <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+          <!--End Twitter 'Share a link'-->

@@ -23,9 +23,7 @@ handleHomeR = do
 
   runNgModule (Just "playerMod") $ do
     let angularMessage = "Angular" :: String
-    -- $(addCtrl "/episodes" "episodeList")
     $(addCtrl "/player/:podcastName/:episodeNumber" "player")
-    -- $(addCtrl "/csv" "csvtest")
 
     setDefaultRoute $ pack $ "/player/The Joe Rogan Experience/" ++ (show $ episodeNumber episode)
 
