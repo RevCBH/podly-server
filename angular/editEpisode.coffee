@@ -18,13 +18,33 @@ app.filter 'formatOffset', -> (input) ->
 
   c.join ':'
 
+app.directive 'stickyBits', ->
+  (scope, element, attrs) ->
+    anchor = element.find('.sticky-anchor')
+    divTop = anchor.offset().top
+    sticky = element.find('.sticky')
+    $(window).scroll ->
+      windowTop = $(window).scrollTop() + 52;
+      if windowTop > divTop
+        sticky.addClass('stuck')
+        anchor.addClass('active');
+      else
+        sticky.removeClass('stuck')
+        anchor.removeClass('active')
+
 app.directive 'podlyVimeo', ->
   (scope, element, attrs) ->
     scope.time = 0
+    scope.isPlaying = false
     scope.player = $f 'vimeo-player'
     scope.player.addEvent 'ready', (x) ->
       scope.player.addEvent 'playProgress', (data, id) ->
         scope.$apply "time = #{data.seconds}"
+
+      scope.player.addEvent 'play', -> scope.$apply "isPlaying = true"
+      setStopped = -> scope.$apply "isPlaying = false"
+      scope.player.addEvent 'pause', setStopped
+      scope.player.addEvent 'finish', setStopped
 
 app.directive 'episodeEditor', ($routeParams, $http, dataService)->
   (scope, element, attrs) ->
@@ -427,6 +447,8 @@ return ($scope, $routeParams, $http, nodeCsvParser) ->
     n.time = $scope.time
     n.update()
 
+  $scope.curTab = "nodes"
+
   $scope.$watch 'csvData', (newValue) ->
     $scope.parseErrors = null
     $scope.nodeParseResults = null
@@ -505,3 +527,9 @@ return ($scope, $routeParams, $http, nodeCsvParser) ->
 
   $scope.pause = -> guardPlayer (p) ->
     p.api 'pause'
+
+  $scope.togglePlay = ->
+    if $scope.isPlaying
+      $scope.pause()
+    else
+      $scope.play()

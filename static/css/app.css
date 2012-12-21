@@ -361,8 +361,7 @@ Nav Bar Brand
   margin-top: -15px;
 }
 
-#newNodeNav{
-  border: dashed 0px blue;
+.newNodeNav{
   display: inline-block;
   margin-bottom: -10px;
   margin-top: -10px;
@@ -476,4 +475,41 @@ td .in-place-display {
   max-width: 140px;
   display: inline-block;
   overflow: hidden;
+}
+
+/* Mini player */
+#mini-play-controls .btn-group {
+  margin-left: 3px;
+}
+
+#mini-play-controls .btn-group .btn-mini {
+  padding: 0px 7px 4px 9px;
+}
+
+#mini-play-controls .btn-group .btn-mini:first-child {
+  padding: 0px 9px 4px 7px;
+}
+
+/* Sticky scroll past divs */
+.sticky {
+}
+
+.sticky-anchor.active {
+  height: 36px;
+}
+
+.stuck {
+  -moz-border-radius: 4px;
+  -webkit-border-radius: 4px;
+  border-radius: 4px;
+
+  top: 12px;
+  height: 33px;
+  margin-left: 85px;
+  padding-top: 3px;
+  padding-left: 8px;
+
+  background-color: #fff;
+  position: fixed;
+  z-index: 10000;
 }

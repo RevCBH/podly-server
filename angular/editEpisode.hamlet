@@ -1,11 +1,26 @@
 <div episode-editor>
   <div class="affix" style="left:5px; width: 100px">
-    <ul class="nav nav-pills nav-stacked well well-small" style="min-width: 100px; background-color: white;">
+    <ul class="nav nav-pills nav-stacked well well-small" style="min-width: 100px; background-color: white; margin-bottom: 6px;">
       <li><a href="#/podcasts/{{episode.podcast}}"><i class="icon-chevron-left"></i> Episodes</a>
       <li><hr style="margin: 3px 0px;">
-      <li class="active"><a href="#display-nodes" data-toggle="tab">Nodes</a>
-      <li><a href="#episode-properties" data-toggle="tab">Properties</a>
-      <li><a href="#csv-import-nodes" data-toggle="tab">Spreadsheet Import</a>
+      <li class="active">
+        <a href="#display-nodes" data-toggle="tab" ng-click="curTab = 'nodes'">
+          Nodes
+      <li><a href="#episode-properties" data-toggle="tab" ng-click="curTab = 'properties'">Properties</a>
+      <li><a href="#csv-import-nodes" data-toggle="tab" ng-click="curTab = 'import'">Spreadsheet Import</a>
+    <ul ng-show="curTab == 'nodes'" class="nav nav-pills nav-stacked well well-small" style="min-width: 100px; background-color: white;">
+      <li style="text-align: center;">
+        <span style="background-color: #eee;">{{time | formatOffset }}
+      <li id="mini-play-controls">
+        <div class="btn-group">
+          <button class="btn btn-mini" ng-click="seek(time - 5)">
+            <i class="icon-backward"></i>
+          <button class="btn btn-mini" ng-click="togglePlay()">
+            <i ng-class="{'icon-play': !isPlaying, 'icon-pause': isPlaying}"></i>
+          <button class="btn btn-mini" ng-click="seek(time + 5)">
+            <i class="icon-forward"></i>
+
+
 
   <div id="nowPlayingTitle">
     Joe Rogan Experience &#35;{{episode.number}}
@@ -41,28 +56,30 @@
           <!--End Video Container-->
         <!--End Table holding Video & List Controls-->
 
-        <div id="newNodeNav">
-          <div id="newNode">
-            <!--Input for Nodes-->
-            <form class="form-inline">
-              <div class="input-prepend input-append">
-                <!--Time Input-->
-                <span class="add-on" type="text" class="input-mini" disabled>
-                  {{time | formatOffset}}
-                <!--Title Input-->
-                <input type="text" class="span2" placeholder="Topic" ng-model="newNodeTitle">
-                <!--Add Button-->
-                <a class="btn" type="button" ng-click="createNode()"><i class="icon-plus"></i>Add
-            <!--End Input for Nodes-->
-          <!--End newNode-->
+        <div sticky-bits>
+          <div class="sticky-anchor">
+          <div id="newNodeNav" class="newNodeNav sticky">
+            <div id="newNode">
+              <!--Input for Nodes-->
+              <form class="form-inline">
+                <div class="input-prepend input-append">
+                  <!--Time Input-->
+                  <span class="add-on" type="text" class="input-mini" disabled>
+                    {{time | formatOffset}}
+                  <!--Title Input-->
+                  <input type="text" class="span2" placeholder="Topic" ng-model="newNodeTitle">
+                  <!--Add Button-->
+                  <a class="btn" type="button" ng-click="createNode()"><i class="icon-plus"></i>Add
+              <!--End Input for Nodes-->
+            <!--End newNode-->
 
-          <!--Total Topics:# & "Clear Selected"-->
-          <div id="totalTopics">
-            <h3>
-              <div class="span3">
-                Total topics: {{episode.nodes.length}}
-          <!--End Total Topics:# & "Clear Selected"-->
-        <!--End newNodeNav-->
+            <!--Total Topics:# & "Clear Selected"-->
+            <div id="totalTopics">
+              <h3>
+                <div class="span3">
+                  Total topics: {{episode.nodes.length}}
+            <!--End Total Topics:# & "Clear Selected"-->
+          <!--End newNodeNav-->
 
         <!--Cleaned up Node List-->
         <table class="table table-bordered table-striped">
