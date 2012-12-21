@@ -9,6 +9,8 @@ module Yesod.Angular
     , addCommand
     , addCtrl
     , addCtrlRaw
+    , addLib
+    , addExtLib
     , setDefaultRoute
     , GAngular
     ) where
@@ -18,11 +20,12 @@ import           Control.Monad.Trans.Writer (WriterT, runWriterT, tell)
 import           Data.Aeson                 (FromJSON, ToJSON)
 import           Data.Map                   (Map)
 import qualified Data.Map                   as Map
-import           Data.Maybe                 (fromMaybe, Maybe(..))
+import           Data.Maybe                 (fromMaybe, Maybe(..), catMaybes)
 import           Data.Monoid                (First (..), Monoid (..))
 import           Data.Text                  (Text)
 import           Text.Hamlet                (HtmlUrl, hamletFile)
 import           Text.Julius                (JavascriptUrl, julius, juliusFile)
+import           Text.Coffee                (coffeeFile, coffeeFileReload)
 import           Text.Coffee.Bare           (coffeeBareFile, coffeeBareFileReload)
 import           Yesod.Core                 (GHandler, GWidget, RepHtml,
                                              RepHtml (RepHtml), Route, Yesod,
@@ -51,18 +54,20 @@ data AngularWriter sub master = AngularWriter
     , awPartials     :: Map Text (HtmlUrl (Route master))
     , awRoutes       :: JavascriptUrl (Route master)
     , awControllers  :: JavascriptUrl (Route master)
+    , awLibs         :: Map Text (Maybe (JavascriptUrl (Route master)))
     , awDefaultRoute :: First Text
     }
 instance Monoid (AngularWriter sub master) where
-    mempty = AngularWriter mempty mempty mempty mempty mempty
-    AngularWriter a1 a2 a3 a4 a5
-        `mappend` AngularWriter b1 b2 b3 b4 b5
+    mempty = AngularWriter mempty mempty mempty mempty mempty mempty
+    AngularWriter commands1 partials1 routes1 controllers1 libs1 defaultRoute1
+        `mappend` AngularWriter commands2 partials2 routes2 controllers2 libs2 defaultRoute2
         = AngularWriter
-            (mappend a1 b1)
-            (mappend a2 b2)
-            (mappend a3 b3)
-            (mappend a4 b4)
-            (mappend a5 b5)
+            (mappend commands1 commands2)
+            (mappend partials1 partials2)
+            (mappend routes1 routes2)
+            (mappend controllers1 controllers2)
+            (mappend libs1 libs2)
+            (mappend defaultRoute1 defaultRoute2)
 
 type GAngular sub master = WriterT (AngularWriter sub master) (GHandler sub master)
 
@@ -95,12 +100,18 @@ runNgModule mModname ga = do
                 First (Just x) -> [julius|.otherwise({redirectTo:"#{x}"})|]
                 First Nothing -> mempty
 
+    let renderLibs = mconcat . catMaybes . Map.elems $ awLibs
+    let declLibs = let ks = Map.keys awLibs
+                       f = \x -> T.concat ["\"", x, "\","]
+                   in T.concat (map f ks)
+
     wrapAngular modname $ do
         addScriptEither $ urlAngularJs master
         [whamlet|<div ng-view>|]
         toWidget [julius|
+^{renderLibs}
 angular
-    .module("#{modname}", ['ngResource']) // TODO - parameterize included modules
+    .module("#{modname}", [#{declLibs}])
     .config(["$routeProvider", function($routeProvider) {
         $routeProvider ^{awRoutes} ^{defaultRoute} ;
     }]);
@@ -148,3 +159,26 @@ addCtrlRaw name' route template controller = do
 
 setDefaultRoute :: Text -> GAngular sub master ()
 setDefaultRoute x = tell mempty { awDefaultRoute = First $ Just x }
+
+addLib :: Text -- ^ lib name
+       -> Q Exp
+addLib name = do
+    --let name' = T.filter isAlpha name
+    [|addLibRaw $(liftT name) $(coffeeFile fn)|]
+  where
+    liftT t = do
+        p <- [|T.pack|]
+        return $ AppE p $ LitE $ StringL $ T.unpack t
+    fn = T.unpack $ T.concat ["angular/lib/", name, ".coffee"]
+
+
+addLibRaw :: Text -- ^ lib name
+          -> JavascriptUrl (Route master) -- ^ lib
+          -> GAngular sub master ()
+addLibRaw name lib = do
+    tell mempty
+        { awLibs = Map.singleton name $ Just [julius|^{lib}|] }
+
+addExtLib :: Text
+          -> GAngular sub master ()
+addExtLib name = tell mempty { awLibs = Map.singleton name Nothing }

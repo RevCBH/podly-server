@@ -45,20 +45,20 @@ app.service 'scrollManager', () ->
   return this
 
 
-app.filter 'formatOffset', -> (input) ->
-  n = parseInt input
-  c = [
-    (n / 3600) % 60, #hh
-    (n / 60) % 60, #mm
-    n % 60 #ss
-  ]
+# app.filter 'formatOffset', -> (input) ->
+#   n = parseInt input
+#   c = [
+#     (n / 3600) % 60, #hh
+#     (n / 60) % 60, #mm
+#     n % 60 #ss
+#   ]
 
-  c = c.map (x) ->
-    x = Math.floor x
-    x = "0#{x}" if x < 10
-    return x
+#   c = c.map (x) ->
+#     x = Math.floor x
+#     x = "0#{x}" if x < 10
+#     return x
 
-  c.join ':'
+#   c.join ':'
 
 app.directive 'podlyVimeo', ($http) ->
   (scope, element, attrs) ->

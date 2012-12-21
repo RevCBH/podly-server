@@ -12,6 +12,7 @@ import qualified Data.Vector as V
 import qualified Data.Aeson as A
 import Data.Text (pack)
 import Data.Maybe (fromJust)
+import Text.Coffee (coffeeFile)
 
 import Document
 
@@ -59,6 +60,9 @@ handleAdminR :: Handler RepHtml
 handleAdminR = do
   (Entity _ user) <- requireAuth
   icons <- runDB $ selectList [] [Asc IconName]
+
+--toWidget $(coffeeFile "angular/lib/test.coffee")
+
   runNgModule (Just "admin") $ do
     cmdCreateEpisode <- addCommand $ \ep -> do
       episode <- tryInsertEpisode ep
@@ -88,6 +92,8 @@ handleAdminR = do
       episode <- runDB $ episodeFromDocument ep
       doc <- runDB $ documentFromEpisode (Entity tid episode)
       return doc
+
+    $(addLib "format")
 
     $(addCtrl "/podcasts" "podcastIndex")
     $(addCtrl "/podcasts/:podcastName" "showPodcast")
