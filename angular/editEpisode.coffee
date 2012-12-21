@@ -322,6 +322,7 @@ class ModelWrapper
 
 class NodeRowWrapper extends ModelWrapper
   @attr 'title', 'time', 'url', 'nodeType'
+  @attr 'relId' # TODO - obscure, should be handled by episode entity
 
   validate: =>
     @errors = []
@@ -366,13 +367,8 @@ class NodeRowWrapper extends ModelWrapper
 
   isNew: => @model._id
 
-# NodeRowWrapper = (n) ->
-#   @node = n
-#   @validate = =>
-
-# window.NodeRowWrapper = NodeRowWrapper
-
 return ($scope, $routeParams, $http, nodeCsvParser) ->
+  window.sc = $scope
   $scope.csvData = null
 
   $scope.episode = {
@@ -383,21 +379,12 @@ return ($scope, $routeParams, $http, nodeCsvParser) ->
   }
 
   $scope.nodeParseResults = null
-  # $scope.nodeRows = []
-  # $scope.nodeRows = ->
-  #   _($scope.episode.nodes).map (x) ->
-  #     x.validate = -> alert('validate node')
-  #     x
-  # $scope.$watch "episode.nodes[$index]", ((newValue) ->
-  #   console.log "w[] - newValue:", newValue, "$index", $scope.$index), true
 
   $scope.$watch "episode.nodes", (newValue) ->
         $scope.nodeRows = _(newValue).map (x) ->
           x = new NodeRowWrapper(x)
           x.validate()
           x
-
-  window.sc = $scope
 
   $scope.deleteNode = (node) ->
     original = $scope.episode.nodes.slice(0)
@@ -407,11 +394,7 @@ return ($scope, $routeParams, $http, nodeCsvParser) ->
     q.error () ->
       $scope.episode.nodes = original
 
-  # $scope.$watch 'episode.nodes', (newValue) ->
-  #   console.log "nodes changed:", newValue, "(index:", $scope.$index, ")"
-  #   $scope.nodeRows = _(newValue).map (x) -> x
-
-  $scope.newNodeTitle = "Boo"
+  $scope.newNodeTitle = ""
   $scope.createNode = ->
     return unless $scope.newNodeTitle?.length > 0
     n = {

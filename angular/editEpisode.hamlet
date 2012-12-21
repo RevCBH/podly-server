@@ -115,7 +115,7 @@
               <td style="width: 40px;">
                 <!-- <div id="infoStatusBadge">
                   <span class="badge badge-{{todo.badge}}">i -->
-                <button class="btn btn-danger" ng-click="deleteNode(x.node)"><i class="icon-trash"></i>
+                <button class="btn btn-danger" ng-click="deleteNode(x.model)"><i class="icon-trash"></i>
         <!--End Cleaned up Node List-->
 
     <div id="csv-import-nodes" class="tab-pane">

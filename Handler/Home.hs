@@ -61,8 +61,6 @@ handleAdminR = do
   (Entity _ user) <- requireAuth
   icons <- runDB $ selectList [] [Asc IconName]
 
---toWidget $(coffeeFile "angular/lib/test.coffee")
-
   runNgModule (Just "admin") $ do
     cmdCreateEpisode <- addCommand $ \ep -> do
       episode <- tryInsertEpisode ep
