@@ -24,8 +24,8 @@ loadFixture :: (PersistStore (YesodPersistBackend master) (GHandler sub master),
 loadFixture loader = liftIO loader >>= runDB . (mapM insert)
 
 -- create an action that loads an episode document fixture into the persistent store
-loadEpisodes :: (Control.Monad.IO.Class.MonadIO (backend m), PersistUnique backend m) =>
-  String -> backend m ()
+--loadEpisodes :: (Control.Monad.IO.Class.MonadIO (backend m), PersistUnique backend m) =>
+--  String -> backend m ()
 loadEpisodes name = do
   docs <- liftIO loadEpisodeDocuments
   mapM_ episodeFromDocument docs

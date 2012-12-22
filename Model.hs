@@ -44,26 +44,27 @@ instance FromJSON (NodeTypeGeneric t) where
 --      "title" .= title,
 --      "icon" .= icon]
 
-instance FromJSON (NodeGeneric t) where
-  parseJSON (Object o) = Node <$>
-    o .: "title"              <*>
-    o .: "url"                <*>
-    o .: "linkTitle"          <*>
-    o .: "nodeTypeId"
-  parseJSON _  = error "Object expected when parsing Node"
+--instance FromJSON (NodeGeneric t) where
+--  parseJSON (Object o) = Node <$>
+--    o .: "title"              <*>
+--    o .: "url"                <*>
+--    o .: "linkTitle"          <*>
+--    o .: "nodeTypeId"
+--  parseJSON _  = error "Object expected when parsing Node"
 
 instance FromJSON (NodeInstanceGeneric t) where
   parseJSON (Object o) = NodeInstance <$>
-    o .: "nodeId"                     <*>
+    o .: "title"                      <*>
+    o .: "url"                        <*>
     o .: "nodeTypeId"                 <*>
     o .: "episodeId"                  <*>
     o .: "time"
   parseJSON _ = error "Object expected when parsing NodeInstance"
 
-instance ToJSON (Entity Node) where
-  toJSON (Entity tid n) = object
-    [ "_id" .= tid,
-      "title" .= nodeTitle n]
+--instance ToJSON (Entity Node) where
+--  toJSON (Entity tid n) = object
+--    [ "_id" .= tid,
+--      "title" .= nodeTitle n]
 
 instance ToJSON (Entity Episode) where
   toJSON (Entity tid (Episode podcast title number slug airDate published duration)) = object

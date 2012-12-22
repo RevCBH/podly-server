@@ -15,26 +15,26 @@ import Yesod.Form.Jquery
 
 import Document
 
-newNodeInstanceForm :: EpisodeId -> [Entity Node] -> Form NodeInstance
-newNodeInstanceForm episodeId nodes = renderDivs $ NodeInstance
-    <$> areq (selectFieldList nodes') "Node" Nothing
-    <*> areq hiddenField "" Nothing
-    <*> areq hiddenField "" (Just episodeId)
-    <*> areq intField "Time" (Just 0)
-  where
-    nodes' = (flip map) nodes (\(Entity tid x) -> (nodeTitle x, tid))
+--newNodeInstanceForm :: EpisodeId -> [Entity Node] -> Form NodeInstance
+--newNodeInstanceForm episodeId nodes = renderDivs $ NodeInstance
+--    <$> areq (selectFieldList nodes') "Node" Nothing
+--    <*> areq hiddenField "" Nothing
+--    <*> areq hiddenField "" (Just episodeId)
+--    <*> areq intField "Time" (Just 0)
+--  where
+--    nodes' = (flip map) nodes (\(Entity tid x) -> (nodeTitle x, tid))
 
-getPodcastEpisodeR :: Text -> Int -> Handler RepHtmlJson
+getPodcastEpisodeR :: Text -> Int -> Handler RepJson -- RepHtmlJson
 getPodcastEpisodeR name number = do
     entity@(Entity episodeId episode) <- runDB $ getBy404 $ UniqueEpisodeNumber name number
     episodeDoc <- runDB $ documentFromEpisode entity
-    nodes <- runDB $ selectList [] [Asc NodeTitle]
-    (formWidget, enctype) <- generateFormPost $ newNodeInstanceForm episodeId nodes
-    let widget = do
-        setTitle $ toHtml $ name <> " #" <> (pack $ show number) <> " - " <> (episodeTitle episode)
-        $(widgetFile "episodes/show")
-    let json = episodeDoc
-    defaultLayoutJson widget json
+    --nodes <- runDB $ selectList [] [Asc NodeTitle]
+    --(formWidget, enctype) <- generateFormPost $ newNodeInstanceForm episodeId nodes
+    --let widget = do
+    --    setTitle $ toHtml $ name <> " #" <> (pack $ show number) <> " - " <> (episodeTitle episode)
+    --    $(widgetFile "episodes/show")
+    --defaultLayoutJson widget json
+    jsonToRepJson episodeDoc
 
 instance FromJSON Day where
     parseJSON val = do
@@ -82,29 +82,29 @@ getNewEpisodeR podcast = do
         $(widgetFile "episodes/new")
 -}
 
-postEpisodesR :: Handler RepJson
-postEpisodesR = do
-    (source, episodeHACK) <- fromJsonOrFormPost $ newEpisodeForm Nothing
-    let episode = episodeFromEpisodeHACK episodeHACK
-    _ <- ensurePodcast $ episodePodcast episode
-    entity <- ensureEpisode episode
-    case source of
-        PostJson -> jsonToRepJson entity
-        PostForm -> redirect $ PodcastEpisodeR (episodePodcast episode) (episodeNumber episode)
-  where
-    ensurePodcast name =
-        let item = Podcast name Nothing Nothing Nothing
-            constraint = UniquePodcastName name
-        in ensureEntity item constraint
-    ensureEpisode ep =
-        let constraint = UniqueEpisodeNumber (episodePodcast ep) (episodeNumber ep)
-        in ensureEntity ep constraint
-    episodeFromEpisodeHACK (EpisodeHACK _ podcast title number slug date published duration) =
-        let dTime = secondsToDiffTime 0
-            utc = do
-                d <- date
-                return $ UTCTime d dTime
-        in Episode podcast title number slug utc published duration
+--postEpisodesR :: Handler RepJson
+--postEpisodesR = do
+--    (source, episodeHACK) <- fromJsonOrFormPost $ newEpisodeForm Nothing
+--    let episode = episodeFromEpisodeHACK episodeHACK
+--    _ <- ensurePodcast $ episodePodcast episode
+--    entity <- ensureEpisode episode
+--    case source of
+--        PostJson -> jsonToRepJson entity
+--        PostForm -> redirect $ PodcastEpisodeR (episodePodcast episode) (episodeNumber episode)
+--  where
+--    ensurePodcast name =
+--        let item = Podcast name Nothing Nothing Nothing
+--            constraint = UniquePodcastName name
+--        in ensureEntity item constraint
+--    ensureEpisode ep =
+--        let constraint = UniqueEpisodeNumber (episodePodcast ep) (episodeNumber ep)
+--        in ensureEntity ep constraint
+--    episodeFromEpisodeHACK (EpisodeHACK _ podcast title number slug date published duration) =
+--        let dTime = secondsToDiffTime 0
+--            utc = do
+--                d <- date
+--                return $ UTCTime d dTime
+--        in Episode podcast title number slug utc published duration
 
 
 getEpisodesR :: Handler RepHtmlJson

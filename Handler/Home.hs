@@ -13,6 +13,10 @@ import qualified Data.Aeson as A
 import Data.Text (pack)
 import Data.Maybe (fromJust)
 import Text.Coffee (coffeeFile)
+import Control.Monad (liftM)
+import Control.Monad.Trans.Maybe
+
+import Debug.Trace
 
 import Document
 
@@ -83,6 +87,13 @@ handleAdminR = do
     cmdDeleteNode <- addCommand $ \(Singleton rel) -> do
       runDB $ delete (rel :: NodeInstanceId)
       return $ Singleton ("OK" :: String)
+
+    cmdSetNodeInstance <- addCommand $ \(epId, node) -> do
+      trace ("cmdReplaceNodes " ++ show epId ++ "node:\n" ++ show node) (return ())
+      ins <- runDB $ syncInstance epId node
+      trace ("\tgot instance") (return ())
+      doc <- runDB $ runMaybeT $ documentFromNodeInstance ins
+      return doc
 
     cmdReplaceNodes <- addCommand $ \ep -> do
       (Entity tid _) <- runDB $ getBy404 $ UniqueEpisodeNumber (docEpisodePodcast ep) (docEpisodeNumber ep)

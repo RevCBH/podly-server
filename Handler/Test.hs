@@ -59,7 +59,7 @@ getNukeR :: Handler RepJson
 getNukeR = do
     runDB $ deleteWhere ([] :: [Filter Icon])
     runDB $ deleteWhere ([] :: [Filter NodeInstance])
-    runDB $ deleteWhere ([] :: [Filter Node])
+    -- runDB $ deleteWhere ([] :: [Filter Node])
     runDB $ deleteWhere ([] :: [Filter NodeType])
     runDB $ deleteWhere ([] :: [Filter Episode])
     runDB $ deleteWhere ([] :: [Filter Podcast])

@@ -13,12 +13,12 @@ NodeType
     icon Text
     UniqueTypeTitle title
     deriving Show
-Node
-    title Text
-    url Text -- TODO - URL datatype?
-    linkTitle Text
-    defaultNodeTypeId NodeTypeId Eq Maybe
-    UniqueNodeTitle title
+--Node
+--    title Text
+--    url Text -- TODO - URL datatype?
+--    linkTitle Text
+--    defaultNodeTypeId NodeTypeId Eq Maybe
+--    UniqueNodeTitle title
 
 Podcast
     name Text
@@ -45,7 +45,8 @@ MediaSource
     url Text
 
 NodeInstance
-    nodeId NodeId Eq
+    title Text
+    url Text
     nodeTypeId NodeTypeId
     episodeId EpisodeId Eq
     time Int

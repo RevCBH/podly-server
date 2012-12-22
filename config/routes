@@ -22,8 +22,8 @@
 -- /podcasts/#Text/episodes.new NewEpisodeR GET
 
 -- nodes
-/nodes NodesR GET -- POST
-/nodes/#NodeId NodeR GET
+-- /nodes NodesR GET -- POST
+-- /nodes/#NodeId NodeR GET
 -- /nodes.new NewNodeR GET
 
 -- node types

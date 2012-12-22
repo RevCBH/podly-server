@@ -251,7 +251,7 @@ app.service 'nodeCsvParser', (dataService) ->
       nt = dataService.nodeTypes.find (n) -> n.title.toLowerCase() == x.nodeType?.toLowerCase()
       x.nodeType = nt || x.nodeType
       x.time = parseTime(x.time)
-      x._id = null
+      # x._id = null
       x.relId = null
       x.linkTitle = ""
 
@@ -310,8 +310,8 @@ class ModelWrapper
   @attr = (a...) -> @attrs = (@attrs || []).concat(a)
 
   constructor: (@model) -> @loadAttrs()
-  loadAttrs: -> @[a] = @model[a] for a in @constructor.attrs
-  storeAttrs: -> @model[a] = @[a] for a in @constructor.attrs
+  loadAttrs: -> @[a] = (@model[a] || null) for a in @constructor.attrs
+  storeAttrs: -> @model[a] = (@[a] || null) for a in @constructor.attrs
   isValid: (k) ->
     xs = @errors || []
     xs = @errorsFor(k) if k
@@ -320,16 +320,25 @@ class ModelWrapper
   errorsFor: (k) -> _(@errors || []).filter (x) -> x[k]
   warningsFor: (k) -> _(@warnings || []).filter (x) -> x[k]
 
+  toJSON: ->
+    res = {}
+    res[a] = @[a] for a in @constructor.attrs
+    return res
+
 class NodeRowWrapper extends ModelWrapper
-  @attr 'title', 'time', 'url', 'nodeType'
-  @attr 'relId' # TODO - obscure, should be handled by episode entity
+  @attr 'title', 'time', 'url', 'linkTitle', 'nodeType'
+  @attr 'relId'
+
+  constructor: (@model, @episode) ->
+    super(@model)
+    @linkTitle = ""
 
   validate: =>
     @errors = []
     @warnings = []
 
     @errors.push {title: "title is required"} unless @title?.length > 0
-    @errors.push {time: "time is required"} unless @time
+    @errors.push {time: "time is required"} unless _.isNumber(@time)
     @errors.push {nodeType: "nodeType is required"} unless @nodeType
     @errors.push {nodeType: "Invalid nodeType"} if _.isString(@nodeType)
     @errors.push {url: "URL is required"} unless @url
@@ -345,10 +354,9 @@ class NodeRowWrapper extends ModelWrapper
     return 'status warning' if @warningsFor(k).length > 0
     return ''
 
+  # TODO - this is getting evaluated extremely often, investigate
   messagesFor: (k, list=false) =>
-    es = _(@errorsFor(k)).map (x) ->
-          console.log "Error:", x
-          "Error: #{x[k]}"
+    es = _(@errorsFor(k)).map (x) -> "Error: #{x[k]}"
     ws = _(@warningsFor(k)).map (x) -> "Warn: #{x[k]}"
     xs = es.concat ws
     if list
@@ -356,12 +364,18 @@ class NodeRowWrapper extends ModelWrapper
     return xs
 
   update: =>
+    console.log "update"
     @validate()
     @storeAttrs()
     # HACK - clear stuck popups on update...
     $('td div.popover-thunk + .popover').prev().popover('destroy')
-    # if @isValid()
-    #   TODO - update backend
+    window.x = this
+    if @isValid()
+      console.log "update->cmdSetNodeInstance"
+      q = @$http.post("%{cmdSetNodeInstance}", [@episode._id, @toJSON()])
+      # TODO - result handling
+      q.success (data) -> console.log "update/success:", data
+      q.error -> console.log "update/error"
 
   revert: @loadAttrs
 
@@ -370,6 +384,8 @@ class NodeRowWrapper extends ModelWrapper
 return ($scope, $routeParams, $http, nodeCsvParser) ->
   window.sc = $scope
   $scope.csvData = null
+
+  window.http = NodeRowWrapper::$http = $http # HACK
 
   $scope.episode = {
     _id: null
@@ -382,7 +398,7 @@ return ($scope, $routeParams, $http, nodeCsvParser) ->
 
   $scope.$watch "episode.nodes", (newValue) ->
         $scope.nodeRows = _(newValue).map (x) ->
-          x = new NodeRowWrapper(x)
+          x = new NodeRowWrapper(x, $scope.episode)
           x.validate()
           x
 
@@ -391,8 +407,7 @@ return ($scope, $routeParams, $http, nodeCsvParser) ->
     $scope.episode.nodes = _(original).without(node)
     q = $http.post("%{cmdDeleteNode}", [node.relId])
     # q.success (data) ->
-    q.error () ->
-      $scope.episode.nodes = original
+    q.error -> $scope.episode.nodes = original
 
   $scope.newNodeTitle = ""
   $scope.createNode = ->
@@ -403,7 +418,7 @@ return ($scope, $routeParams, $http, nodeCsvParser) ->
     }
 
     $scope.episode.nodes.push(n)
-    n = new NodeRowWrapper(n)
+    n = new NodeRowWrapper(n, $scope.episode)
     n.validate()
     $scope.nodeRows.push(n)
     $scope.newNodeTitle = ""
