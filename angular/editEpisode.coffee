@@ -254,7 +254,6 @@ app.service 'nodeCsvParser', (dataService) ->
       x.time = parseTime(x.time)
       # x._id = null
       x.relId = null
-      x.linkTitle = ""
 
     # rejects = _(xs).reject (x) -> x.nodeType
     # xs = _(xs).filter (x) -> x.nodeType
@@ -333,12 +332,11 @@ class ModelWrapper
     return res
 
 class NodeRowWrapper extends ModelWrapper
-  @attr 'title', 'time', 'url', 'linkTitle', 'nodeType'
+  @attr 'title', 'time', 'url', 'nodeType'
   @attr 'relId'
 
   constructor: (@model, @episode) ->
     super(@model)
-    @linkTitle = ""
 
   validate: =>
     @errors = []
@@ -346,9 +344,9 @@ class NodeRowWrapper extends ModelWrapper
 
     @errors.push {title: "title is required"} unless @title?.length > 0
     @errors.push {time: "time is required"} unless _.isNumber(@time)
-    @errors.push {nodeType: "nodeType is required"} unless @nodeType
-    @errors.push {nodeType: "Invalid nodeType"} if _.isString(@nodeType)
-    @errors.push {url: "URL is required"} unless @url
+    @warnings.push {nodeType: "No category specified"} unless @nodeType
+    @errors.push {nodeType: "Category doesn't exist"} if _.isString(@nodeType) and @nodeType.length
+    # @errors.push {url: "URL is required"} unless @url
     @warnings.push {url: "Invalid URL"} unless /^http(s)?\:\/\/[^.]+\.[^.]+/.test(@url)
     @isValid()
 
@@ -431,7 +429,9 @@ return ($scope, $routeParams, $http, nodeCsvParser) ->
 
     $scope.episode.nodes.push(n)
     n = new NodeRowWrapper(n, $scope.episode)
-    n.validate()
+    # n.validate()
+    n.update()
+
     $scope.nodeRows.push(n)
     $scope.newNodeTitle = ""
 

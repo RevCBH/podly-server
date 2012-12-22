@@ -46,8 +46,8 @@ MediaSource
 
 NodeInstance
     title Text
-    url Text
-    nodeTypeId NodeTypeId
+    url Text Maybe
+    nodeTypeId NodeTypeId Maybe
     episodeId EpisodeId Eq
     time Int
     UniqueInstanceEpisodeTime episodeId time

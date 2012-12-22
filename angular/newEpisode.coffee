@@ -31,12 +31,6 @@ app.service 'mediaService', () ->
 return ($scope, $routeParams, $http, mediaService, EpisodeDoc) ->
   $scope.episode = new EpisodeDoc(podcast: $routeParams.podcastName)
   window.sc = $scope
-    # _id: null
-    # podcast: $routeParams.podcastName
-    # airDate: null
-    # searchSlug: null
-    # duration: null
-    # published: {"Draft": []}
 
   $scope.mediaSource = ""
 

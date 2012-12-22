@@ -36,10 +36,10 @@ $(deriveJSON (removePrefix "docNodeType") ''NodeTypeDocument)
 data NodeDocument = DocNode {
   docNodeRelId :: Maybe NodeInstanceId,
   docNodeTitle :: Text,
-  docNodeUrl :: Text,
-  docNodeLinkTitle :: Text,
+  docNodeUrl :: Maybe Text,
+  -- docNodeLinkTitle :: Text,
   docNodeTime :: Int,
-  docNodeNodeType :: NodeTypeDocument
+  docNodeNodeType :: Maybe NodeTypeDocument
 } deriving (Show, Generic)
 
 $(deriveJSON (removePrefix "docNode") ''NodeDocument)
@@ -77,12 +77,15 @@ documentFromNodeType (Entity tid (NodeType title icon)) = DocNodeT (Just tid) ic
 
 --documentFromNodeInstance :: PersistStore t m => Entity (NodeInstanceGeneric t) -> t m (Maybe NodeDocument)
 --documentFromNodeInstance :: Entity NodeInstance -> MaybeDB NodeDocument
-documentFromNodeInstance (Entity relId (NodeInstance title url nodeTypeId episodeId time)) = do
-  nt <- MaybeT . get $ nodeTypeId
-  let docFromNT = documentFromNodeType (Entity nodeTypeId nt)
-  return $ DocNode (Just relId) title url url time $ docFromNT
- --where
- -- liftMaybe = MaybeT . return --maybe mzero return
+
+maybeDocFromMaybeNodeTypeId Nothing = return Nothing
+maybeDocFromMaybeNodeTypeId (Just ntid) = do
+  nt <- MaybeT . get $ ntid
+  return . Just . documentFromNodeType $ (Entity ntid nt)
+
+documentFromNodeInstance (Entity relId (NodeInstance title mUrl mNodeTypeId episodeId time)) = do
+  mNtDoc <- maybeDocFromMaybeNodeTypeId mNodeTypeId
+  return $ DocNode (Just relId) title mUrl time $ mNtDoc
 
 documentFromMediaSource (Entity tid (MediaSource _ kind offset url)) = do
   DocMediaSource kind url offset
@@ -113,15 +116,15 @@ nodeTypeIdFromDoc doc = do
 nodeInstanceIdFromNodeInEpisode :: PersistUnique backend m =>
   Int
   -> Text -- title
-  -> Text -- url
+  -> Maybe Text -- url
   -> Key backend (EpisodeGeneric backend)
   -- -> Key backend (NodeGeneric backend)
-  -> Key backend (NodeTypeGeneric backend)
+  -> Maybe (Key backend (NodeTypeGeneric backend))
   -> backend m (Key backend (NodeInstanceGeneric backend))
-nodeInstanceIdFromNodeInEpisode time title url episodeId nodeTypeId = do
+nodeInstanceIdFromNodeInEpisode time title mUrl episodeId mNodeTypeId = do
   mNI <- getBy $ UniqueInstanceEpisodeTime episodeId time
   case mNI of
-    Nothing -> insert $ NodeInstance title url nodeTypeId episodeId time
+    Nothing -> insert $ NodeInstance title mUrl mNodeTypeId episodeId time
     Just (Entity tid _) -> return tid
 
 episodeAndIdFromDoc :: PersistUnique backend m =>
@@ -153,9 +156,12 @@ episodeAndIdFromDoc (DocEpisode _ podcast number airDate title slug duration pub
     UniqueInstanceEpisodeTime episodeId time
     -}
 
-syncInstance episodeId (DocNode mRelId title url _ time nodeTypeDoc) = do
-  nodeTypeId <- nodeTypeIdFromDoc nodeTypeDoc
-  let getNewInstanceId = insert $ NodeInstance title url nodeTypeId episodeId time
+maybeMaybeNodeTypeIdFromDoc Nothing = return Nothing
+maybeMaybeNodeTypeIdFromDoc (Just doc) = return . Just =<< nodeTypeIdFromDoc doc
+
+syncInstance episodeId (DocNode mRelId title mUrl time mNodeTypeDoc) = do
+  mNodeTypeId <- maybeMaybeNodeTypeIdFromDoc mNodeTypeDoc
+  let getNewInstanceId = insert $ NodeInstance title mUrl mNodeTypeId episodeId time
 
   relId <-  case mRelId of
               Just tid  -> return tid
@@ -163,9 +169,9 @@ syncInstance episodeId (DocNode mRelId title url _ time nodeTypeDoc) = do
 
   ins <- liftM fromJust $ get relId
   let updatePlan = map snd $ filter fst $ [(title /= nodeInstanceTitle ins, NodeInstanceTitle =. title),
-                                           (url /= nodeInstanceUrl ins, NodeInstanceUrl =. url),
+                                           (mUrl /= nodeInstanceUrl ins, NodeInstanceUrl =. mUrl),
                                            (time /= nodeInstanceTime ins, NodeInstanceTime =. time),
-                                           (nodeTypeId /= nodeInstanceNodeTypeId ins, NodeInstanceNodeTypeId =. nodeTypeId)]
+                                           (mNodeTypeId /= nodeInstanceNodeTypeId ins, NodeInstanceNodeTypeId =. mNodeTypeId)]
 
   mIns <- if length updatePlan > 0
             then do

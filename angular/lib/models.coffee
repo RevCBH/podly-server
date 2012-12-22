@@ -37,11 +37,10 @@ class EpisodeDoc extends ModelBase
 app.constant 'EpisodeDoc', EpisodeDoc
 
 class NodeRowWrapper extends ModelBase
-  @attr 'title', 'time', 'url', 'linkTitle', 'nodeType', 'relId'
+  @attr 'title', 'time', 'url', 'nodeType', 'relId'
 
   constructor: (@model, @episode) ->
     super(@model)
-    @linkTitle = ""
 
   validate: =>
     @errors = []
