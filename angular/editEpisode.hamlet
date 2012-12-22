@@ -38,10 +38,10 @@
           <label class="control-label" for="episodeNumber">Episode Number
           <div in-place class="controls" model=episode.number on-update="saveProperty('number')">
             <input type=number name="episodeNumber" ng-model=episode.number>
-        <div class="control-group">
+        <!-- <div class="control-group">
           <div class="controls">
             <label class="checkbox">
-              <input type="checkbox" ng-model=episode.published>Published?
+              <input type="checkbox" ng-model=episode.published>Published? -->
 
     <!-- Node editor -->
     <div podly-vimeo id="display-nodes" class="tab-pane active">

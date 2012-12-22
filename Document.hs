@@ -153,24 +153,27 @@ episodeAndIdFromDoc (DocEpisode _ podcast number airDate title slug duration _ _
     -}
 
 syncInstance episodeId (DocNode mRelId title url _ time nodeTypeDoc) = do
-  nodeTypeId <- trace ("\tgot nodeTypeId") (nodeTypeIdFromDoc nodeTypeDoc)
-  let getNewInstanceId = trace ("\tgot instanceId") $ insert $ NodeInstance title url nodeTypeId episodeId time
+  nodeTypeId <- nodeTypeIdFromDoc nodeTypeDoc
+  let getNewInstanceId = insert $ NodeInstance title url nodeTypeId episodeId time
 
   relId <-  case mRelId of
               Just tid  -> return tid
               Nothing   -> getNewInstanceId
 
-  ins <- trace ("\tgot ins") $ liftM fromJust $ get relId
+  ins <- liftM fromJust $ get relId
   let updatePlan = map snd $ filter fst $ [(title /= nodeInstanceTitle ins, NodeInstanceTitle =. title),
                                            (url /= nodeInstanceUrl ins, NodeInstanceUrl =. url),
                                            (time /= nodeInstanceTime ins, NodeInstanceTime =. time),
                                            (nodeTypeId /= nodeInstanceNodeTypeId ins, NodeInstanceNodeTypeId =. nodeTypeId)]
 
-  if trace ("\tupdatePlan length: " ++ (show $ length updatePlan)) (length updatePlan) > 0
-    then update relId updatePlan
-    else return ()
+  mIns <- if length updatePlan > 0
+            then do
+              update relId updatePlan
+              get relId
+            else
+              return $ Just ins
 
-  return (Entity relId ins)
+  return (Entity relId $ fromJust mIns)
 
   --mInstance <- get relId
 

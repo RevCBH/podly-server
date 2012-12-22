@@ -159,6 +159,7 @@ app.directive 'inPlace', ($parse) ->
           setTimeout (-> inputElement.focus()), 0
 
         scope.endEditing = (revert=false) ->
+          return unless scope.isEditing
           if revert
             scope.model = JSON.parse originalValue
           else
@@ -310,8 +311,14 @@ class ModelWrapper
   @attr = (a...) -> @attrs = (@attrs || []).concat(a)
 
   constructor: (@model) -> @loadAttrs()
-  loadAttrs: -> @[a] = (@model[a] || null) for a in @constructor.attrs
-  storeAttrs: -> @model[a] = (@[a] || null) for a in @constructor.attrs
+
+  getAttrs: => @__proto__.constructor.attrs
+
+  defaultNull = (x) ->
+    if _.isNull(x) or _.isUndefined(x) then null else x
+
+  loadAttrs: -> @[a] = defaultNull(@model[a]) for a in @getAttrs()
+  storeAttrs: -> @model[a] = defaultNull(@[a]) for a in @getAttrs() # @constructor.attrs
   isValid: (k) ->
     xs = @errors || []
     xs = @errorsFor(k) if k
@@ -322,7 +329,7 @@ class ModelWrapper
 
   toJSON: ->
     res = {}
-    res[a] = @[a] for a in @constructor.attrs
+    res[a] = @[a] for a in @getAttrs()
     return res
 
 class NodeRowWrapper extends ModelWrapper
@@ -374,8 +381,13 @@ class NodeRowWrapper extends ModelWrapper
       console.log "update->cmdSetNodeInstance"
       q = @$http.post("%{cmdSetNodeInstance}", [@episode._id, @toJSON()])
       # TODO - result handling
-      q.success (data) -> console.log "update/success:", data
-      q.error -> console.log "update/error"
+      q.success (data) =>
+        for a in @getAttrs()
+          console.log "\t#{a}: #{data[a]}"
+          @model[a] = data[a]
+        @loadAttrs()
+        console.log "update/success:", data
+      q.error => console.log "update/error"
 
   revert: @loadAttrs
 
