@@ -28,14 +28,15 @@ app.service 'mediaService', () ->
     else
       jQuery """<div>Invalid media source</div>"""
 
-return ($scope, $routeParams, $http, mediaService) ->
-  $scope.episode =
-    _id: null
-    podcast: $routeParams.podcastName
-    airDate: null
-    searchSlug: null
-    duration: null
-    published: false
+return ($scope, $routeParams, $http, mediaService, EpisodeDoc) ->
+  $scope.episode = new EpisodeDoc(podcast: $routeParams.podcastName)
+  window.sc = $scope
+    # _id: null
+    # podcast: $routeParams.podcastName
+    # airDate: null
+    # searchSlug: null
+    # duration: null
+    # published: {"Draft": []}
 
   $scope.mediaSource = ""
 
@@ -49,9 +50,16 @@ return ($scope, $routeParams, $http, mediaService) ->
     ($ 'input').attr 'disabled', 'disabled'
     ($ 'button[type=submit]').attr 'disabled', 'disabled'
 
-    q = $http.post("%{cmdCreateEpisode}", $scope.episode)
+    console.log $scope.episode
+    # $scope.episode.
+
+    q = $http.post("%{cmdCreateEpisode}", $scope.episode.toJSON())
     q.success (data) ->
+      console.log "submit/success:", data
       window.location.hash = "#/podcasts/#{$routeParams.podcastName}/episodes/#{data.number}"
+    q.error ->
+      console.log "submit/error"
+
 
     # $http.post("%{cmdSum}", [1, 2]).success (data) ->
       # console.log "+:", data

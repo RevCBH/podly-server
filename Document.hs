@@ -61,6 +61,7 @@ data EpisodeDocument = DocEpisode {
   docEpisodeTitle :: Text,
   docEpisodeSearchSlug :: Maybe Text,
   docEpisodeDuration :: Maybe Int,
+  docEpisodePublished :: PublishedState,
   docEpisodeMediaSources :: [MediaSourceDocument],
   docEpisodeNodes :: [NodeDocument]
 } deriving (Show, Generic)
@@ -88,13 +89,13 @@ documentFromMediaSource (Entity tid (MediaSource _ kind offset url)) = do
 
 --documentFromEpisode :: PersistQuery backend m => Entity (EpisodeGeneric backend) -> backend m EpisodeDocument
 documentFromEpisode episode = do
-  let Entity tid (Episode podcast title number slug airDate _ duration) = episode
+  let Entity tid (Episode podcast title number slug airDate published duration) = episode
   instancesWithIds <- selectList [NodeInstanceEpisodeId ==. tid] [Asc NodeInstanceTime]
   mNodes <- mapM (runMaybeT . documentFromNodeInstance) instancesWithIds
   nodes <- filterM (return . isJust) mNodes
   justNodes <- mapM (return . fromJust) nodes
   mediaSources <- mapM (return . documentFromMediaSource) =<< selectList [MediaSourceEpisodeId ==. tid] []
-  return $ DocEpisode (Just tid) podcast number airDate title slug duration mediaSources justNodes
+  return $ DocEpisode (Just tid) podcast number airDate title slug duration published mediaSources justNodes
 
 --nodeTypeIdFromDoc :: NodeTypeDocument -> DBKey NodeTypeGeneric
 nodeTypeIdFromDoc doc = do
@@ -126,7 +127,7 @@ nodeInstanceIdFromNodeInEpisode time title url episodeId nodeTypeId = do
 episodeAndIdFromDoc :: PersistUnique backend m =>
   EpisodeDocument
   -> backend m (Key backend (EpisodeGeneric backend), EpisodeGeneric backend)
-episodeAndIdFromDoc (DocEpisode _ podcast number airDate title slug duration _ _) = do
+episodeAndIdFromDoc (DocEpisode _ podcast number airDate title slug duration published _ _) = do
   mPodcast <- getBy $ UniquePodcastName podcast
   case mPodcast of
     Nothing -> do
@@ -137,7 +138,7 @@ episodeAndIdFromDoc (DocEpisode _ podcast number airDate title slug duration _ _
   mEpisode <- getBy $ UniqueEpisodeNumber podcast number
   case mEpisode of
     Nothing -> do
-      let ep = Episode podcast title number slug airDate True duration
+      let ep = Episode podcast title number slug airDate published duration
       tid <- insert ep
       return (tid, ep)
     Just (Entity tid ep) -> return (tid, ep)

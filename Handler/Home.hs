@@ -102,7 +102,8 @@ handleAdminR = do
       doc <- runDB $ documentFromEpisode (Entity tid episode)
       return doc
 
-    $(addLib "format")
+    $(addLib "filters")
+    $(addLib "models")
 
     $(addCtrl "/podcasts" "podcastIndex")
     $(addCtrl "/podcasts/:podcastName" "showPodcast")

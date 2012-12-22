@@ -1,4 +1,4 @@
-app = angular.module('format', [])
+app = angular.module('filters', [])
 
 app.filter 'formatOffset', -> (input) ->
   n = parseInt input
