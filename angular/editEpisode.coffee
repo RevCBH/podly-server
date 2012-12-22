@@ -77,6 +77,7 @@ InPlaceEditor = (scope) ->
     scope.isEditing = true
 
   @endEditing = (save=true) =>
+    return unless scope.isEditing
     unless save
       @setter (JSON.parse originalValue)
     else
@@ -351,7 +352,7 @@ class NodeRowWrapper extends ModelWrapper
     @isValid()
 
   invalidNodeType: ->
-    x = _(@errors || []).find (x) -> x?.nodeType?.indexOf("Invalid nodeType") == 0
+    x = _(@errors || []).find (x) -> _.isString(x?.nodeType)
     return @nodeType if x
 
   statusFor: (k) =>

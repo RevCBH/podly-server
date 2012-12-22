@@ -27,7 +27,7 @@ handleHomeR = do
   let nodeTypesJson = L8.unpack $ encode $ map documentFromNodeType nodeTypes
 
   runNgModule (Just "playerMod") $ do
-    let angularMessage = "Angular" :: String
+    $(addLib "filters")
     $(addCtrl "/player/:podcastName/:episodeNumber" "player")
 
     setDefaultRoute $ pack $ "/player/The Joe Rogan Experience/" ++ (show $ episodeNumber episode)
