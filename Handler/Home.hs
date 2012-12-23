@@ -62,11 +62,14 @@ tryInsertNodeType nodeType = do
 
 handleAdminR :: Handler RepHtml
 handleAdminR = do
-  (Entity _ user) <- requireAuth
+  (Entity userId user) <- requireAuth
+  rights <- requirePermissions userId
+
   icons <- runDB $ selectList [] [Asc IconName]
 
   runNgModule (Just "admin") $ do
     cmdCreateEpisode <- addCommand $ \ep -> do
+      requireCreateEpisode rights
       episode <- tryInsertEpisode ep
       return episode
 

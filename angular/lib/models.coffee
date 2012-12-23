@@ -31,7 +31,7 @@ class EpisodeDoc extends ModelBase
     @model.airDate ||= null
     @model.searchSlug ||= null
     @model.duration ||= null
-    @model.published ||= {"Draft": []}
+    @model.published ||= {"StateDraft": []}
     super(@model)
 
 app.constant 'EpisodeDoc', EpisodeDoc

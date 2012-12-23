@@ -2,17 +2,31 @@ User
     ident Text
     password Text Maybe
     UniqueUser ident
+
 Email
     email Text
     user UserId Maybe
     verkey Text Maybe
     UniqueEmail email
 
+Role
+    userId UserId
+    privilege Privilege
+    UniqueRolePerUser userId privilege
+    deriving Show
+
+EpisodeGrant
+    userId UserId
+    privilege Privilege
+    episodeId EpisodeId
+    deriving Show
+
 NodeType
     title Text
     icon Text
     UniqueTypeTitle title
     deriving Show
+
 --Node
 --    title Text
 --    url Text -- TODO - URL datatype?

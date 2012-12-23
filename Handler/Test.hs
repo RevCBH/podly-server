@@ -54,6 +54,21 @@ iconNames = do
         let x' = (x ++ "/")
         return $ map (x' ++ ) files
 
+getFirstRunR :: Handler RepHtml
+getFirstRunR = do
+    mRole <- liftM maybeHead $ runDB $ selectList [RolePrivilege ==. AsAdmin] []
+    case mRole of
+        Just _ -> notFound
+        Nothing -> do
+            (Entity userId user) <- requireAuth
+            runDB $ insert $ Role userId AsAdmin
+            runDB $ insert $ Role userId AsPublisher
+            runDB $ insert $ Role userId AsEditor
+
+            defaultLayout [whamlet|<h1>Granted #{userIdent user} Admin privileges</h1>|]
+  where
+    maybeHead (x:_) = Just x
+    maybeHead _ = Nothing
 
 getNukeR :: Handler RepJson
 getNukeR = do

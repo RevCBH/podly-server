@@ -23,14 +23,23 @@ derivePersistField "MediaKind"
 $(deriveJSON id ''MediaKind)
 
 data PublishedState =
-  Draft
-  | Submitted
-  | Pending
-  | Public
+  StateDraft
+  | StateSubmitted
+  | StatePending
+  | StatePublished
  deriving (Show, Read, Eq, Generic, Enum)
 derivePersistField "PublishedState"
 
 $(deriveJSON id ''PublishedState)
+
+data Privilege =
+  -- | View
+  AsEditor
+  | AsPublisher
+  | AsAdmin
+  deriving (Show, Read, Eq, Ord, Generic, Enum)
+derivePersistField "Privilege"
+$(deriveJSON id ''Privilege)
 
 share [mkPersist sqlSettings, mkMigrate "migrateAll"]
     $(persistFileWith lowerCaseSettings "config/models")

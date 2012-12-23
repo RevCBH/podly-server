@@ -8,6 +8,7 @@
 / HomeR
 
 /reset NukeR GET
+/first-run-setup FirstRunR GET
 
 -- podcasts
 /podcasts PodcastIndexR GET
