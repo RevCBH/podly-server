@@ -35,9 +35,10 @@ $(deriveJSON id ''PublishedState)
 data Privilege =
   -- | View
   AsEditor
+  | AsManager
   | AsPublisher
   | AsAdmin
-  deriving (Show, Read, Eq, Ord, Generic, Enum)
+  deriving (Show, Read, Eq, Generic, Enum)
 derivePersistField "Privilege"
 $(deriveJSON id ''Privilege)
 
@@ -119,3 +120,7 @@ instance ToJSON (Entity Icon) where
   toJSON (Entity _ (Icon name)) = object
     ["name" .= name]
 
+instance ToJSON (Entity User) where
+  toJSON (Entity tid (User ident _)) = object
+    ["_id" .= tid,
+     "identity" .= ident]

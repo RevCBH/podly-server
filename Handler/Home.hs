@@ -6,6 +6,7 @@ import Yesod.Auth
 import Yesod.Angular
 
 import Handler.Util
+import Podly.Auth
 
 import qualified Data.ByteString.Lazy.Char8 as L8
 import qualified Data.Vector as V
@@ -74,11 +75,13 @@ handleAdminR = do
       return episode
 
     cmdSetEpisodeTitle <- addCommand $ \(epId, title) -> do
+      requireEditEpisode rights epId
       runDB $ update epId [EpisodeTitle =. title]
       episode <- runDB $ get404 epId
       return $ Singleton $ episodeTitle episode
 
     cmdSetEpisodeNumber <- addCommand $ \(epId, number) -> do
+      requireEditEpisode rights epId
       runDB $ update epId [EpisodeNumber =. number]
       episode <- runDB $ get404 epId
       return $ Singleton $ episodeNumber episode
@@ -88,22 +91,35 @@ handleAdminR = do
       return $ documentFromNodeType nodeType
 
     cmdDeleteNode <- addCommand $ \(Singleton rel) -> do
-      runDB $ delete (rel :: NodeInstanceId)
+      ins <- runDB $ get404 (rel :: NodeInstanceId)
+      requireEditEpisode rights $ nodeInstanceEpisodeId ins
+      runDB $ delete rel
       return $ Singleton ("OK" :: String)
 
     cmdSetNodeInstance <- addCommand $ \(epId, node) -> do
-      trace ("cmdReplaceNodes " ++ show epId ++ "node:\n" ++ show node) (return ())
+      requireEditEpisode rights epId
       ins <- runDB $ syncInstance epId node
-      trace ("\tgot instance") (return ())
       doc <- runDB $ runMaybeT $ documentFromNodeInstance ins
       return doc
 
     cmdReplaceNodes <- addCommand $ \ep -> do
       (Entity tid _) <- runDB $ getBy404 $ UniqueEpisodeNumber (docEpisodePodcast ep) (docEpisodeNumber ep)
+      requireEditEpisode rights tid
       runDB $ deleteWhere [NodeInstanceEpisodeId ==. tid]
       episode <- runDB $ episodeFromDocument ep
       doc <- runDB $ documentFromEpisode (Entity tid episode)
       return doc
+
+    cmdGrant <- addCommand $ \(userId, perm) ->
+      case perm of
+        HasRole role -> do
+          requireGrant role rights
+          _ <- runDB $ insert $ Role userId role
+          return $ Singleton ("OK" :: String)
+        HasEpisodeGrant epId role -> do
+          requireGrantOnEp role epId rights
+          _ <- runDB $ insert $ EpisodeGrant userId role epId
+          return $ Singleton ("OK" :: String)
 
     $(addLib "filters")
     $(addLib "models")
@@ -112,5 +128,6 @@ handleAdminR = do
     $(addCtrl "/podcasts/:podcastName" "showPodcast")
     $(addCtrl "/podcasts/:podcastName/episodes.new" "newEpisode")
     $(addCtrl "/podcasts/:podcastName/episodes/:episodeNumber" "editEpisode")
+    $(addCtrl "/users" "admin/users/index")
 
     setDefaultRoute "/podcasts"

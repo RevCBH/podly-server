@@ -23,12 +23,12 @@
   <div class="control-group">
     <label class="control-label" for="mediaSource">Media URL
     <div class="controls">
-      <input type="url" id="mediaSource" ng-model="mediaSource">
+      <input type="url" id="mediaSource" ng-model="mediaSourceUrl">
       <div id="player-preview">
 
   <div class="control-group">
     <div class="controls">
-      <button class="btn btn-primary" type="submit">Create
+      <button class="btn btn-primary" type="submit" ng-disabled="!isValid()">Create
 
 <!-- <textarea ng-model="csvData">
 

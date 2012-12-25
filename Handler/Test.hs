@@ -11,25 +11,32 @@ import Text.Coffee (coffeeFile)
 import qualified Data.HashMap.Strict as Map
 import Control.Monad (filterM, liftM, liftM2)
 import Data.List (head)
+--import qualified Data.Map as Map'
 
 import Fixtures
 import Document
 import Handler.Util
+import Podly.Auth
 
 import Yesod.Form.Jquery
 
-import System.Directory
+import System.Directory hiding (getPermissions)
 
-getUsersR :: Handler RepHtml
+getUsersR :: Handler RepJson
 getUsersR = do
+    (Entity userId user) <- requireAuth
+    rights <- requirePermissions userId
+    requireManageUsers rights
     users <- runDB $ selectList [] [Asc UserIdent]
-    let widget = do
-        [whamlet|
-            <ul>
-                $forall Entity tid x <- users
-                    <li>#{userIdent x}
-        |]
-    defaultLayout widget
+    json <- runDB $ mapM userWithPerms users
+
+    jsonToRepJson json
+  where
+    userWithPerms entity@(Entity uid _) = do
+        perms <- getPermissions uid
+        let (Object uJson) = toJSON entity
+        return $ object $ mconcat [Map.toList uJson, ["permissions" .= perms]]
+
 
 postEchoJsonR :: Handler RepJson
 postEchoJsonR = do

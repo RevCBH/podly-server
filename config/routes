@@ -33,4 +33,4 @@
 -- /nodetypes.new NewNodeTypeR GET
 
 -- users
--- /users UsersR GET
+/users UsersR GET

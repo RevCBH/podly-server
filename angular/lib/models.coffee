@@ -21,6 +21,49 @@ class ModelBase
     return res
 app.constant 'ModelBase', ModelBase
 
+class Algebraic
+  constructor: (@$case) ->
+    @[@$case] = []
+
+  @enum = (xs...) -> @case x for x in xs
+  @case = (c) ->
+    @$cases = @$cases || []
+    # TODO - error if dup
+    @$cases.push(c)
+    @[c] = new @(c)
+
+  @deriving = (classes...) ->
+    for c in classes
+      if c.toLowerCase() == 'show'
+        cname = @name
+        @::toString = -> "#{cname}.#{@$case}"
+
+  @fromJSON = (data) ->
+    k = null
+    elem = _(JSON.parse(data))
+    if elem.isObject()
+      k = elem.pairs()[0][0]
+    return @[k] if @[k]
+    # TODO - raise type error
+
+  toJSON: ->
+    x = new @constructor(@$case)
+    delete x.$case
+    x
+
+
+class MediaKind extends Algebraic
+  @enum 'AudioMp3', 'VideoVimeo', 'VideoYouTube'
+  @deriving 'Show'
+
+class Privilege extends Algebraic
+  @enum 'AsEditor', 'AsManager', 'AsPublisher', 'AsAdmin'
+  @deriving 'Show'
+
+class PublishedState extends Algebraic
+  @enum 'StateDraft', 'StateSubmitted', 'StatePending', 'StatePublished'
+  @deriving 'Show'
+
 class EpisodeDoc extends ModelBase
   @attr 'podcast', 'title', 'number', 'searchSlug', 'airDate', 'published', 'duration'
   @attr 'mediaSources', 'nodes'
@@ -31,10 +74,16 @@ class EpisodeDoc extends ModelBase
     @model.airDate ||= null
     @model.searchSlug ||= null
     @model.duration ||= null
-    @model.published ||= {"StateDraft": []}
+    @model.published ||= PublishedState.StateDraft
+    @model.nodes ||= []
     super(@model)
-
 app.constant 'EpisodeDoc', EpisodeDoc
+
+class MediaSourceDoc extends ModelBase
+  @attr 'kind', 'offset', 'resource'
+  constructor: (@model) ->
+    @model.offset ||= 0
+app.constant 'MediaSourceDoc', MediaSourceDoc
 
 class NodeRowWrapper extends ModelBase
   @attr 'title', 'time', 'url', 'nodeType', 'relId'

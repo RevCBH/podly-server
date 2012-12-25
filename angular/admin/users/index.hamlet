@@ -1,0 +1,21 @@
+<div user-list>
+  <h1>Users</h1>
+  <table .table>
+    <thead>
+      <tr>
+        <td>Identity
+        <td>Permissions
+    <tbody>
+      <tr ng-repeat="user in users">
+        <td>{{user.identity}}
+        <td>
+          <ul style="list-style-type: none;">
+            <li ng-repeat="p in user.permissions" style="display: inline-block;">
+              <div ng-show="p.HasRole"
+                   style="background-color: #D0D4DF; margin-right: 12px; margin-bottom: 3px; padding: 4px; border-radius: 4px;">
+                <span class="label label-important">Role
+                <span>{{p.HasRole.permission}}
+              <div ng-show="p.HasEpisodeGrant"
+                   style="background-color: #D0D4DF; margin-right: 12px; margin-bottom: 5px; padding: 4px; border-radius: 4px;">
+                <span class="label label-info">Grant
+                <span>on {{p.HasEpisodeGrant.episodeId}} {{p.HasEpisodeGrant.permission}}
