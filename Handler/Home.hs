@@ -123,6 +123,7 @@ handleAdminR = do
 
     $(addLib "filters")
     $(addLib "models")
+    $(addLib "media")
 
     $(addCtrl "/podcasts" "podcastIndex")
     $(addCtrl "/podcasts/:podcastName" "showPodcast")

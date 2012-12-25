@@ -44,7 +44,7 @@ import GHC.Base
 
 class Yesod master => YesodAngular master where
     urlAngularJs :: master -> Either (Route master) Text
-    urlAngularJs _ = Right "//ajax.googleapis.com/ajax/libs/angularjs/1.0.2/angular.min.js"
+    urlAngularJs _ = Right "//ajax.googleapis.com/ajax/libs/angularjs/1.0.3/angular.js"
 
     wrapAngular :: Text -> GWidget sub master () -> GHandler sub master RepHtml
     wrapAngular modname widget = defaultLayout [whamlet|<div ng-app=#{modname}>^{widget}|]
