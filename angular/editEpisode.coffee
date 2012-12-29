@@ -104,8 +104,8 @@ app.directive 'nodeTypeSelect', (dataService, $parse, $timeout) ->
   template: """
     <div class="in-place-wrapper" style="min-width: 86px;">
       <input type=text class="in-place-input" ng-show=isEditing ng-model=nodeTypeTitle style="width: 72px; margin-left: 0px;">
-      <span class="in-place-display" ng-hide=isEditing ng-click='beginEditing()'>
-        <a style="margin-left: 7px;">{{model.title || model || '&lt;none&gt;'}}</a>
+      <span class="in-place-display" ng-hide=isEditing>
+        <a ng-click='beginEditing()' style="margin-left: 7px;">{{model.title || model || '&lt;none&gt;'}}</a>
       </span>
       <span ng-transclude></span>
     </div>
@@ -146,10 +146,11 @@ app.directive 'inPlace', ($parse) ->
     scope:
       model: '='
     compile: (tElement, tAttrs, transclude) ->
+      console.log "compile inPlace editor"
       inputTemplate = """<div class='in-place-input' ng-show=isEditing ng-transclude></div>"""
       previewTemplate = """
-        <span class='in-place-display' ng-hide=isEditing ng-click='beginEditing()'>
-          <a>{{model || '&lt;none&gt;'}}</a>
+        <span class='in-place-display' ng-hide=isEditing>
+          <a ng-click='beginEditing()'>{{model || '&lt;none&gt;'}}</a>
         </span>"""
 
       # tElement.html "<div class='in-place-wrapper'></div>"
@@ -162,7 +163,9 @@ app.directive 'inPlace', ($parse) ->
         onUpdate = $parse(attrs.onUpdate)
 
         scope.isEditing = false
+        console.log "setup beginEditing"
         scope.beginEditing = ->
+          console.log "beginEditing"
           originalValue = JSON.stringify scope.model
           scope.isEditing = true
           setTimeout (-> inputElement.focus()), 0
