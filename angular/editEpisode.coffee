@@ -412,22 +412,23 @@ class MediaPlayer
     console.log "loadVimeoPlayer:", resource, @container, @scope
     vimeoUrl = "http://player.vimeo.com/video/#{resource}?api=1&amp;player_id=vimeo-player"
     key = "vimeo-#{resource}"
-    console.log "players:", window.players
-    unless window.players[key]
-      jqElem = jQuery """<iframe podly-vimeo id="vimeo-player" src="#{vimeoUrl}" width="640" height="360" frameborder="0" webkitAllowFullScreen mozallowfullscreen allowFullScreen>"""
-      plr = $f(jqElem[0])
-      window.players[key] = [plr, jqElem]
-      # $('body').append jqElem
-      plr.addEvent 'ready', =>
-        console.log 'ready for realzies'
-        plr.addEvent 'playProgress', (data, id) =>
-          console.log "player played:", data
-          try
-            @scope.$apply "time = #{data.seconds}"
-          catch error
-            console.log "\terror on $apply:", error
+    # console.log "players:", window.players
+    # unless window.players[key]
+    jqElem = jQuery """<iframe podly-vimeo id="vimeo-player" src="#{vimeoUrl}" width="640" height="360" frameborder="0" webkitAllowFullScreen mozallowfullscreen allowFullScreen>"""
+    plr = $f(jqElem[0])
+    @scope.player = plr
+    # window.players[key] = [plr, jqElem]
+    # $('body').append jqElem
+    plr.addEvent 'ready', =>
+      console.log 'ready for realzies'
+      plr.addEvent 'playProgress', (data, id) =>
+        console.log "player played:", data
+        try
+          @scope.$apply "time = #{data.seconds}"
+        catch error
+          console.log "\terror on $apply:", error
 
-    [plr, jqElem] = window.players[key]
+    # [plr, jqElem] = window.players[key]
     @container.html jqElem
 
     # console.log "loadVimeoPlayer:", @scope, @container
@@ -485,11 +486,12 @@ class MediaPlayer
 #     target.html jqElem
 #   return this
 
-return ($scope, $routeParams, $http, nodeCsvParser, $compile) ->
+return ($scope, $routeParams, $http, nodeCsvParser, $compile, PublishedState) ->
   window.sc = $scope
   $scope.csvData = null
 
   window.http = NodeRowWrapper::$http = $http # HACK
+  window.ps = PublishedState
 
   $scope.mediaPlayer = new MediaPlayer($('#videoContainerCell'), $scope)
 

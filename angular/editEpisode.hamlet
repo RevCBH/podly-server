@@ -19,6 +19,11 @@
             <i ng-class="{'icon-play': !isPlaying, 'icon-pause': isPlaying}"></i>
           <button class="btn btn-mini" ng-click="seek(time + 5)">
             <i class="icon-forward"></i>
+    <ul class="nav nav-pills nav-stacked well well-small" style="min-width: 100px; background-color: white;">
+      <li>Publishing
+      <li style="text-align: center;">
+        <button ng-show="episode.published == PublishedState.StateDraft" class="btn btn-success" ng-click>
+          Submit
 
 
 

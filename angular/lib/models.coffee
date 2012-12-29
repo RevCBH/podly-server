@@ -40,7 +40,8 @@ class Algebraic
 
   @fromJSON = (data) ->
     k = null
-    elem = _(JSON.parse(data))
+    elem = _(data)
+    elem = _(JSON.parse(data)) if _.isString(data)
     if elem.isObject()
       k = elem.pairs()[0][0]
     return @[k] if @[k]
@@ -63,6 +64,8 @@ class Privilege extends Algebraic
 class PublishedState extends Algebraic
   @enum 'StateDraft', 'StateSubmitted', 'StatePending', 'StatePublished'
   @deriving 'Show'
+app.constant 'PublishedState', PublishedState
+# app.constant 'StateDraft', StateDraft
 
 class EpisodeDoc extends ModelBase
   @attr 'podcast', 'title', 'number', 'searchSlug', 'airDate', 'published', 'duration'
@@ -74,7 +77,11 @@ class EpisodeDoc extends ModelBase
     @model.airDate ||= null
     @model.searchSlug ||= null
     @model.duration ||= null
-    @model.published ||= PublishedState.StateDraft
+    console.log "published:", @model.published
+    if @model.published
+      @model.published = PublishedState.fromJSON @model.published
+    else
+      @model.published = PublishedState.StateDraft
     @model.nodes ||= []
     super(@model)
 app.constant 'EpisodeDoc', EpisodeDoc

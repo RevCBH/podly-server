@@ -105,6 +105,12 @@ instance Yesod App where
     -- users receiving stale content.
     addStaticContent = addStaticContentExternal minifym base64md5 Settings.staticDir (StaticR . flip StaticRoute [])
 
+    -- Skip minification, TODO make active in debug mode
+    --addStaticContent =
+    --    addStaticContentExternal nominify base64md5 Settings.staticDir (StaticR . flip StaticRoute [])
+    --  where
+    --    nominify = Right . id
+
     -- Place Javascript at bottom of the body tag so the rest of the page loads first
     jsLoader _ = BottomOfBody
 
@@ -144,8 +150,9 @@ instance YesodAuth App where
 
     authHttpManager = httpManager
 
-instance YesodAngular App --where
-    --urlAngularJs _ = Left $ StaticR $ StaticRoute ["angular", "angular.min.js"] []
+instance YesodAngular App where
+    --urlAngularJs _ = Left $ StaticR $ StaticRoute ["angular", "angular.js"] []
+    urlAngularJs _ = Left $ StaticR $ StaticRoute ["js", "angular.js"] []
 
 type Angular = GAngular App App ()
 
