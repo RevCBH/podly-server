@@ -83,6 +83,7 @@ InPlaceEditor = (scope) ->
   scope.beginEditing = =>
     originalValue = JSON.stringify @getter(scope)
     scope.isEditing = true
+    @onBeginEditing() if @onBeginEditing
 
   @endEditing = (save=true) =>
     return unless scope.isEditing
@@ -126,12 +127,14 @@ app.directive 'nodeTypeSelect', (dataService, $parse, $timeout) ->
       @setter(scope.nodeTypeTitle)
       # ISSUE, HACK - why do we need to defer this?
       $timeout -> $parse(attrs.onUpdate)(scope.$parent)
+    ipe.onBeginEditing = -> setTimeout (-> inputElement.focus()), 0
 
     scope.nodeTypeTitle = ipe.getter()
     scope.save = -> ipe.endEditing(true)
     scope.revert = -> ipe.endEditing(false)
 
-    inputElement.blur = -> scope.$apply -> scope.save()
+    inputElement.blur ->
+      scope.$apply -> scope.save()
 
     inputElement.keydown (event) ->
       endWithSave = (s) ->
