@@ -130,7 +130,6 @@ app.directive 'inPlace', ($parse) ->
     scope:
       model: '='
     compile: (tElement, tAttrs, transclude) ->
-      console.log "compile inPlace editor"
       inputTemplate = """<div class='in-place-input' ng-show=isEditing ng-transclude></div>"""
       previewTemplate = """
         <span class='in-place-display' ng-hide=isEditing>
@@ -147,9 +146,7 @@ app.directive 'inPlace', ($parse) ->
         onUpdate = $parse(attrs.onUpdate)
 
         scope.isEditing = false
-        console.log "setup beginEditing"
         scope.beginEditing = ->
-          console.log "beginEditing"
           originalValue = JSON.stringify scope.model
           scope.isEditing = true
           setTimeout (-> inputElement.focus()), 0
@@ -365,22 +362,18 @@ class NodeRowWrapper extends ModelWrapper
     return xs
 
   update: =>
-    console.log "update"
     @validate()
     @storeAttrs()
     # HACK - clear stuck popups on update...
     $('td div.popover-thunk + .popover').prev().popover('destroy')
     window.x = this
     if @isValid()
-      console.log "update->cmdSetNodeInstance"
       q = @$http.post("%{cmdSetNodeInstance}", [@episode._id, @toJSON()])
       # TODO - result handling
       q.success (data) =>
         for a in @getAttrs()
-          console.log "\t#{a}: #{data[a]}"
           @model[a] = data[a]
         @loadAttrs()
-        console.log "update/success:", data
       q.error => console.log "update/error"
 
   revert: @loadAttrs
@@ -512,7 +505,7 @@ return ($scope, $routeParams, $http, nodeCsvParser, $compile, PublishedState, Me
       for k in ks
         delete x[k] if k.indexOf('$') == 0 || k == 'notes'
 
-    console.log "\tsending ep:", JSON.parse JSON.stringify(ep)
+    # console.log "\tsending ep:", JSON.parse JSON.stringify(ep)
     window.ep = ep
 
     q = $http.post("%{cmdReplaceNodes}", ep)
@@ -521,11 +514,9 @@ return ($scope, $routeParams, $http, nodeCsvParser, $compile, PublishedState, Me
       $scope.nodeParseResults = originalResults
 
   $scope.submitEpisode = ->
-    console.log "submit ep:"
     $scope.episode.published = PublishedState.StateSubmitted
     q = $http.post("%{cmdSubmitForReview}", [$scope.episode._id])
     q.success (data) ->
-      console.log "success"
       # HACK - should be integrated to model
       data.published = PublishedState.fromJSON(data.published)
       # END HACK
@@ -539,12 +530,9 @@ return ($scope, $routeParams, $http, nodeCsvParser, $compile, PublishedState, Me
     p.api 'seekTo', time
     p.api 'play'
 
-  $scope.play = -> guardPlayer (p) ->
-    console.log "play:", p
-    p.api 'play'
+  $scope.play = -> guardPlayer (p) -> p.api 'play'
 
-  $scope.pause = -> guardPlayer (p) ->
-    p.api 'pause'
+  $scope.pause = -> guardPlayer (p) -> p.api 'pause'
 
   $scope.togglePlay = ->
     if $scope.isPlaying

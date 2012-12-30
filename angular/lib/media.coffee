@@ -44,14 +44,17 @@ app.service 'mediaService', (MediaKind) ->
       """<div>Invalid media source</div>"""
 
 class MediaPlayer
-  constructor: (@container, @scope, @width=640, @height=360) ->
+  @__plr_id = 0
+  constructor: (@container, @scope, @autoplay=false, @width=640, @height=360) ->
     @player = null
 
   loadVimeoPlayer: (resource) ->
-    vimeoUrl = "http://player.vimeo.com/video/#{resource}?api=1&amp;player_id=vimeo-player"
+    plrId = "vimeo-player-#{@constructor.__plr_id++}"
+    vimeoUrl = "http://player.vimeo.com/video/#{resource}?api=1&amp;player_id=#{plrId}"
     key = "vimeo-#{resource}"
-    jqElem = jQuery """<iframe podly-vimeo id="vimeo-player" src="#{vimeoUrl}" width="#{@width}" height="#{@height}" frameborder="0" webkitAllowFullScreen mozallowfullscreen allowFullScreen>"""
-    plr = $f(jqElem[0])
+    jqElem = jQuery """<iframe podly-vimeo id="#{plrId}" src="#{vimeoUrl}" width="#{@width}" height="#{@height}" frameborder="0" webkitAllowFullScreen mozallowfullscreen allowFullScreen>"""
+    @container.html jqElem
+    plr = $f(plrId)
     @player = @scope.player = plr
 
     plr.addEvent 'ready', =>
@@ -60,7 +63,9 @@ class MediaPlayer
       setStopped = => @scope.$apply "isPlaying = false"
       plr.addEvent 'pause', setStopped
       plr.addEvent 'finish', setStopped
-    @container.html jqElem
+
+      if @autoplay
+        setTimeout (-> plr.api 'play'), 0
 
 app.constant 'MediaPlayer', MediaPlayer
 
