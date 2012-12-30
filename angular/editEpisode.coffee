@@ -14,30 +14,6 @@ app.directive 'stickyBits', ->
         sticky.removeClass('stuck')
         anchor.removeClass('active')
 
-app.directive 'podlyVimeo', ->
-  console.log 'podlyVimeo'
-  (scope, element, attrs) ->
-    console.log 'podlyVimeo all up in this:', scope
-    scope.time = 0
-    scope.isPlaying = false
-    scope.player = $f 'vimeo-player'
-    console.log "got player:", scope.player
-    scope.player.addEvent 'ready', (x) ->
-      console.log "player READY"
-      scope.player.addEvent 'playProgress', (data, id) ->
-        console.log "player played:", data
-        scope.$apply "time = #{data.seconds}"
-
-      scope.player.addEvent 'play', ->
-        console.log "player play"
-        scope.$apply "isPlaying = true"
-      setStopped = ->
-        console.log "player stopped"
-        scope.$apply "isPlaying = false"
-      scope.player.addEvent 'pause', setStopped
-      scope.player.addEvent 'finish', setStopped
-      console.log "player wired"
-
 app.directive 'episodeEditor', ($routeParams, $http, dataService, $compile)->
   (scope, element, attrs) ->
     # req.error -> TODO - something reasonable
@@ -406,91 +382,27 @@ class NodeRowWrapper extends ModelWrapper
 
   isNew: => @model._id
 
-# HACK
-window.players = {}
 class MediaPlayer
   # @players = {}
-
   constructor: (@container, @scope) ->
     @player = null
 
   loadVimeoPlayer: (resource) ->
-    console.log "loadVimeoPlayer:", resource, @container, @scope
     vimeoUrl = "http://player.vimeo.com/video/#{resource}?api=1&amp;player_id=vimeo-player"
     key = "vimeo-#{resource}"
-    # console.log "players:", window.players
     # unless window.players[key]
     jqElem = jQuery """<iframe podly-vimeo id="vimeo-player" src="#{vimeoUrl}" width="640" height="360" frameborder="0" webkitAllowFullScreen mozallowfullscreen allowFullScreen>"""
     plr = $f(jqElem[0])
     @scope.player = plr
     # window.players[key] = [plr, jqElem]
-    # $('body').append jqElem
     plr.addEvent 'ready', =>
-      console.log 'ready for realzies'
-      plr.addEvent 'playProgress', (data, id) =>
-        console.log "player played:", data
-        try
-          @scope.$apply "time = #{data.seconds}"
-        catch error
-          console.log "\terror on $apply:", error
-
+      plr.addEvent 'playProgress', (data, id) => @scope.$apply "time = #{data.seconds}"
+      plr.addEvent 'play', => @scope.$apply "isPlaying = true"
+      setStopped = => @scope.$apply "isPlaying = false"
+      plr.addEvent 'pause', setStopped
+      plr.addEvent 'finish', setStopped
     # [plr, jqElem] = window.players[key]
     @container.html jqElem
-
-    # console.log "loadVimeoPlayer:", @scope, @container
-    # vimeoUrl = "http://player.vimeo.com/video/#{resource}?api=1&amp;player_id=vimeo-player"
-    # if @constructor.players["vimeo-#{resource}"]
-    #   console.log "baleeted"
-    #   delete @constructor.players["vimeo-#{resource}"][1]
-    #   @container.html("<div></div>")
-    #   jqElem = jQuery """<iframe podly-vimeo id="vimeo-player" src="#{vimeoUrl}" width="640" height="360" frameborder="0" webkitAllowFullScreen mozallowfullscreen allowFullScreen>"""
-    #   @constructor.players["vimeo-#{resource}"][1] = jqElem
-    #   @constructor.players["vimeo-#{resource}"][1].element = jqElem[0]
-    #   console.log "fuck my life"
-
-    # unless @constructor.players["vimeo-#{resource}"]
-    #   jqElem = jQuery """<iframe podly-vimeo id="vimeo-player" src="#{vimeoUrl}" width="640" height="360" frameborder="0" webkitAllowFullScreen mozallowfullscreen allowFullScreen>"""
-    #   plr = $f(jqElem[0])
-    #   @constructor.players["vimeo-#{resource}"] = [plr, jqElem]
-
-    # [p, elem] = @constructor.players["vimeo-#{resource}"]
-    # # @player = p
-    # @container.html(elem)
-    # # @player = $f(@player[0])
-    # p.addEvent 'ready', =>
-    #   console.log "player READY"
-    #   p.addEvent 'playProgress', (data, id) =>
-    #     console.log "player played:", data
-    #     @scope.$apply "time = #{data.seconds}"
-
-      # scope.player.addEvent 'play', ->
-      #   console.log "player play"
-      #   scope.$apply "isPlaying = true"
-      # setStopped = ->
-      #   console.log "player stopped"
-      #   scope.$apply "isPlaying = false"
-      # scope.player.addEvent 'pause', setStopped
-      # scope.player.addEvent 'finish', setStopped
-
-# app.factory 'mediaService', ->
-#   @loadVimeoPlayer = (resource, target) ->
-#     console.log "loadVimeoPlayer:", resource, target
-#     vimeoUrl = "http://player.vimeo.com/video/#{resource}?api=1&amp;player_id=vimeo-player"
-#     key = "vimeo-#{resource}"
-#     console.log "players:", window.players
-#     unless window.players[key]
-#       jqElem = jQuery """<iframe podly-vimeo id="vimeo-player" src="#{vimeoUrl}" width="640" height="360" frameborder="0" webkitAllowFullScreen mozallowfullscreen allowFullScreen>"""
-#       plr = $f(jqElem[0])
-#       window.players[key] = [plr, jqElem]
-#       $('body').append jqElem
-#       plr.addEvent 'ready', ->
-#         console.log 'ready for realzies'
-#         plr.addEvent 'playProgress', (data, id) ->
-#           console.log "player played:", data
-
-#     [plr, jqElem] = window.players[key]
-#     target.html jqElem
-#   return this
 
 return ($scope, $routeParams, $http, nodeCsvParser, $compile, PublishedState) ->
   window.sc = $scope
