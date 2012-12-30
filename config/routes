@@ -7,7 +7,7 @@
 /admin AdminR
 / HomeR
 
-/reset NukeR GET
+-- /reset NukeR GET
 /first-run-setup FirstRunR GET
 
 -- podcasts

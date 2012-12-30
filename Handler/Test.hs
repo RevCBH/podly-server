@@ -67,6 +67,11 @@ getFirstRunR = do
     case mRole of
         Just _ -> notFound
         Nothing -> do
+            runDB $ do
+                deleteWhere ([] :: [Filter Icon])
+                xs <- liftIO iconNames
+                mapM_ insert $ map Icon xs
+
             (Entity userId user) <- requireAuth
             runDB $ insert $ Role userId AsAdmin
             runDB $ insert $ Role userId AsPublisher
