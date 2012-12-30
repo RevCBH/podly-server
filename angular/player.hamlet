@@ -9,8 +9,7 @@
     <!--Video Container-->
     <div id="videoContainer">
       <tr>
-        <td>
-          <iframe id="vimeo-player" src="http://player.vimeo.com/video/51488504?api=1&amp;player_id=vimeo-player" width="640" height="360" frameborder="0" webkitAllowFullScreen mozallowfullscreen allowFullScreen>
+        <td id="videoContainerCell">
     <!--End Video Container-->
     <!--List Controls Top-->
       <tr>

@@ -26,7 +26,6 @@ return ($scope, $routeParams, $http, mediaService, EpisodeDoc) ->
     # END HACK
     q = $http.post(cmd, $scope.episode.toJSON())
     q.success (data) ->
-      console.log "submit/success:", data
       window.location.hash = "#/podcasts/#{$routeParams.podcastName}/episodes/#{data.number}"
     q.error ->
       console.log "submit/error"

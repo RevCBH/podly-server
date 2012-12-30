@@ -387,29 +387,7 @@ class NodeRowWrapper extends ModelWrapper
 
   isNew: => @model._id
 
-class MediaPlayer
-  # @players = {}
-  constructor: (@container, @scope) ->
-    @player = null
-
-  loadVimeoPlayer: (resource) ->
-    vimeoUrl = "http://player.vimeo.com/video/#{resource}?api=1&amp;player_id=vimeo-player"
-    key = "vimeo-#{resource}"
-    # unless window.players[key]
-    jqElem = jQuery """<iframe podly-vimeo id="vimeo-player" src="#{vimeoUrl}" width="640" height="360" frameborder="0" webkitAllowFullScreen mozallowfullscreen allowFullScreen>"""
-    plr = $f(jqElem[0])
-    @scope.player = plr
-    # window.players[key] = [plr, jqElem]
-    plr.addEvent 'ready', =>
-      plr.addEvent 'playProgress', (data, id) => @scope.$apply "time = #{data.seconds}"
-      plr.addEvent 'play', => @scope.$apply "isPlaying = true"
-      setStopped = => @scope.$apply "isPlaying = false"
-      plr.addEvent 'pause', setStopped
-      plr.addEvent 'finish', setStopped
-    # [plr, jqElem] = window.players[key]
-    @container.html jqElem
-
-return ($scope, $routeParams, $http, nodeCsvParser, $compile, PublishedState) ->
+return ($scope, $routeParams, $http, nodeCsvParser, $compile, PublishedState, MediaPlayer) ->
   window.sc = $scope
   $scope.csvData = null
 

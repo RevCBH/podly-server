@@ -46,6 +46,27 @@ app.service 'mediaService', () ->
     else
       """<div>Invalid media source</div>"""
 
+class MediaPlayer
+  constructor: (@container, @scope, @width=640, @height=360) ->
+    @player = null
+
+  loadVimeoPlayer: (resource) ->
+    vimeoUrl = "http://player.vimeo.com/video/#{resource}?api=1&amp;player_id=vimeo-player"
+    key = "vimeo-#{resource}"
+    jqElem = jQuery """<iframe podly-vimeo id="vimeo-player" src="#{vimeoUrl}" width="#{@width}" height="#{@height}" frameborder="0" webkitAllowFullScreen mozallowfullscreen allowFullScreen>"""
+    plr = $f(jqElem[0])
+    @player = @scope.player = plr
+
+    plr.addEvent 'ready', =>
+      plr.addEvent 'playProgress', (data, id) => @scope.$apply "time = #{data.seconds}"
+      plr.addEvent 'play', => @scope.$apply "isPlaying = true"
+      setStopped = => @scope.$apply "isPlaying = false"
+      plr.addEvent 'pause', setStopped
+      plr.addEvent 'finish', setStopped
+    @container.html jqElem
+
+app.constant 'MediaPlayer', MediaPlayer
+
 # app.directive 'podlyPlayer', () ->
 #   initVimeoPlayer = (scope) ->
 #     scope.player = $f 'vimeo-player'

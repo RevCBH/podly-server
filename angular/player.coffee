@@ -46,11 +46,11 @@ app.service 'scrollManager', () ->
 
 app.directive 'podlyVimeo', ($http) ->
   (scope, element, attrs) ->
-    scope.player = $f 'vimeo-player'
-    scope.player.addEvent 'ready', (x) ->
-      scope.player.addEvent 'playProgress', (data, id) ->
-        scope.$apply "time = #{data.seconds}"
-      scope.play()
+    # scope.player = $f 'vimeo-player'
+    # scope.player.addEvent 'ready', (x) ->
+    #   scope.player.addEvent 'playProgress', (data, id) ->
+    #     scope.$apply "time = #{data.seconds}"
+    #   scope.play()
 
     scope.episodePages =
       current: 1
@@ -74,13 +74,20 @@ app.filter 'range', ->
     end = parseInt(end)
     num for num in [start..end]
 
-return ($scope, $routeParams, $http, scrollManager) ->
+return ($scope, $routeParams, $http, scrollManager, MediaPlayer, PublishedState) ->
   window.sc = $scope
   window.sm = scrollManager
-  # $scope.episode = %{epJson}
+
+  $scope.mediaPlayer = new MediaPlayer($('#videoContainerCell'), $scope)
   $scope.episode = {title: "loading...", number: $routeParams.episodeNumber}
+
   q = $http.get "/podcasts/#{$routeParams.podcastName}/episodes/#{$routeParams.episodeNumber}"
-  q.success (data) -> $scope.episode = data
+  q.success (data) ->
+    # HACK - should be integrated to model
+    data.published = PublishedState.fromJSON(data.published)
+    # END HACK
+    $scope.episode = data
+    $scope.mediaPlayer.loadVimeoPlayer(data.mediaSources[0].resource, $('#videoContainerCell'))
 
   scrollManager.watch (jQuery '#listOfNodes')
 
