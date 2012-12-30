@@ -47,7 +47,12 @@ app.directive 'episodeEditor', ($routeParams, $http, dataService, $compile)->
         _(scope.nodeParseResults).each (x) ->
           if _.isString(x.node.nodeType) && (x.node.nodeType.toLowerCase() == scope.originalNewNodeTitle.toLowerCase())
             x.node.nodeType = data
-          x.validate()
+            x.validate()
+        # TODO - unify with nodeParseResults
+        _(scope.nodeRows).each (x) ->
+          if _.isString(x.nodeType) && (x.nodeType.toLowerCase() == scope.originalNewNodeTitle.toLowerCase())
+            x.nodeType = data
+            x.update()
         cleanup()
       q.error ->
         cleanup()
