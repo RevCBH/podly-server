@@ -15,7 +15,7 @@
     <!--List Controls Top-->
       <tr>
         <td id="listControlTop">
-          <a class="btn" ng-click="scrollToCurrent()" ng-hide="shouldHideSnapButton()">{{currentNodeTitle()}}
+          <a class="btn btn-small" ng-click="scrollToCurrent()" ng-hide="shouldHideSnapButton()">{{currentNodeTitle()}}
 
           <form class="navbar-search pull-right">
             <input type="text" class="search-query" placeholder="Search this episode" ng-model="nodeFilter">
@@ -33,7 +33,7 @@
             <div class="playTime">
               <!--Button -->
               <div class="playButton">
-                <button type="submit" class="btn" ng-click="seek(node.time)">
+                <button type="submit" class="btn btn-mini" ng-click="seek(node.time)">
                   <i class="icon-play icon-black">
 
               <!--Time Test-->
