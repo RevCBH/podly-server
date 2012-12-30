@@ -4,7 +4,7 @@ module Handler.Episode where
 import Import
 import Handler.Util
 
-import Data.Aeson (Result(..), FromJSON(..), fromJSON)
+import Data.Aeson (Result(..), FromJSON(..), fromJSON, ToJSON(..))
 import Data.Aeson.TH (deriveJSON)
 import Data.Maybe
 import Data.Time(Day, UTCTime(..), secondsToDiffTime)
