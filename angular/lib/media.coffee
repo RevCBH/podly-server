@@ -7,12 +7,9 @@ app = angular.module('media', ['models'])
 
 #     """<iframe podly-vimeo id="vimeo-player" src="{{vimeoUrl()}}" width="640" height="360" frameborder="0" webkitAllowFullScreen mozallowfullscreen allowFullScreen>"""
 
-app.service 'mediaService', () ->
+app.service 'mediaService', (MediaKind) ->
   makeSource = (k, res) ->
-    # TODO - use models MediaSource type
-    x = {resource: res, kind: {}, offset: 0}
-    x.kind[k] = []
-    x
+    {resource: res, kind: MediaKind[k], offset: 0}
 
   mediaRegExs =
     ".*vimeo\\.com\\/(video\\/)?(\\d+)": 'VideoVimeo'

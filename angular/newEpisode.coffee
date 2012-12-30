@@ -17,16 +17,16 @@ return ($scope, $routeParams, $http, mediaService, EpisodeDoc) ->
     ($ 'input').attr 'disabled', 'disabled'
     ($ 'button[type=submit]').attr 'disabled', 'disabled'
 
-    console.log $scope.episode
-    # window.ep = $scope.episode
-
     # HACK - WTF? why is cmdCreateEpisode surrounded by backtics?
     cmd = '%{cmdCreateEpisode}'
     cmd = cmd.slice(1,-1) if cmd[0] is '`'
     # END HACK
-    q = $http.post(cmd, $scope.episode.toJSON())
+    q = $http.post(cmd, $scope.episode)
     q.success (data) ->
+      $scope.episode = data
+      # HACK ISSUE - Need to reload page for video to show up...
       window.location.hash = "#/podcasts/#{$routeParams.podcastName}/episodes/#{data.number}"
+      window.location.reload(true)
     q.error ->
       console.log "submit/error"
 

@@ -87,8 +87,8 @@ documentFromNodeInstance (Entity relId (NodeInstance title mUrl mNodeTypeId epis
   mNtDoc <- maybeDocFromMaybeNodeTypeId mNodeTypeId
   return $ DocNode (Just relId) title mUrl time $ mNtDoc
 
-documentFromMediaSource (Entity tid (MediaSource _ kind offset url)) = do
-  DocMediaSource kind url offset
+documentFromMediaSource (Entity tid (MediaSource _ kind offset resource)) = do
+  DocMediaSource kind resource offset
 
 --documentFromEpisode :: PersistQuery backend m => Entity (EpisodeGeneric backend) -> backend m EpisodeDocument
 documentFromEpisode episode = do
@@ -184,13 +184,30 @@ syncInstance episodeId (DocNode mRelId title mUrl time mNodeTypeDoc) = do
 
   --mInstance <- get relId
 
+syncMediaSource episodeId (DocMediaSource kind resource offset) = do
+  mSource <- getBy $ UniqueMediaKindForEpisode episodeId kind
+  case mSource of
+    Just (Entity tid source) -> do
+      -- TODO - update plan ?
+      update tid [MediaSourceResource =. resource, MediaSourceOffset =. offset]
+      source' <- get tid
+      return $ Entity tid $ fromJust source'
+    Nothing -> do
+      let source = MediaSource episodeId kind offset resource
+      tid <- insert source
+      return $ Entity tid source
+
 --episodeFromDocument :: EpisodeDocument -> DB EpisodeGeneric
 episodeFromDocument doc = do
-  liftIO $ traceIO "\nepisodeFromDocument:\n"
+  liftIO $ traceIO "\nepisodeFromDocument:"
   (episodeId, episode) <- episodeAndIdFromDoc doc
+  liftIO $ traceIO $ "\tepisodeId:" ++ (show episodeId)
   mapM_ (syncInstance episodeId) $ docEpisodeNodes doc
+  liftIO $ traceIO "\tsync'd instances"
+  mapM_ (syncMediaSource episodeId) $ docEpisodeMediaSources doc
+  liftIO $ traceIO $ "\tsync'd sources (count: " ++ (show $ length $ docEpisodeMediaSources doc) ++ ")"
 
-  return episode
+  return $ Entity episodeId episode
  --where
  -- syncInstance (DocNode relId title url _ time nodeTypeDoc) =
 

@@ -50,18 +50,20 @@ instance A.FromJSON a => A.FromJSON (Singleton a) where
     parseJSON _ = fail "Not an array"
 
 
-tryInsertEpisode :: Episode -> Handler (Entity Episode)
-tryInsertEpisode episode = do
-  _ <- ensurePodcast $ episodePodcast episode
-  ensureEpisode episode
- where
-  ensurePodcast name =
-      let item = Podcast name Nothing Nothing Nothing
-          constraint = UniquePodcastName name
-      in ensureEntity item constraint
-  ensureEpisode ep =
-      let constraint = UniqueEpisodeNumber (episodePodcast ep) (episodeNumber ep)
-      in ensureEntity ep constraint
+--tryInsertEpisode :: Episode -> Handler (Entity Episode)
+--tryInsertEpisode episode = do
+--  _ <- ensurePodcast $ episodePodcast episode
+--  ensureEpisode episode
+-- where
+--  ensurePodcast name =
+--      let item = Podcast name Nothing Nothing Nothing
+--          constraint = UniquePodcastName name
+--      in ensureEntity item constraint
+--  ensureEpisode ep =
+--      let constraint = UniqueEpisodeNumber (episodePodcast ep) (episodeNumber ep)
+--      in ensureEntity ep constraint
+--tryInsertEpisode episode = do
+--  episodeFromDocument episode
 
 tryInsertNodeType :: NodeType -> Handler (Entity NodeType)
 tryInsertNodeType nodeType = do
@@ -77,8 +79,11 @@ handleAdminR = do
   runNgModule (Just "admin") $ do
     cmdCreateEpisode <- addCommand $ \ep -> do
       requireCreateEpisode rights
-      episode <- tryInsertEpisode ep
-      return episode
+      --episode <- tryInsertEpisode ep
+      -- TODO - ensure episode doesn't exist
+      (Entity tid _) <- runDB $ episodeFromDocument (ep :: EpisodeDocument)
+      --doc <- runDB $ documentFromEpisode episode
+      return $ ep {docEpisode_id = Just tid}
 
     cmdSetEpisodeTitle <- addCommand $ \(epId, title) -> do
       requireEditEpisode rights epId
@@ -112,7 +117,7 @@ handleAdminR = do
       (Entity tid _) <- runDB $ getBy404 $ UniqueEpisodeNumber (docEpisodePodcast ep) (docEpisodeNumber ep)
       requireEditEpisode rights tid
       runDB $ deleteWhere [NodeInstanceEpisodeId ==. tid]
-      episode <- runDB $ episodeFromDocument ep
+      (Entity _ episode) <- runDB $ episodeFromDocument ep
       doc <- runDB $ documentFromEpisode (Entity tid episode)
       return doc
 

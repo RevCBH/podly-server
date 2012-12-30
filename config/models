@@ -56,7 +56,8 @@ MediaSource
     episodeId EpisodeId Eq
     kind MediaKind
     offset Int
-    url Text
+    resource Text
+    UniqueMediaKindForEpisode episodeId kind
 
 NodeInstance
     title Text

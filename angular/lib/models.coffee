@@ -56,6 +56,7 @@ class Algebraic
 class MediaKind extends Algebraic
   @enum 'AudioMp3', 'VideoVimeo', 'VideoYouTube'
   @deriving 'Show'
+app.constant 'MediaKind', MediaKind
 
 class Privilege extends Algebraic
   @enum 'AsEditor', 'AsManager', 'AsPublisher', 'AsAdmin'
@@ -69,7 +70,7 @@ app.constant 'PublishedState', PublishedState
 
 class EpisodeDoc extends ModelBase
   @attr 'podcast', 'title', 'number', 'searchSlug', 'airDate', 'published', 'duration'
-  @attr 'mediaSources', 'nodes'
+  @attr 'mediaSources', 'nodes', '_id'
 
   constructor: (@model, defPodcastName=null) ->
     @model._id ||= null
