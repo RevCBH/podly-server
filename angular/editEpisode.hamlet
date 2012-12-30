@@ -22,10 +22,8 @@
     <ul class="nav nav-pills nav-stacked well well-small" style="min-width: 100px; background-color: white;">
       <li>Publishing
       <li style="text-align: center;">
-        <button ng-show="episode.published == PublishedState.StateDraft" class="btn btn-success" ng-click>
+        <button ng-show="episode.published == PublishedState.StateDraft" class="btn btn-success" ng-click="submitEpisode()">
           Submit
-
-
 
   <div id="nowPlayingTitle">
     Joe Rogan Experience &#35;{{episode.number}}

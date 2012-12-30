@@ -410,6 +410,7 @@ return ($scope, $routeParams, $http, nodeCsvParser, $compile, PublishedState) ->
 
   window.http = NodeRowWrapper::$http = $http # HACK
   window.ps = PublishedState
+  $scope.PublishedState = PublishedState
 
   $scope.mediaPlayer = new MediaPlayer($('#videoContainerCell'), $scope)
 
@@ -422,18 +423,11 @@ return ($scope, $routeParams, $http, nodeCsvParser, $compile, PublishedState) ->
 
   req = $http.get("/podcasts/#{$routeParams.podcastName}/episodes/#{$routeParams.episodeNumber}")
   req.success (data) ->
+    # HACK - should be integrated to model
+    data.published = PublishedState.fromJSON(data.published)
+    # END HACK
     $scope.episode = data
     $scope.mediaPlayer.loadVimeoPlayer(data.mediaSources[0].resource, $('#videoContainerCell'))
-    # $scope.vimeoResource =
-    # console.log "loaded episode:", data
-    # vimeoUrl = "http://player.vimeo.com/video/#{data.mediaSources[0].resource}?api=1&amp;player_id=vimeo-player"
-    # console.log "vimeoUrl:", vimeoUrl
-    # playerHtml = """<iframe podly-vimeo id="vimeo-player" src="#{vimeoUrl}" width="640" height="360" frameborder="0" webkitAllowFullScreen mozallowfullscreen allowFullScreen>"""
-    # console.log "playerHtml:", playerHtml
-    # console.log "#videoContainerCell:", $("#videoContainerCell")
-    # elem = $('#videoContainerCell')
-    # elem.html(playerHtml)
-    # $compile(elem)($scope)
 
   $scope.nodeParseResults = null
 
@@ -542,6 +536,19 @@ return ($scope, $routeParams, $http, nodeCsvParser, $compile, PublishedState) ->
     q.error ->
       $scope.episode = JSON.parse originalEp
       $scope.nodeParseResults = originalResults
+
+  $scope.submitEpisode = ->
+    console.log "submit ep:"
+    $scope.episode.published = PublishedState.StateSubmitted
+    q = $http.post("%{cmdSubmitForReview}", [$scope.episode._id])
+    q.success (data) ->
+      console.log "success"
+      # HACK - should be integrated to model
+      data.published = PublishedState.fromJSON(data.published)
+      # END HACK
+      $scope.episode = data
+    q.error (err) -> console.log "error:", err
+
 
   guardPlayer = (f) -> f($scope.player) if $scope.player
 

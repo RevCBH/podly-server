@@ -110,6 +110,13 @@ handleAdminR = do
       doc <- runDB $ documentFromEpisode (Entity tid episode)
       return doc
 
+    cmdSubmitForReview <- addCommand $ \(Singleton epId) -> do
+      requireEditEpisode rights epId
+      runDB $ update epId [EpisodePublished =. StateSubmitted]
+      episode <- runDB $ get404 epId
+      doc <- runDB $ documentFromEpisode (Entity epId episode)
+      return doc
+
     cmdGrant <- addCommand $ \(userId, perm) ->
       case perm of
         HasRole role -> do
