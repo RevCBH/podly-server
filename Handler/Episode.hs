@@ -24,6 +24,7 @@ import Document
 --  where
 --    nodes' = (flip map) nodes (\(Entity tid x) -> (nodeTitle x, tid))
 
+-- TODO - access control
 getPodcastEpisodeR :: Text -> Int -> Handler RepJson -- RepHtmlJson
 getPodcastEpisodeR name number = do
     entity@(Entity episodeId episode) <- runDB $ getBy404 $ UniqueEpisodeNumber name number
@@ -113,8 +114,8 @@ getEpisodesR = do
   limit <- paramOr "limit" 8
   let resultsPerPage = min (max 1 limit) 20 :: Int
 
-  episodeCount <- runDB $ count ([] :: [Filter Episode])
-  episodes <- runDB $ selectList [] [Desc EpisodeNumber, LimitTo resultsPerPage, OffsetBy (page * resultsPerPage)]
+  episodeCount <- runDB $ count [EpisodePublished ==. StatePublished]
+  episodes <- runDB $ selectList [EpisodePublished ==. StatePublished] [Desc EpisodeNumber, LimitTo resultsPerPage, OffsetBy (page * resultsPerPage)]
   let pageCount = (episodeCount `quot` resultsPerPage) + (if episodeCount `mod` resultsPerPage > 0 then 1 else 0)
 
   let widget = do

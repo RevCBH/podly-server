@@ -23,7 +23,7 @@ import Document
 
 handleHomeR :: Handler RepHtml
 handleHomeR = do
-  (Entity _ episode):_ <- runDB $ selectList [] [Desc EpisodeNumber]
+  (Entity _ episode):_ <- runDB $ selectList [EpisodePublished ==. StatePublished] [Desc EpisodeNumber]
   nodeTypes <- runDB $ selectList [] [Asc NodeTypeTitle]
   let nodeTypesJson = L8.unpack $ encode $ map documentFromNodeType nodeTypes
 
