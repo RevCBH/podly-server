@@ -35,8 +35,8 @@ class Algebraic
   @deriving = (classes...) ->
     for c in classes
       if c.toLowerCase() == 'show'
-        cname = @name
-        @::toString = -> "#{cname}.#{@$case}"
+        # cname = @name
+        @::toString = -> "#{@$case}"
 
   @fromJSON = (data) ->
     k = null

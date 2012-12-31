@@ -1,8 +1,15 @@
 <div podcast-detail>
-  <h1>{{podcast.name}}</h1>
+  <h1>{{podcast.name}}
 
-<h2>Episodes <small><a href="#/podcasts/{{podcast.name}}/episodes.new">new</a></small></h2>
-<div episode-list>
-  <ul>
-    <li ng-repeat="episode in episodes">
-      <a href="#/podcasts/{{podcast.name}}/episodes/{{episode.number}}">{{episode.title}}
+<h2>Episodes <small><a href="#/podcasts/{{podcast.name}}/episodes.new">new</a>
+<table episode-list .table .table-striped .table-small .table-condensed>
+  <thead>
+    <tr>
+      <td .span1>Number
+      <td>Title
+      <td>State
+  <tbody>
+    <tr ng-repeat="episode in episodes">
+      <td .span1>{{episode.number}}
+      <td><a href="#/podcasts/{{podcast.name}}/episodes/{{episode.number}}">{{episode.title}}
+      <td><span class="label label-info">{{episode.published}}
