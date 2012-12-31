@@ -10,8 +10,11 @@ app.directive 'episodeList', ($routeParams) ->
     jQuery.getJSON "/podcasts/#{$routeParams.podcastName}/episodes", (data) ->
       scope.$apply -> scope.episodes = data
 
-return ($scope, $routeParams, $http) ->
+return ($scope, $routeParams, $http, Permission) ->
   $scope.podcast =
     name: $routeParams.podcastName
 
   $scope.episodes = []
+
+  $scope.rights = _(%{rightsDoc}).map (x) -> Permission.fromJSON(x)
+  window.sc = $scope

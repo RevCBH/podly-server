@@ -73,6 +73,7 @@ handleAdminR :: Handler RepHtml
 handleAdminR = do
   (Entity userId user) <- requireAuth
   rights <- requirePermissions userId
+  let rightsDoc = L8.unpack $ encode rights
 
   icons <- runDB $ selectList [] [Asc IconName]
 
@@ -122,11 +123,17 @@ handleAdminR = do
       return doc
 
     cmdSubmitForReview <- addCommand $ \(Singleton epId) -> do
-      requireEditEpisode rights epId
+      requireSubmitEpisode rights epId
       runDB $ update epId [EpisodePublished =. StateSubmitted]
       episode <- runDB $ get404 epId
       doc <- runDB $ documentFromEpisode (Entity epId episode)
       return doc
+
+    cmdPublishEpisode <- addCommand $ \(Singleton epId) -> --do
+      guardUpdateEntity requirePublishEpisode epId [EpisodePublished =. StatePublished] documentFromEpisode
+
+    cmdUnpublishEpisode <- addCommand $ \(Singleton epId) ->
+      guardUpdateEntity requirePublishEpisode epId [EpisodePublished =. StatePending] documentFromEpisode
 
     cmdGrant <- addCommand $ \(userId, perm) ->
       case perm of

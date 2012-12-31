@@ -380,7 +380,7 @@ class NodeRowWrapper extends ModelWrapper
 
   isNew: => @model._id
 
-return ($scope, $routeParams, $http, nodeCsvParser, $compile, PublishedState, MediaPlayer) ->
+return ($scope, $routeParams, $http, nodeCsvParser, $compile, PublishedState, MediaPlayer, Permission) ->
   window.sc = $scope
   $scope.csvData = null
 
@@ -513,6 +513,7 @@ return ($scope, $routeParams, $http, nodeCsvParser, $compile, PublishedState, Me
       $scope.episode = JSON.parse originalEp
       $scope.nodeParseResults = originalResults
 
+  $scope.rights = _(%{rightsDoc}).map (x) -> Permission.fromJSON(x)
   $scope.submitEpisode = ->
     $scope.episode.published = PublishedState.StateSubmitted
     q = $http.post("%{cmdSubmitForReview}", [$scope.episode._id])
@@ -523,6 +524,28 @@ return ($scope, $routeParams, $http, nodeCsvParser, $compile, PublishedState, Me
       $scope.episode = data
     q.error (err) -> console.log "error:", err
 
+  hasEpGrant = (x, grant) ->
+    x = x.HasEpisodeGrant
+    x?.permission?[grant] and (x?.episodeId is $scope.episode._id)
+  hasEpRight = (x, right) -> x.HasRole?.permission?[right] or hasEpGrant(x, right)
+  hasEditRight = _($scope.rights).find (x) -> hasEpRight(x, 'AsEditor')
+  hasPublishRight = _($scope.rights).find (x) -> hasEpRight(x, 'AsPublisher')
+
+  $scope.canPublish = ->
+    hasPublishRight and _([PublishedState.StateSubmitted, PublishedState.StatePending]).contains $scope.episode.published
+  $scope.canUnpublish = ->
+    hasPublishRight and (PublishedState.StatePublished is $scope.episode.published)
+  $scope.canSubmit = ->
+    hasEditRight and ($scope.episode.published is PublishedState.StateDraft)
+
+  updatePublishedTo = (state, action) ->
+    original = $scope.episode.published
+    $scope.episode.published = state
+    q = $http.post(action, [$scope.episode._id])
+    q.error -> $scope.episode.published = original
+
+  $scope.publishEpisode = -> updatePublishedTo PublishedState.StatePublished, "%{cmdPublishEpisode}"
+  $scope.unpublishEpisode = -> updatePublishedTo PublishedState.StatePending, "%{cmdUnpublishEpisode}"
 
   guardPlayer = (f) -> f($scope.player) if $scope.player
 

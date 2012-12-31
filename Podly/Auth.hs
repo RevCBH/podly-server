@@ -7,6 +7,7 @@ import Data.Maybe (isJust)
 import Data.List (find)
 import Control.Monad (liftM)
 import Data.Monoid (Any(..), getAny)
+import Data.Text (pack)
 
 import Data.Aeson.TH (deriveJSON)
 
@@ -46,6 +47,16 @@ requireEpisodePermission r msg perms epId = do
 requireManageUsers = requireRole AsManager "You don't have permission to manage users"
 requireCreateEpisode = requireRole AsEditor "You don't have permission to create episodes"
 requireEditEpisode = requireEpisodePermission AsEditor "You don't have permission to edit this episode"
+requirePublishEpisode = requireEpisodePermission AsPublisher "You don't have permission to publish this episode"
+
+requireSubmitEpisode perms epId = do
+  requireEpisodePermission AsEditor "You don't have permission to edit this episode" perms epId
+  episode <- runDB $ get404 epId
+  case episodePublished episode of
+    StateDraft -> return ()
+    _ -> do
+      let msg = "Can't submit " ++ (show $ epId) ++ ". Episode is already submitted."
+      permissionDenied $ pack msg
 
 canGrant role perms =
   case role of
@@ -103,3 +114,12 @@ getPermissions userId = do
   mapEpGrants =
     let mkGrant (Entity _ x) = HasEpisodeGrant <$> episodeGrantEpisodeId <*> episodeGrantPrivilege $ x
     in liftM (map mkGrant)
+
+guardUpdateEntity ensure entityId updates toDoc = do
+  (Entity userId user) <- requireAuth
+  rights <- requirePermissions userId
+  ensure rights entityId
+  runDB $ update entityId updates
+  entity <- runDB $ get404 entityId
+  doc <- runDB $ toDoc (Entity entityId entity)
+  return doc

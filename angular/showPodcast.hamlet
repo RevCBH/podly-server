@@ -13,3 +13,8 @@
       <td .span1>{{episode.number}}
       <td><a href="#/podcasts/{{podcast.name}}/episodes/{{episode.number}}">{{episode.title}}
       <td><span class="label label-info">{{episode.published}}
+
+<ul>
+  <li ng-repeat="r in rights">
+    <div ng-show="r.HasRole">Role: {{r.HasRole.permission.toString()}}
+    <div ng-show="r.HasEpisodeGrant">Role: {{r.HasEpisodeGrant.permission.toString()}} (episode id: {{r.HasEpisodeGrant.episodeId}})

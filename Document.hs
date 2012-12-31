@@ -199,13 +199,9 @@ syncMediaSource episodeId (DocMediaSource kind resource offset) = do
 
 --episodeFromDocument :: EpisodeDocument -> DB EpisodeGeneric
 episodeFromDocument doc = do
-  liftIO $ traceIO "\nepisodeFromDocument:"
   (episodeId, episode) <- episodeAndIdFromDoc doc
-  liftIO $ traceIO $ "\tepisodeId:" ++ (show episodeId)
   mapM_ (syncInstance episodeId) $ docEpisodeNodes doc
-  liftIO $ traceIO "\tsync'd instances"
   mapM_ (syncMediaSource episodeId) $ docEpisodeMediaSources doc
-  liftIO $ traceIO $ "\tsync'd sources (count: " ++ (show $ length $ docEpisodeMediaSources doc) ++ ")"
 
   return $ Entity episodeId episode
  --where

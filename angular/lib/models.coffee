@@ -22,36 +22,62 @@ class ModelBase
 app.constant 'ModelBase', ModelBase
 
 class Algebraic
-  constructor: (@$case) ->
-    @[@$case] = []
+  constructor: (@$case) -> @[@$case] = []
 
   @enum = (xs...) -> @case x for x in xs
-  @case = (c) ->
-    @$cases = @$cases || []
+  @case = (kase) ->
+    @$cases = @$cases || {}
     # TODO - error if dup
-    @$cases.push(c)
-    @[c] = new @(c)
+
+    if _(kase).isString()
+      @$cases[kase] = []
+      @[kase] = new @(kase)
+      return null
+
+    for cname, cdef of kase
+      @$cases[cname] = _(cdef).pairs()
+      @[cname] = (args...) =>
+        ins = {}
+        res = new @(cname)
+        res[cname] = ins
+        for [[pname, pdef], a] in _(cdef).chain().pairs().zip(args).value()
+          unless a.constructor.name is pdef.name
+            throw "invalid argument: #{a} for #{cname}.#{pname}. Expected #{pdef.name}"
+          ins[pname] = a
+        return res
+    return null
 
   @deriving = (classes...) ->
     for c in classes
       if c.toLowerCase() == 'show'
-        # cname = @name
-        @::toString = -> "#{@$case}"
+        cname = @name
+        @::toString = -> "#{cname}.#{@$case}"
 
   @fromJSON = (data) ->
     k = null
     elem = _(data)
     elem = _(JSON.parse(data)) if _.isString(data)
     if elem.isObject()
-      k = elem.pairs()[0][0]
+      [k, vals] = elem.pairs()[0]
+      cons = @[k]
+      schema = @$cases[k]
+
+      if _.isFunction(cons)
+        args = for [prop, type] in schema
+          if typeof type?.fromJSON is 'function'
+            type.fromJSON vals[prop]
+          else
+            vals[prop]
+        return cons args...
+      else
+        return cons
     return @[k] if @[k]
     # TODO - raise type error
 
   toJSON: ->
     x = new @constructor(@$case)
     delete x.$case
-    x
-
+    return x
 
 class MediaKind extends Algebraic
   @enum 'AudioMp3', 'VideoVimeo', 'VideoYouTube'
@@ -61,12 +87,25 @@ app.constant 'MediaKind', MediaKind
 class Privilege extends Algebraic
   @enum 'AsEditor', 'AsManager', 'AsPublisher', 'AsAdmin'
   @deriving 'Show'
+app.constant 'Privilege', Privilege
 
 class PublishedState extends Algebraic
   @enum 'StateDraft', 'StateSubmitted', 'StatePending', 'StatePublished'
   @deriving 'Show'
 app.constant 'PublishedState', PublishedState
-# app.constant 'StateDraft', StateDraft
+
+class Permission extends Algebraic
+  @case HasRole:
+    permission: Privilege
+  @case HasEpisodeGrant:
+    permission: Privilege
+    episodeId: Number
+  @deriving 'Show'
+app.constant 'Permission', Permission
+
+# class User extends ModelBase
+#   @attr 'email'
+# app.constant 'User', User
 
 class EpisodeDoc extends ModelBase
   @attr 'podcast', 'title', 'number', 'searchSlug', 'airDate', 'published', 'duration'
