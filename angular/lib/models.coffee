@@ -74,10 +74,11 @@ class Algebraic
     return @[k] if @[k]
     # TODO - raise type error
 
-  toJSON: ->
-    x = new @constructor(@$case)
-    delete x.$case
-    return x
+  toJSON: =>
+    res = {}
+    for k, v of @
+      res[k] = v if @hasOwnProperty(k) and not (k in ['$case'])
+    return res
 
 class MediaKind extends Algebraic
   @enum 'AudioMp3', 'VideoVimeo', 'VideoYouTube'

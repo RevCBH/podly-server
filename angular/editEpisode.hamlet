@@ -7,6 +7,8 @@
         <a href="#display-nodes" data-toggle="tab" ng-click="curTab = 'nodes'">
           Nodes
       <li><a href="#episode-properties" data-toggle="tab" ng-click="curTab = 'properties'">Properties</a>
+      <li ng-show="canManage()">
+        <a href="#manage-permissions" data-toggle="tab" ng-click="curTab = 'manage'">Manage</a>
       <li><a href="#csv-import-nodes" data-toggle="tab" ng-click="curTab = 'import'">Spreadsheet Import</a>
     <ul ng-show="curTab == 'nodes'" class="nav nav-pills nav-stacked well well-small" style="min-width: 100px; background-color: white;">
       <li style="text-align: center;">
@@ -171,6 +173,34 @@
                 <td>
                   <div class="span4 in-place-wrapper" in-place model=x.node.url on-update="x.validate()">
                     <input class="span4" type=url ng-model=x.node.url>
+    <!-- Permissions Editor -->
+    <div id="manage-permissions" class="tab-pane">
+      <div .span12 style="margin-left:0px">
+        <form .form-inline style="margin-top: 20px; margin-bottom: 5px">
+          <input type="text" ng-model="grantUserEmail" placeholder="User email">
+          <button type="button" class="btn btn-primary" ng-click="addGrantUser()">Add
+        <table .table>
+          <thead>
+            <tr>
+              <td>User
+              <td>Permissions
+          <tbody>
+            <tr ng-repeat="x in rights">
+              <td>{{x.ident}}
+              <td>
+                <div class="btn-group" data-toggle="buttons-checkbox">
+                  <button type="button" class="btn btn-info"
+                          ng-class="{active: hasPermisson(x.id, 'AsEditor')}"
+                          ng-click="togglePermission(x.id, 'AsEditor')">Edit
+                  <button type="button" class="btn btn-info"
+                          ng-class="{active: hasPermisson(x.id, 'AsManager')}"
+                          ng-click="togglePermission(x.id, 'AsManager')">Manage
+                  <button type="button" class="btn btn-info"
+                          ng-class="{active: hasPermisson(x.id, 'AsPublisher')}"
+                          ng-click="togglePermission(x.id, 'AsPublisher')">Publish
+                  <button type="button" class="btn btn-info"
+                          ng-class="{active: hasPermisson(x.id, 'AsAdmin')}"
+                          ng-click="togglePermission(x.id, 'AsAdmin')">Admin
 
   <!-- NodeType creation modal -->
   <div id="node-type-creator" class="modal hide fade">

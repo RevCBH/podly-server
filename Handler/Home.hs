@@ -12,7 +12,9 @@ import qualified Data.ByteString.Lazy.Char8 as L8
 import qualified Data.Vector as V
 import qualified Data.Aeson as A
 import Data.Text (pack)
+import Data.List (nub)
 import Data.Maybe (fromJust)
+import qualified Data.Map as Map
 import Text.Coffee (coffeeFile)
 import Control.Monad (liftM)
 import Control.Monad.Trans.Maybe
@@ -74,6 +76,7 @@ handleAdminR = do
   (Entity userId user) <- requireAuth
   rights <- requirePermissions userId
   let rightsDoc = L8.unpack $ encode rights
+  let userDoc = L8.unpack $ encode $ object ["_id" .= userId, "ident" .= (userIdent user)]
 
   icons <- runDB $ selectList [] [Asc IconName]
 
@@ -86,17 +89,11 @@ handleAdminR = do
       --doc <- runDB $ documentFromEpisode episode
       return $ ep {docEpisode_id = Just tid}
 
-    cmdSetEpisodeTitle <- addCommand $ \(epId, title) -> do
-      requireEditEpisode rights epId
-      runDB $ update epId [EpisodeTitle =. title]
-      episode <- runDB $ get404 epId
-      return $ Singleton $ episodeTitle episode
+    cmdSetEpisodeTitle <- addCommand $ \(epId, title) ->
+      guardUpdateEntity requireEditEpisode epId [EpisodeTitle =. title] documentFromEpisode
 
-    cmdSetEpisodeNumber <- addCommand $ \(epId, number) -> do
-      requireEditEpisode rights epId
-      runDB $ update epId [EpisodeNumber =. number]
-      episode <- runDB $ get404 epId
-      return $ Singleton $ episodeNumber episode
+    cmdSetEpisodeNumber <- addCommand $ \(epId, number) ->
+      guardUpdateEntity requireEditEpisode epId [EpisodeNumber =. number] documentFromEpisode
 
     cmdCreateNodeType <- addCommand $ \nt -> do
       nodeType <- tryInsertNodeType nt
@@ -122,18 +119,34 @@ handleAdminR = do
       doc <- runDB $ documentFromEpisode (Entity tid episode)
       return doc
 
-    cmdSubmitForReview <- addCommand $ \(Singleton epId) -> do
-      requireSubmitEpisode rights epId
-      runDB $ update epId [EpisodePublished =. StateSubmitted]
-      episode <- runDB $ get404 epId
-      doc <- runDB $ documentFromEpisode (Entity epId episode)
-      return doc
+    cmdSubmitForReview <- addCommand $ \(Singleton epId) ->
+      guardUpdateEntity requireSubmitEpisode epId [EpisodePublished =. StateSubmitted] documentFromEpisode
 
     cmdPublishEpisode <- addCommand $ \(Singleton epId) -> --do
       guardUpdateEntity requirePublishEpisode epId [EpisodePublished =. StatePublished] documentFromEpisode
 
     cmdUnpublishEpisode <- addCommand $ \(Singleton epId) ->
       guardUpdateEntity requirePublishEpisode epId [EpisodePublished =. StatePending] documentFromEpisode
+
+    cmdGrantsForEpisode <- addCommand $ \(Singleton epId) -> do
+      grants <- runDB $ selectList [EpisodeGrantEpisodeId ==. epId] [Asc EpisodeGrantUserId]
+      let selEntity (Entity _ x) = x
+      let selId (Entity x _) = x
+      let userIds = nub $ map (episodeGrantUserId . selEntity) grants
+      users <- runDB $ selectList [UserId <-. userIds] [Asc UserIdent]
+
+      -- Map user ids to (user ident, [] :: [HasEpisodeGrant])
+      let userTbl = foldr (\x m -> Map.insert (selId x) (userIdent $ selEntity x, []) m) Map.empty users
+      -- Convert an Entity to a HasEpisodeGrant
+      let mkGrant = (HasEpisodeGrant <$> episodeGrantEpisodeId <*> episodeGrantPrivilege) . selEntity
+      -- Collect HasEpisodeGrants grouped by userIds
+      let appendGrant x (i, xs) = (i, (mkGrant x : xs))
+      let rights = foldr (\x m -> Map.adjust (appendGrant x) (episodeGrantUserId $ selEntity x) m) userTbl grants
+      -- Convert to JSON compatible format
+      let mapPair f g = map (\(a, b) -> (f a, g b))
+      let txtId = pack . L8.unpack . encode
+      let objPair (i, xs) = object ["ident" .= i, "grants" .= xs]
+      return $ object $ mapPair txtId objPair $ Map.assocs rights
 
     cmdGrant <- addCommand $ \(userId, perm) ->
       case perm of
@@ -145,6 +158,20 @@ handleAdminR = do
           requireGrantOnEp role epId rights
           _ <- runDB $ insert $ EpisodeGrant userId role epId
           return $ Singleton ("OK" :: String)
+
+    cmdRevoke <- addCommand $ \(userId, perm) ->
+      case perm of
+        HasRole role -> do
+          requireGrant role rights
+          runDB $ deleteWhere [RoleUserId ==. userId, RolePrivilege ==. role]
+          return $ Singleton ("OK" :: String)
+        HasEpisodeGrant epId role -> do
+          requireGrantOnEp role epId rights
+          runDB $ deleteWhere [EpisodeGrantUserId ==. userId,
+                               EpisodeGrantPrivilege ==. role,
+                               EpisodeGrantEpisodeId ==. epId]
+          return $ Singleton ("OK" :: String)
+    cmdGetUserForEmail <- addCommand $ \(Singleton email) -> runDB $ getBy404 $ UniqueUser email
 
     $(addLib "filters")
     $(addLib "models")

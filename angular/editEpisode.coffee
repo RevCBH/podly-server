@@ -173,13 +173,6 @@ app.directive 'inPlace', ($parse) ->
           endWithRevert true if event.which is 27
   }
 
-# class NodeType
-#   constructor: (@obj) ->
-#   toString: -> @obj.title
-#   toJSON: -> @obj.toJSON()
-#   title: @obj.title
-#   @icon: @obj.icon
-
 app.service 'dataService', ($http) ->
   @nodeTypes = _([])
   @icons = %{L8.unpack $ encode icons}
@@ -191,9 +184,6 @@ app.service 'dataService', ($http) ->
   @nodeTypeNamed = (name) =>
     name = name.toLowerCase()
     @nodeTypes.find (x) -> x.title?.toLowerCase() == name
-
-  # @icons = =>
-  #   @nodeTypes.map (x) -> x.icon
 
   return this
 
@@ -245,12 +235,7 @@ app.service 'nodeCsvParser', (dataService) ->
       nt = dataService.nodeTypes.find (n) -> n.title.toLowerCase() == x.nodeType?.toLowerCase()
       x.nodeType = nt || x.nodeType
       x.time = parseTime(x.time)
-      # x._id = null
       x.relId = null
-
-    # rejects = _(xs).reject (x) -> x.nodeType
-    # xs = _(xs).filter (x) -> x.nodeType
-      # x.nodeType = {} unless x.nodeType
 
     return xs
     # $scope.episode.nodes = xs
@@ -380,7 +365,7 @@ class NodeRowWrapper extends ModelWrapper
 
   isNew: => @model._id
 
-return ($scope, $routeParams, $http, nodeCsvParser, $compile, PublishedState, MediaPlayer, Permission) ->
+return ($scope, $routeParams, $http, nodeCsvParser, $compile, PublishedState, MediaPlayer, Permission, Privilege) ->
   window.sc = $scope
   $scope.csvData = null
 
@@ -396,6 +381,7 @@ return ($scope, $routeParams, $http, nodeCsvParser, $compile, PublishedState, Me
     number: $routeParams.episodeNumber
     title: "Loading..."
   }
+  $scope.rights = {}
 
   req = $http.get("/podcasts/#{$routeParams.podcastName}/episodes/#{$routeParams.episodeNumber}")
   req.success (data) ->
@@ -404,6 +390,14 @@ return ($scope, $routeParams, $http, nodeCsvParser, $compile, PublishedState, Me
     # END HACK
     $scope.episode = data
     $scope.mediaPlayer.loadVimeoPlayer(data.mediaSources[0].resource, $('#videoContainerCell'))
+
+    q = $http.post("%{cmdGrantsForEpisode}", [$scope.episode._id])
+    q.success (data) ->
+      res = {}
+      for k, v of data
+        v.grants = _(v.grants).map (x) -> Permission.fromJSON x
+        v.id = k
+      $scope.rights = data
 
   $scope.nodeParseResults = null
 
@@ -482,9 +476,9 @@ return ($scope, $routeParams, $http, nodeCsvParser, $compile, PublishedState, Me
     q.success (data) ->
       # HACK - update url if number changes...
       if named is 'number'
-        window.location.hash = "#/podcasts/#{$routeParams.podcastName}/episodes/#{data[0]}"
+        window.location.hash = "#/podcasts/#{$routeParams.podcastName}/episodes/#{data[named]}"
       else
-        $scope.episode[named] = data[0]
+        $scope.episode[named] = data[named]
 
   $scope.saveCSV = (opts={overwrite: false}) ->
     originalResults = $scope.nodeParseResults.slice 0
@@ -513,7 +507,9 @@ return ($scope, $routeParams, $http, nodeCsvParser, $compile, PublishedState, Me
       $scope.episode = JSON.parse originalEp
       $scope.nodeParseResults = originalResults
 
-  $scope.rights = _(%{rightsDoc}).map (x) -> Permission.fromJSON(x)
+  $scope.userRights = _(%{rightsDoc}).map (x) -> Permission.fromJSON(x)
+  user = %{userDoc}
+
   $scope.submitEpisode = ->
     $scope.episode.published = PublishedState.StateSubmitted
     q = $http.post("%{cmdSubmitForReview}", [$scope.episode._id])
@@ -526,10 +522,13 @@ return ($scope, $routeParams, $http, nodeCsvParser, $compile, PublishedState, Me
 
   hasEpGrant = (x, grant) ->
     x = x.HasEpisodeGrant
-    x?.permission?[grant] and (x?.episodeId is $scope.episode._id)
+    x?.permission?[grant] if (x?.episodeId is $scope.episode._id)
   hasEpRight = (x, right) -> x.HasRole?.permission?[right] or hasEpGrant(x, right)
-  hasEditRight = _($scope.rights).find (x) -> hasEpRight(x, 'AsEditor')
-  hasPublishRight = _($scope.rights).find (x) -> hasEpRight(x, 'AsPublisher')
+
+  hasEditRight = _($scope.userRights).find (x) -> hasEpRight(x, 'AsEditor')
+  hasPublishRight = _($scope.userRights).find (x) -> hasEpRight(x, 'AsPublisher')
+  hasManageRight = _($scope.userRights).find (x) -> hasEpRight(x, 'AsManager')
+  hasAdminRight = _($scope.userRights).find (x) -> hasEpRight(x, 'AsAdmin')
 
   $scope.canPublish = ->
     hasPublishRight and _([PublishedState.StateSubmitted, PublishedState.StatePending]).contains $scope.episode.published
@@ -537,6 +536,38 @@ return ($scope, $routeParams, $http, nodeCsvParser, $compile, PublishedState, Me
     hasPublishRight and (PublishedState.StatePublished is $scope.episode.published)
   $scope.canSubmit = ->
     hasEditRight and ($scope.episode.published is PublishedState.StateDraft)
+  $scope.canManage = ->
+    hasAdminRight or hasManageRight
+
+  $scope.hasPermisson = (userId, perm) ->
+    userId = parseInt userId if _.isString(userId)
+    _($scope.rights[userId].grants).find (x) -> hasEpGrant(x, perm)
+
+  $scope.togglePermission = (userId, perm) ->
+    userId = parseInt userId if _.isString(userId)
+    grant = $scope.hasPermisson(userId, perm)
+    if grant
+      q = $http.post("%{cmdRevoke}", [userId, grant])
+      q.success ->
+        vals = _($scope.rights[userId].grants).without grant
+        $scope.rights[userId].grants = vals
+        $scope.userRights = vals if userId is user._id
+    else
+      grant = Permission.HasEpisodeGrant(Privilege[perm], $scope.episode._id)
+      q = $http.post("%{cmdGrant}", [userId, grant])
+      q.success ->
+        $scope.rights[userId].grants.push ||= []
+        $scope.rights[userId].grants.push grant
+        $scope.userRights.push grant if userId is user._id
+
+  $scope.addGrantUser = ->
+    q = $http.post("%{cmdGetUserForEmail}", [$scope.grantUserEmail])
+
+    q.success (data) ->
+      $scope.grantUserEmail = ""
+      return if $scope.rights[data._id]
+      $scope.rights[data._id] = {id: data._id, ident: data.identity, grants:[]}
+    q.error ->
 
   updatePublishedTo = (state, action) ->
     original = $scope.episode.published
