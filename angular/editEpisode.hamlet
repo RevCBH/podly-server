@@ -196,10 +196,10 @@
                           ng-class="{active: hasPermisson(x.id, 'AsManager')}"
                           ng-click="togglePermission(x.id, 'AsManager')">Manage
                   <button type="button" class="btn btn-info"
-                          ng-class="{active: hasPermisson(x.id, 'AsPublisher')}"
+                          ng-class="{active: hasPermisson(x.id, 'AsPublisher'), disabled: !isAdmin()}"
                           ng-click="togglePermission(x.id, 'AsPublisher')">Publish
                   <button type="button" class="btn btn-info"
-                          ng-class="{active: hasPermisson(x.id, 'AsAdmin')}"
+                          ng-class="{active: hasPermisson(x.id, 'AsAdmin'), disabled: !isAdmin()}"
                           ng-click="togglePermission(x.id, 'AsAdmin')">Admin
 
   <!-- NodeType creation modal -->

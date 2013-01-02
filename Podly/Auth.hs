@@ -11,7 +11,7 @@ import Data.Text (pack)
 
 import Data.Aeson.TH (deriveJSON)
 
---import Debug.Trace
+import Debug.Trace
 
 data Permission =
   HasRole {
@@ -83,11 +83,14 @@ canGrantOnEp role epId perms =
       AsEditor -> [AsAdmin, AsManager] `anyElem` grants
  where
   roles = map rolePermission $ filter permIsRole perms
-  grants = map epGrantPermission $ filter ((epId ==) <$> epGrantEpisodeId) $ filter permIsEpGrant perms
+  grants =
+    let epGrants = filter permIsEpGrant perms
+        matchingGrants = filter ((epId ==) <$> epGrantEpisodeId) $ epGrants
+    in map epGrantPermission matchingGrants
   xs `anyElem` ys = getAny . mconcat $ map (Any . (`elem` ys)) xs
 
 requireGrantOnEp role epId perms =
-  if canGrant role perms
+  if canGrantOnEp role epId perms
     then return ()
     else permissionDenied "You can't grant that permission"
 

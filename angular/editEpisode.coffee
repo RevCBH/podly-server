@@ -525,19 +525,20 @@ return ($scope, $routeParams, $http, nodeCsvParser, $compile, PublishedState, Me
     x?.permission?[grant] if (x?.episodeId is $scope.episode._id)
   hasEpRight = (x, right) -> x.HasRole?.permission?[right] or hasEpGrant(x, right)
 
-  hasEditRight = _($scope.userRights).find (x) -> hasEpRight(x, 'AsEditor')
-  hasPublishRight = _($scope.userRights).find (x) -> hasEpRight(x, 'AsPublisher')
-  hasManageRight = _($scope.userRights).find (x) -> hasEpRight(x, 'AsManager')
-  hasAdminRight = _($scope.userRights).find (x) -> hasEpRight(x, 'AsAdmin')
+  hasEditRight = -> _($scope.userRights).find (x) -> hasEpRight(x, 'AsEditor')
+  hasPublishRight = -> _($scope.userRights).find (x) -> hasEpRight(x, 'AsPublisher')
+  hasManageRight = -> _($scope.userRights).find (x) -> hasEpRight(x, 'AsManager')
+  hasAdminRight = -> _($scope.userRights).find (x) -> hasEpRight(x, 'AsAdmin')
 
   $scope.canPublish = ->
-    hasPublishRight and _([PublishedState.StateSubmitted, PublishedState.StatePending]).contains $scope.episode.published
+    hasPublishRight() and _([PublishedState.StateSubmitted, PublishedState.StatePending]).contains $scope.episode.published
   $scope.canUnpublish = ->
-    hasPublishRight and (PublishedState.StatePublished is $scope.episode.published)
+    hasPublishRight() and (PublishedState.StatePublished is $scope.episode.published)
   $scope.canSubmit = ->
-    hasEditRight and ($scope.episode.published is PublishedState.StateDraft)
+    hasEditRight() and ($scope.episode.published is PublishedState.StateDraft)
   $scope.canManage = ->
-    hasAdminRight or hasManageRight
+    hasAdminRight() or hasManageRight()
+  $scope.isAdmin = hasAdminRight
 
   $scope.hasPermisson = (userId, perm) ->
     userId = parseInt userId if _.isString(userId)
