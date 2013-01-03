@@ -441,6 +441,7 @@ return ($scope, $routeParams, $http, nodeCsvParser, $compile, PublishedState, Me
       n.manualMode = true
       window.fi = $filter
       n.newTimeBuffer = $filter('formatOffset')(n.time)
+      setTimeout (-> $(evt.target).parent().find('input').focus()), 0
     else
       n.time = $scope.time
       n.update()
@@ -448,7 +449,10 @@ return ($scope, $routeParams, $http, nodeCsvParser, $compile, PublishedState, Me
   $scope.updateTimeManual = (n, save) ->
     n.manualMode = false
     if save and n.newTimeBuffer
-      parts = [n.newTimeBuffer.slice(0,2), n.newTimeBuffer.slice(2,4), n.newTimeBuffer.slice(4,6)]
+      if n.newTimeBuffer.indexOf(':') >= 0
+        parts = n.newTimeBuffer.split ':'
+      else
+        parts = [n.newTimeBuffer.slice(0,2), n.newTimeBuffer.slice(2,4), n.newTimeBuffer.slice(4,6)]
       n.time = _(parts).reduce ((acc, x) -> 60*acc + parseInt(x)), 0
       n.update()
 

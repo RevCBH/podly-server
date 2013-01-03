@@ -112,7 +112,8 @@
                                ng-hide="x.manualMode">{{x.time | formatOffset}}</a>
                 <input class="span2" style="margin-bottom: 0px" type=text ng-show="x.manualMode"
                        ng-model=x.newTimeBuffer ui-mask="'99:99:99'"
-                       ui-keydown="{enter: 'updateTimeManual(x, true)', 27: 'updateTimeManual(x, false)'}">
+                       ui-keydown="{enter: 'updateTimeManual(x, true)', 27: 'updateTimeManual(x, false)'}"
+                       ui-event="{blur: 'updateTimeManual(x, true)'}">
               <td ng-class="x.statusFor('title')">
                 <div class="popover-thunk" data-content="{{x.messagesFor('title', true)}}">
                   <div class="span2" in-place model=x.title on-update="x.update()">
