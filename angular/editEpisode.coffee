@@ -364,8 +364,9 @@ class NodeRowWrapper extends ModelWrapper
   revert: @loadAttrs
 
   isNew: => @model._id
+  manualMode: false
 
-return ($scope, $routeParams, $http, nodeCsvParser, $compile, PublishedState, MediaPlayer, Permission, Privilege) ->
+return ($scope, $routeParams, $http, nodeCsvParser, $compile, PublishedState, MediaPlayer, Permission, Privilege, $filter) ->
   window.sc = $scope
   $scope.csvData = null
 
@@ -434,9 +435,22 @@ return ($scope, $routeParams, $http, nodeCsvParser, $compile, PublishedState, Me
     $scope.nodeRows.push(n)
     $scope.newNodeTitle = ""
 
-  $scope.syncTime = (n) ->
-    n.time = $scope.time
-    n.update()
+  $scope.syncTime = (n, evt) ->
+    # console.log "syncTime - this:", @, "n:", n, "evt:", evt
+    if evt.shiftKey
+      n.manualMode = true
+      window.fi = $filter
+      n.newTimeBuffer = $filter('formatOffset')(n.time)
+    else
+      n.time = $scope.time
+      n.update()
+
+  $scope.updateTimeManual = (n, save) ->
+    n.manualMode = false
+    if save and n.newTimeBuffer
+      parts = [n.newTimeBuffer.slice(0,2), n.newTimeBuffer.slice(2,4), n.newTimeBuffer.slice(4,6)]
+      n.time = _(parts).reduce ((acc, x) -> 60*acc + parseInt(x)), 0
+      n.update()
 
   $scope.curTab = "nodes"
 

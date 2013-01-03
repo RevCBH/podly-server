@@ -173,6 +173,7 @@ handleAdminR = do
           return $ Singleton ("OK" :: String)
     cmdGetUserForEmail <- addCommand $ \(Singleton email) -> runDB $ getBy404 $ UniqueUser email
 
+    addExtLib "ui"
     $(addLib "filters")
     $(addLib "models")
     $(addLib "media")

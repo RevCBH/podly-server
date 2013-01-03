@@ -29,7 +29,7 @@ import           Text.Coffee                (coffeeFile, coffeeFileReload)
 import           Text.Coffee.Bare           (coffeeBareFile, coffeeBareFileReload)
 import           Yesod.Core                 (GHandler, GWidget, RepHtml,
                                              RepHtml (RepHtml), Route, Yesod,
-                                             addScriptEither, defaultLayout,
+                                             addScriptEither, addStylesheetEither, defaultLayout,
                                              getUrlRenderParams, getYesod, lift,
                                              lookupGetParam, newIdent,
                                              sendResponse, toContent,
@@ -45,6 +45,18 @@ import GHC.Base
 class Yesod master => YesodAngular master where
     urlAngularJs :: master -> Either (Route master) Text
     urlAngularJs _ = Right "//ajax.googleapis.com/ajax/libs/angularjs/1.0.3/angular.js"
+
+    urlAngularUi :: master -> Either (Route master) Text
+    urlAngularUi _ = Right "https://raw.github.com/angular-ui/angular-ui/master/build/angular-ui.js"
+
+    urlAngularUiCss :: master -> Either (Route master) Text
+    urlAngularUiCss _ = Right "https://raw.github.com/angular-ui/angular-ui/master/build/angular-ui.css"
+
+    urlJqueryUi :: master -> Either (Route master) Text
+    urlJqueryUi _ = Right "//ajax.googleapis.com/ajax/libs/jqueryui/1.9.2/jquery-ui.min.js"
+
+    urlJqueryMaskedInput :: master -> Either (Route master) Text
+    urlJqueryMaskedInput _ = Right "http://angular-ui.github.com/lib/maskedinput/jquery.maskedinput.js"
 
     wrapAngular :: Text -> GWidget sub master () -> GHandler sub master RepHtml
     wrapAngular modname widget = defaultLayout [whamlet|<div ng-app=#{modname}>^{widget}|]
@@ -106,7 +118,12 @@ runNgModule mModname ga = do
                    in T.concat (map f ks)
 
     wrapAngular modname $ do
+        addScriptEither $ urlJqueryUi master
+        addScriptEither $ urlJqueryMaskedInput master
         addScriptEither $ urlAngularJs master
+        addScriptEither $ urlAngularUi master
+        addStylesheetEither $ urlAngularUiCss master
+
         [whamlet|<div ng-view>|]
         toWidget [julius|
 ^{renderLibs}
