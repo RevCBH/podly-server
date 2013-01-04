@@ -50,6 +50,8 @@
               <div class="wordLinks">
                 <a href="{{node.url}}" target="_blank">{{node.title}}
             <!--End Wordy Bits -->
+            <div class="twitterNodeShare">
+              <a href="https://twitter.com/share" class="socialite twitter-share" data-url="http://{{node.url}}" data-text="listen to this bit on {{node.title}}.  {{node.url}}" data-via="thePodly" data-size="large" data-related="JoeRoganExp" data-count="none" data-hashtags="{{note.noteType.title}}">Tweet</a>
           <!--End Node Elements-->
       <!--End Row -->
 

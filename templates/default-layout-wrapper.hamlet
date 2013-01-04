@@ -32,18 +32,17 @@ $newline never
         <script src="/static/js/jquery.csv-0.71.min.js"></script>
         <script src="/static/js/bootstrap.min.js"></script>
 
-        <script>
-          document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/,'js');
+        <script>document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/,'js');</script>
     <body>
         <!--Facebook Like Button JavaScript SDK-->
-          <div id="fb-root"></div>
+          <!-- <div id="fb-root"></div>
           <script>(function(d, s, id) {
             var js, fjs = d.getElementsByTagName(s)[0];
             if (d.getElementById(id)) return;
             js = d.createElement(s); js.id = id;
             js.src = "//connect.facebook.net/en_US/all.js#xfbml=1";
             fjs.parentNode.insertBefore(js, fjs);
-            }(document, 'script', 'facebook-jssdk'));
+            }(document, 'script', 'facebook-jssdk')); -->
         <!--End FB Like Button JS SDK-->
         ^{pageBody pc}
 

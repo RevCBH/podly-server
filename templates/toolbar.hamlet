@@ -1,4 +1,4 @@
-<div class="navbar navbar-inverse navbar-fixed-top">
+<div id="page-navbar" class="navbar navbar-inverse navbar-fixed-top">
   <div class="navbar-inner">
     <div class="container">
       <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
@@ -11,23 +11,24 @@
         <ul .nav .pull-right>
           <li> <a id='toolbar-logout-link' data-placement='bottom' rel='tooltip' title="#{userIdent auth}" href=@{AuthR LogoutR}>Logout</a>
           <!-- TODO - move this to somewhere sensible -->
-          <script type="text/javascript">
-            jQuery("#toolbar-logout-link").tooltip();
+          <script type="text/javascript">jQuery("#toolbar-logout-link").tooltip();</script>
       $nothing
         <ul #socialNavTop .nav .pull-right>
           <!--Facebook Like Button-->
           <li>
-            <div class="fb-like" data-href="http://ThePodly.com" data-send="false" data-layout="button_count" data-width="450" data-show-faces="false">
+            <div class="socialite facebook-like" data-href="http://ThePodly.com" data-send="false" data-layout="button_count" data-width="450" data-show-faces="false">
           <!--End Facebook Like Button-->
 
           <!--Twitter 'Follow ThePodly'-->
           <li>
               <a href="https://twitter.com/thePodly" class="twitter-follow-button" data-show-count="false">Follow @thePodly</a>
-              <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
           <!--End Twitter 'Follow ThePodly'-->
 
           <!--Twitter 'Share a link'-->
           <li>
-              <a href="https://twitter.com/share" class="twitter-share-button" data-url="http://thePodly.com" data-via="thePodly">Tweet</a>
-              <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+              <a href="https://twitter.com/share" class="socialite twitter-share" data-url="http://thePodly.com" data-via="thePodly">Tweet</a>
           <!--End Twitter 'Share a link'-->
+<script>
+  \$(document).ready(function(){
+    Socialite.load($('page-navbar'));
+  });

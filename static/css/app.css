@@ -27,6 +27,18 @@ background-repeat: no-repeat;
 
 #twitterFollow{;}
 
+.nodeElements:hover .twitterNodeShare {
+  display: inline;
+}
+
+.twitterNodeShare{
+  display: none;
+  float: right;
+  vertical-align: center;
+  padding-left: 0px;
+  margin: 8px 5px 0px 0px;
+}
+
 .fb-like
 {
   z-index: 101;
@@ -134,7 +146,8 @@ background-repeat: no-repeat;
   margin-top: -20px;
   width: 656px;
   height: 190px;
-  overflow: scroll;
+  overflow-x: hidden;
+  overflow-y: scroll;
   border: 1px solid #cccccc;
   z-index: 0;
   position: relative;
@@ -179,9 +192,9 @@ background-repeat: no-repeat;
 /*}*/
 
 .nodeElements{
-  display: inline;
-  width: 500px;
-  border: 0px dashed black;
+  display: inline-block;
+  width: 637px;
+  /*border: 1px dashed black;*/
   /*position: relative;*/
   /*top: 5px;*/
 }
@@ -270,6 +283,9 @@ Wordy Bits
   margin-left: 0px;
   /*color: green;*/
   text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 

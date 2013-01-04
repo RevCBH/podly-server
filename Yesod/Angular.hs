@@ -58,6 +58,9 @@ class Yesod master => YesodAngular master where
     urlJqueryMaskedInput :: master -> Either (Route master) Text
     urlJqueryMaskedInput _ = Right "http://angular-ui.github.com/lib/maskedinput/jquery.maskedinput.js"
 
+    urlSocialite :: master -> Either (Route master) Text
+    urlSocialite _ = Right "https://raw.github.com/dbushell/Socialite/master/socialite.js"
+
     wrapAngular :: Text -> GWidget sub master () -> GHandler sub master RepHtml
     wrapAngular modname widget = defaultLayout [whamlet|<div ng-app=#{modname}>^{widget}|]
 
@@ -123,6 +126,7 @@ runNgModule mModname ga = do
         addScriptEither $ urlAngularJs master
         addScriptEither $ urlAngularUi master
         addStylesheetEither $ urlAngularUiCss master
+        addScriptEither $ urlSocialite master
 
         [whamlet|<div ng-view>|]
         toWidget [julius|

@@ -6,8 +6,32 @@ app.service 'scrollManager', () ->
   shouldAutoScroll = true
   this.disable = () -> shouldAutoScroll = false
   this.enable = () -> shouldAutoScroll = true
+
+  this.makeTwitterButtons = (container) ->
+    # TODO - this is a specific function that should be moved elsewhere
+    height = container.height()
+    inner = $(container.children()[0])
+    top = container.offset().top
+    bottom = top + container.height()
+    elems = inner.find('.nodeElements').parent()
+    for x in elems
+      x = $(x)
+      xtop = x.offset().top
+      xbot = xtop + x.height()
+      if (bottom >= xtop >= top) or (bottom >= xbot >= top)
+        # Socialite.load(x[0]) unless x.find('.socialite-instance').length > 0
+        x.addClass('visible-node')
+      else
+        x.removeClass('visible-node')
+    # END TODO
+
   this.watch = (container) =>
+    container.on 'mouseover', '.visible-node', {}, (evt) ->
+      Socialite.load(evt.target)
+
+    @makeTwitterButtons(container)
     container.scroll () =>
+      @makeTwitterButtons(container)
       if finishedAutoScrolling
         finishedAutoScrolling = false
         isAutoScrolling = false
@@ -88,6 +112,7 @@ return ($scope, $routeParams, $http, scrollManager, MediaPlayer, PublishedState)
     # END HACK
     $scope.episode = data
     $scope.mediaPlayer.loadVimeoPlayer(data.mediaSources[0].resource, $('#videoContainerCell'))
+    setTimeout (-> scrollManager.makeTwitterButtons(jQuery '#listOfNodes')), 0
 
   scrollManager.watch (jQuery '#listOfNodes')
 
