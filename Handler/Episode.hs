@@ -59,8 +59,9 @@ ensureStale time = do
   let mMod = lookup hIfModifiedSince $ requestHeaders req
   case mMod of
     Just t -> do
+      let time' = addUTCTime (-1) time
       case parseHeaderTime $ BS.unpack t of
-        headerT:[] | time <= headerT -> sendResponseStatus notModified304 ()
+        headerT:[] | time' <= headerT -> sendResponseStatus notModified304 ()
         _ -> setCacheHeaders
     Nothing -> setCacheHeaders
 

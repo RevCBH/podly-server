@@ -69,6 +69,12 @@ background-repeat: no-repeat;
 
 }
 
+#videoContainerCell
+{
+  /*min-width: 640px;*/
+  height: 365px;
+}
+
 #nowPlayingTitle{
   white-space: nowrap;
   font-family: sans-serif;
