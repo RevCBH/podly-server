@@ -19,9 +19,10 @@ Staging:
   <<: *defaults
 
 Production:
-  database: d9ao46d1elv9ms
-  host: ec2-107-22-169-148.compute-1.amazonaws.com
-  user: dojjqveidcdqeo
-  password: EyCxsy55NYSha2FMn-5qMFkY-I
+  database: d9si38dhr17rh
+  host: ec2-184-73-164-26.compute-1.amazonaws.com
+  user: u5hk9g9nqp86a3
+  password: pedc2ppevecdqg80m2o8v7hlu0j
+  port: 6182
   poolsize: 100
   <<: *defaults
