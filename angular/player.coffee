@@ -178,7 +178,7 @@ return ($scope, $routeParams, $http, scrollManager, MediaPlayer, PublishedState)
     scrollManager.enable()
     $scope.scrollTo $scope.currentNode()
 
-  $scope.linkToNode = (n) -> "%{approot}#/ni/#{n.relId}"
+  $scope.linkToNode = (n) -> "%{approot}ni/#{n.relId}"
   $scope.tweetText = (n)->
     # 96 chars avail, 44 taken
     # ISSUE, TODO - don't hardcode the number of available characters
