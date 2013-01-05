@@ -16,7 +16,7 @@
 /podcasts PodcastIndexR GET
 /podcasts/#Text PodcastR GET
 /podcasts/#Text/episodes PodcastEpisodeIndexR GET
-/podcasts/#Text/episodes/#Int PodcastEpisodeR GET HEAD
+/podcasts/#Text/episodes/#Int PodcastEpisodeR GET
 -- /podcasts/#Text/episodes/#Int/node NodeInstanceR POST
 
 -- episodes
