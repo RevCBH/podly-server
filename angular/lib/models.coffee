@@ -110,7 +110,7 @@ app.constant 'Permission', Permission
 
 class EpisodeDoc extends ModelBase
   @attr 'podcast', 'title', 'number', 'searchSlug', 'airDate', 'published', 'duration'
-  @attr 'mediaSources', 'nodes', '_id'
+  @attr 'mediaSources', 'nodes', '_id', 'lastModified'
 
   constructor: (@model, defPodcastName=null) ->
     @model._id ||= null
@@ -118,6 +118,7 @@ class EpisodeDoc extends ModelBase
     @model.airDate ||= null
     @model.searchSlug ||= null
     @model.duration ||= null
+    @model.lastModified ||= null
     console.log "published:", @model.published
     if @model.published
       @model.published = PublishedState.fromJSON @model.published
