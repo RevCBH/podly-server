@@ -151,8 +151,14 @@ instance YesodAuth App where
     authHttpManager = httpManager
 
 instance YesodAngular App where
-    --urlAngularJs _ = Left $ StaticR $ StaticRoute ["angular", "angular.js"] []
-    urlAngularJs _ = Left $ StaticR $ StaticRoute ["js", "angular.js"] []
+    --urlAngularJs _ = Left $ StaticR $ StaticRoute ["js", "angular.js"] []
+    urlAngularJs _ = Left $ StaticR $ StaticRoute ["js", "angular.min.js"] []
+    --urlAngularUi _ = Left $ StaticR $ StaticRoute ["js", "angular-ui.js"] []
+    urlAngularUi _ = Left $ StaticR $ StaticRoute ["js", "angular-ui.min.js"] []
+    --urlAngularUiCss _ = Left $ StaticR $ StaticRoute ["js", "angular-ui.css"] []
+    urlAngularUiCss _ = Left $ StaticR $ StaticRoute ["css", "angular-ui.min.css"] []
+    urlJqueryMaskedInput _ = Left $ StaticR $ StaticRoute ["js", "jquery.maskedinput.min.js"] []
+    urlSocialite _ = Left $ StaticR $ StaticRoute ["js", "socialite.min.js"] []
 
 type Angular = GAngular App App ()
 
