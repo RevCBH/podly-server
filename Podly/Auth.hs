@@ -118,6 +118,11 @@ getPermissions userId = do
     let mkGrant (Entity _ x) = HasEpisodeGrant <$> episodeGrantEpisodeId <*> episodeGrantPrivilege $ x
     in liftM (map mkGrant)
 
+guardUpdateEpisode ensure entityId updates toDoc = do
+  doc <- guardUpdateEntity ensure entityId updates toDoc
+  runDB $ touchEpisode entityId
+  return doc
+
 guardUpdateEntity ensure entityId updates toDoc = do
   (Entity userId user) <- requireAuth
   rights <- requirePermissions userId

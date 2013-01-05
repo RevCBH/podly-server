@@ -19,6 +19,7 @@ import Data.Time(UTCTime)
 
 import Control.Monad (liftM, filterM)
 import Control.Monad.Trans.Maybe
+import Data.Time.Clock (getCurrentTime)
 
 --type MaybeDB = (PersistStore backend m) => MaybeT (backend m)
 -- DEBUG start
@@ -62,6 +63,7 @@ data EpisodeDocument = DocEpisode {
   docEpisodeSearchSlug :: Maybe Text,
   docEpisodeDuration :: Maybe Int,
   docEpisodePublished :: PublishedState,
+  docEpisodeLastModified :: Maybe UTCTime,
   docEpisodeMediaSources :: [MediaSourceDocument],
   docEpisodeNodes :: [NodeDocument]
 } deriving (Show, Generic)
@@ -92,13 +94,13 @@ documentFromMediaSource (Entity tid (MediaSource _ kind offset resource)) = do
 
 --documentFromEpisode :: PersistQuery backend m => Entity (EpisodeGeneric backend) -> backend m EpisodeDocument
 documentFromEpisode episode = do
-  let Entity tid (Episode podcast title number slug airDate published duration) = episode
+  let Entity tid (Episode podcast title number slug airDate published duration lastModified) = episode
   instancesWithIds <- selectList [NodeInstanceEpisodeId ==. tid] [Asc NodeInstanceTime]
   mNodes <- mapM (runMaybeT . documentFromNodeInstance) instancesWithIds
   nodes <- filterM (return . isJust) mNodes
   justNodes <- mapM (return . fromJust) nodes
   mediaSources <- mapM (return . documentFromMediaSource) =<< selectList [MediaSourceEpisodeId ==. tid] []
-  return $ DocEpisode (Just tid) podcast number airDate title slug duration published mediaSources justNodes
+  return $ DocEpisode (Just tid) podcast number airDate title slug duration published (Just lastModified) mediaSources justNodes
 
 --nodeTypeIdFromDoc :: NodeTypeDocument -> DBKey NodeTypeGeneric
 nodeTypeIdFromDoc doc = do
@@ -127,10 +129,10 @@ nodeInstanceIdFromNodeInEpisode time title mUrl episodeId mNodeTypeId = do
     Nothing -> insert $ NodeInstance title mUrl mNodeTypeId episodeId time
     Just (Entity tid _) -> return tid
 
-episodeAndIdFromDoc :: PersistUnique backend m =>
-  EpisodeDocument
-  -> backend m (Key backend (EpisodeGeneric backend), EpisodeGeneric backend)
-episodeAndIdFromDoc (DocEpisode _ podcast number airDate title slug duration published _ _) = do
+--episodeAndIdFromDoc :: PersistUnique backend m =>
+--  EpisodeDocument
+--  -> backend m (Key backend (EpisodeGeneric backend), EpisodeGeneric backend)
+episodeAndIdFromDoc (DocEpisode _ podcast number airDate title slug duration published _ _ _) = do
   mPodcast <- getBy $ UniquePodcastName podcast
   case mPodcast of
     Nothing -> do
@@ -141,7 +143,8 @@ episodeAndIdFromDoc (DocEpisode _ podcast number airDate title slug duration pub
   mEpisode <- getBy $ UniqueEpisodeNumber podcast number
   case mEpisode of
     Nothing -> do
-      let ep = Episode podcast title number slug airDate published duration
+      curT <- liftIO getCurrentTime
+      let ep = Episode podcast title number slug airDate published duration curT
       tid <- insert ep
       return (tid, ep)
     Just (Entity tid ep) -> return (tid, ep)
@@ -165,7 +168,9 @@ syncInstance episodeId (DocNode mRelId title mUrl time mNodeTypeDoc) = do
 
   relId <-  case mRelId of
               Just tid  -> return tid
-              Nothing   -> getNewInstanceId
+              Nothing   -> do
+                touchEpisode episodeId
+                getNewInstanceId
 
   ins <- liftM fromJust $ get relId
   let updatePlan = map snd $ filter fst $ [(title /= nodeInstanceTitle ins, NodeInstanceTitle =. title),
@@ -176,6 +181,7 @@ syncInstance episodeId (DocNode mRelId title mUrl time mNodeTypeDoc) = do
   mIns <- if length updatePlan > 0
             then do
               update relId updatePlan
+              touchEpisode episodeId
               get relId
             else
               return $ Just ins

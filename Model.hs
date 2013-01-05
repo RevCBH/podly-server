@@ -87,7 +87,7 @@ instance FromJSON (NodeInstanceGeneric t) where
 --      "title" .= nodeTitle n]
 
 instance ToJSON (Entity Episode) where
-  toJSON (Entity tid (Episode podcast title number slug airDate published duration)) = object
+  toJSON (Entity tid (Episode podcast title number slug airDate published duration lastModified)) = object
     [ "_id" .= tid,
       "podcast" .= podcast,
       "title" .= title,
@@ -95,18 +95,23 @@ instance ToJSON (Entity Episode) where
       "searchSlug" .= slug,
       "published" .= published,
       "duration" .= duration,
-      "airDate" .= (toJSON airDate)]
+      "airDate" .= (toJSON airDate),
+      "lastModified" .= (toJSON lastModified)]
 
-instance FromJSON (EpisodeGeneric t) where
-  parseJSON (Object o) = Episode <$>
-    o .: "podcast"               <*>
-    o .: "title"                 <*>
-    o .: "number"                <*>
-    o .: "searchSlug"            <*>
-    o .: "airDate"               <*>
-    o .: "published"             <*>
-    o .: "duration"
-  parseJSON _  = error "Object expected when parsing Episode"
+touchEpisode episodeId = do
+  curT <- liftIO getCurrentTime
+  update episodeId [EpisodeLastModified =. curT]
+
+--instance FromJSON (EpisodeGeneric t) where
+--  parseJSON (Object o) = Episode <$>
+--    o .: "podcast"               <*>
+--    o .: "title"                 <*>
+--    o .: "number"                <*>
+--    o .: "searchSlug"            <*>
+--    o .: "airDate"               <*>
+--    o .: "published"             <*>
+--    o .: "duration"
+--  parseJSON _  = error "Object expected when parsing Episode"
 
 instance ToJSON (Entity Podcast) where
   toJSON (Entity tid (Podcast name description category image)) = object

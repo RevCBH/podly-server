@@ -97,6 +97,7 @@ library
                  , warp
                  , time
                  , aeson
+                 , http-types
                  , attoparsec
                  , old-locale
                  , mtl

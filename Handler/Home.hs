@@ -115,10 +115,10 @@ handleAdminR = do
       return $ ep {docEpisode_id = Just tid}
 
     cmdSetEpisodeTitle <- addCommand $ \(epId, title) ->
-      guardUpdateEntity requireEditEpisode epId [EpisodeTitle =. title] documentFromEpisode
+      guardUpdateEpisode requireEditEpisode epId [EpisodeTitle =. title] documentFromEpisode
 
     cmdSetEpisodeNumber <- addCommand $ \(epId, number) ->
-      guardUpdateEntity requireEditEpisode epId [EpisodeNumber =. number] documentFromEpisode
+      guardUpdateEpisode requireEditEpisode epId [EpisodeNumber =. number] documentFromEpisode
 
     cmdCreateNodeType <- addCommand $ \nt -> do
       nodeType <- tryInsertNodeType nt
@@ -126,8 +126,9 @@ handleAdminR = do
 
     cmdDeleteNode <- addCommand $ \(Singleton rel) -> do
       ins <- runDB $ get404 (rel :: NodeInstanceId)
-      requireEditEpisode rights $ nodeInstanceEpisodeId ins
-      runDB $ delete rel
+      let epId = nodeInstanceEpisodeId ins
+      requireEditEpisode rights epId
+      runDB $ do delete rel; touchEpisode epId
       return $ Singleton ("OK" :: String)
 
     cmdSetNodeInstance <- addCommand $ \(epId, node) -> do
@@ -145,13 +146,13 @@ handleAdminR = do
       return doc
 
     cmdSubmitForReview <- addCommand $ \(Singleton epId) ->
-      guardUpdateEntity requireSubmitEpisode epId [EpisodePublished =. StateSubmitted] documentFromEpisode
+      guardUpdateEpisode requireSubmitEpisode epId [EpisodePublished =. StateSubmitted] documentFromEpisode
 
     cmdPublishEpisode <- addCommand $ \(Singleton epId) -> --do
-      guardUpdateEntity requirePublishEpisode epId [EpisodePublished =. StatePublished] documentFromEpisode
+      guardUpdateEpisode requirePublishEpisode epId [EpisodePublished =. StatePublished] documentFromEpisode
 
     cmdUnpublishEpisode <- addCommand $ \(Singleton epId) ->
-      guardUpdateEntity requirePublishEpisode epId [EpisodePublished =. StatePending] documentFromEpisode
+      guardUpdateEpisode requirePublishEpisode epId [EpisodePublished =. StatePending] documentFromEpisode
 
     cmdGrantsForEpisode <- addCommand $ \(Singleton epId) -> do
       grants <- runDB $ selectList [EpisodeGrantEpisodeId ==. epId] [Asc EpisodeGrantUserId]
@@ -182,6 +183,7 @@ handleAdminR = do
         HasEpisodeGrant epId role -> do
           requireGrantOnEp role epId rights
           _ <- runDB $ insert $ EpisodeGrant userId role epId
+          runDB $ touchEpisode epId
           return $ Singleton ("OK" :: String)
 
     cmdRevoke <- addCommand $ \(userId, perm) ->

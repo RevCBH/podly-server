@@ -7,13 +7,22 @@ import Handler.Util
 import Data.Aeson (Result(..), FromJSON(..), fromJSON, ToJSON(..))
 import Data.Aeson.TH (deriveJSON)
 import Data.Maybe
+import qualified Data.ByteString.Char8 as BS
 import Data.Time(Day, UTCTime(..), secondsToDiffTime)
+import Data.Time.Clock (getCurrentTime, addUTCTime)
+import qualified Data.Time.Format as TF
+import System.Locale (defaultTimeLocale)
 import Data.Text (pack, unpack)
 import Control.Monad (liftM)
+import Network.HTTP.Types (notModified304)
+import Network.HTTP.Types.Header (hIfModifiedSince)
+import Network.Wai (requestHeaders)
 
 import Yesod.Form.Jquery
 
 import Document
+
+import Debug.Trace
 
 --newNodeInstanceForm :: EpisodeId -> [Entity Node] -> Form NodeInstance
 --newNodeInstanceForm episodeId nodes = renderDivs $ NodeInstance
@@ -24,10 +33,42 @@ import Document
 --  where
 --    nodes' = (flip map) nodes (\(Entity tid x) -> (nodeTitle x, tid))
 
--- TODO - access control
+parseHeaderTime t =
+  -- From RFC 2616 Sec 3.3 http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html
+  let formats = [
+        --Sun, 06 Nov 1994 08:49:37 GMT
+        "%a, %d %b %Y %X %Z",
+        --Sunday, 06-Nov-94 08:49:37 GMT ; RFC 850, obsoleted by RFC 1036
+        "%A, %d-%b-%y %X %Z",
+        --Sun Nov  6 08:49:37 1994
+        "%a %e %X %Y"]
+      tryParse x = TF.parseTime defaultTimeLocale x t
+  in mapMaybe tryParse formats
+
+ensureStale time = do
+  req <- waiRequest
+  let setCacheHeaders = do
+      now <- liftIO getCurrentTime
+      let fmtT = pack . TF.formatTime defaultTimeLocale "%a, %d %b %Y %X %Z"
+      -- TODO - determine good max-age instead of 1 year
+      setHeader "Cache-Control" "public; max-age=31536000"
+      setHeader "Expires" $ fmtT $ addUTCTime 31536000 now
+      setHeader "Last-Modified" $ fmtT time
+      return ()
+
+  let mMod = lookup hIfModifiedSince $ requestHeaders req
+  case mMod of
+    Just t -> do
+      case parseHeaderTime $ BS.unpack t of
+        headerT:[] | time <= headerT -> sendResponseStatus notModified304 ()
+        _ -> setCacheHeaders
+    Nothing -> setCacheHeaders
+
+-- TODO - access control?
 getPodcastEpisodeR :: Text -> Int -> Handler RepJson -- RepHtmlJson
 getPodcastEpisodeR name number = do
     entity@(Entity episodeId episode) <- runDB $ getBy404 $ UniqueEpisodeNumber name number
+    ensureStale $ episodeLastModified episode
     episodeDoc <- runDB $ documentFromEpisode entity
     --nodes <- runDB $ selectList [] [Asc NodeTitle]
     --(formWidget, enctype) <- generateFormPost $ newNodeInstanceForm episodeId nodes

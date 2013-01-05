@@ -11,10 +11,13 @@ import Yesod.Auth
 import Yesod.Default.Config
 import Yesod.Default.Main
 import Yesod.Default.Handlers
+import Network.Wai.Middleware.Autohead (autohead)
+--import qualified Network.Wai.Middleware.Gzip as GZ
 import Network.Wai.Middleware.RequestLogger (logStdout, logStdoutDev)
 import qualified Database.Persist.Store
 import Database.Persist.GenericSql (runMigration)
 import Network.HTTP.Conduit (newManager, def)
+import qualified Data.ByteString.Char8 as S8
 
 -- Import all relevant handler modules here.
 -- Don't forget to add new modules to your cabal file!
@@ -37,8 +40,11 @@ makeApplication :: AppConfig DefaultEnv Extra -> IO Application
 makeApplication conf = do
     foundation <- makeFoundation conf
     app <- toWaiAppPlain foundation
-    return $ logWare app
+    return $ logWare $ autohead app
   where
+    -- TODO - get gzip working
+    --gset = GZ.def {GZ.gzipFiles = GZ.GzipCompress}
+    -- gCheckMime x = GZ.defaultCheckMime x || S8.isPrefixOf "application/json" x
     logWare   = if development then logStdoutDev
                                else logStdout
 

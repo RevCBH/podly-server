@@ -49,6 +49,7 @@ Episode
     airDate UTCTime Maybe
     published PublishedState
     duration Int Maybe
+    lastModified UTCTime default=LOCALTIMESTAMP
     UniqueEpisodeNumber podcast number
     deriving Show
 
