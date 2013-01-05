@@ -61,7 +61,7 @@ ensureStale time = do
     Just t -> do
       let time' = addUTCTime (-1) time
       case parseHeaderTime $ BS.unpack t of
-        headerT:[] | time' <= headerT -> sendResponseStatus notModified304 ()
+        headerT:[] | time' <= headerT -> sendResponseStatus notModified304 (typeJson, emptyContent)
         _ -> setCacheHeaders
     Nothing -> setCacheHeaders
 
