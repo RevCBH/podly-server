@@ -52,7 +52,7 @@ ensureStale time = do
       let fmtT = pack . TF.formatTime defaultTimeLocale "%a, %d %b %Y %X %Z"
       -- TODO - determine good max-age instead of 1 year
       setHeader "Cache-Control" "public; max-age=31536000"
-      setHeader "Expires" $ fmtT $ addUTCTime 31536000 now
+      --setHeader "Expires" $ fmtT $ addUTCTime 31536000 now
       setHeader "Last-Modified" $ fmtT time
       return ()
 
