@@ -4,14 +4,16 @@ module Handler.Home where
 import Import
 import Yesod.Auth
 import Yesod.Angular
+import qualified Network.Wai as W
 
 import Handler.Util
 import Podly.Auth
 
 import qualified Data.ByteString.Lazy.Char8 as L8
+import qualified Data.ByteString.Char8 as B8
 import qualified Data.Vector as V
 import qualified Data.Aeson as A
-import Data.Text (pack)
+import Data.Text (pack, unpack)
 import Data.List (nub)
 import Data.Maybe (fromJust)
 import qualified Data.Map as Map
@@ -29,6 +31,21 @@ handleHomeR = do
   nodeTypes <- runDB $ selectList [] [Asc NodeTypeTitle]
   let nodeTypesJson = L8.unpack $ encode $ map documentFromNodeType nodeTypes
 
+  mStartAt <- lookupSession "StartAt"
+  startAt <- case mStartAt of
+                  Just x -> do
+                    deleteSession "StartAt"
+                    return x
+                  Nothing -> return "0"
+  --let approot = YIC.resolveApproot approot undefined
+  req <- waiRequest
+  let proto = if W.isSecure req then "https" else "http" :: String
+  --let hostname = B8.unpack $ W.serverName req
+  let hostname = "podly.co"
+  --let port = if (W.serverPort req) `elem` [80, 443] then "" else (":" ++ show (W.serverPort req))
+  let port = ""
+  let approot = proto ++ "://" ++ hostname ++ port ++ "/" -- :: Text
+
   runNgModule (Just "playerMod") $ do
     cmdSetNodeInstance <- addCommand $ \() -> do
       notFound
@@ -40,6 +57,14 @@ handleHomeR = do
     $(addCtrl "/player/:podcastName/:episodeNumber" "player")
 
     setDefaultRoute $ pack $ "/player/The Joe Rogan Experience/" ++ (show $ episodeNumber episode)
+
+getPlayNodeR :: NodeInstanceId -> Handler RepHtml
+getPlayNodeR nid = do
+  inst <- runDB $ get404 nid
+  ep <- runDB $ get404 (nodeInstanceEpisodeId inst)
+  setSession (pack "StartAt") (pack . show $ nodeInstanceTime inst)
+  -- HACK
+  redirect $ "/#/player/" ++ (unpack $ episodePodcast ep) ++ "/" ++ (show $ episodeNumber ep)
 
 newtype Singleton a = Singleton { unSingleton :: a }
 instance A.ToJSON a => A.ToJSON (Singleton a) where

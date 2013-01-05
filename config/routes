@@ -7,6 +7,8 @@
 /admin AdminR
 / HomeR
 
+/ni/#NodeInstanceId PlayNodeR GET
+
 -- /reset NukeR GET
 /first-run-setup FirstRunR GET
 

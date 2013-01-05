@@ -65,7 +65,18 @@ class MediaPlayer
       plr.addEvent 'finish', setStopped
 
       if @autoplay
-        setTimeout (-> plr.api 'play'), 0
+        if @autoplay.start
+          ensurePlayAt = (t) =>
+            console.log "scope.time:", @scope.time
+            unless @scope.time >= t
+              plr.api 'seekTo', t
+              setTimeout (-> ensurePlayAt t), 200
+
+          setTimeout (=>
+            plr.api 'play'
+            ensurePlayAt @autoplay.start), 0
+        else
+          setTimeout (-> plr.api 'play'), 0
 
 app.constant 'MediaPlayer', MediaPlayer
 

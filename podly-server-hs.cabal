@@ -67,7 +67,7 @@ library
     build-depends: base                          >= 4          && < 5
                  -- , yesod-platform                >= 1.1        && < 1.2
                  , yesod
-                 , yesod-core
+                 , yesod-core                    >= 1.1.6.1    && < 1.2
                  , yesod-auth
                  , yesod-static
                  , yesod-default

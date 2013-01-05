@@ -102,7 +102,7 @@ return ($scope, $routeParams, $http, scrollManager, MediaPlayer, PublishedState)
   window.sc = $scope
   window.sm = scrollManager
 
-  $scope.mediaPlayer = new MediaPlayer($('#videoContainerCell'), $scope, true)
+  $scope.mediaPlayer = new MediaPlayer($('#videoContainerCell'), $scope, {start: %{startAt}})
   $scope.episode = {title: "loading...", number: $routeParams.episodeNumber}
 
   q = $http.get "/podcasts/#{$routeParams.podcastName}/episodes/#{$routeParams.episodeNumber}"
@@ -177,3 +177,23 @@ return ($scope, $routeParams, $http, scrollManager, MediaPlayer, PublishedState)
   $scope.scrollToCurrent = ->
     scrollManager.enable()
     $scope.scrollTo $scope.currentNode()
+
+  $scope.linkToNode = (n) -> "%{approot}#/ni/#{n.relId}"
+  $scope.tweetText = (n)->
+    # 96 chars avail, 44 taken
+    # ISSUE, TODO - don't hardcode the number of available characters
+    avail = 96 - n.nodeType.title.length
+
+    template = "Check out '@1'@2"
+    topicTxt = n.title
+    # TODO - support short names for podcasts
+    # episodeTxt = "in #{$scope.episode.podcast} #{'#' + $scope.episode.number}"
+    episodeTxt = " in JRE #{'#' + $scope.episode.number}"
+
+    txt = template.replace('@1', topicTxt).replace('@2', episodeTxt)
+    return txt unless txt.length > avail
+    txt = template.replace('@1', topicTxt).replace('@2', '')
+    return txt unless txt.length > avail
+    over = txt.length - avail
+    topicTxt = topicTxt.substring(0, topicTxt.length - (over + 3)) + '...'
+    return template.replace('@1', topicTxt).replace('@2', '')
