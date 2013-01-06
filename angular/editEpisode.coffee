@@ -71,6 +71,7 @@ InPlaceEditor = (scope) ->
     unless save
       @setter (JSON.parse originalValue)
     else
+      scope.model = $.trim(scope.model)
       @onUpdate() if @onUpdate
 
     originalValue = null
@@ -105,6 +106,7 @@ app.directive 'nodeTypeSelect', (dataService, $parse, $timeout) ->
       scope.nodeTypeTitle = ipe.getter()
       return null
     ipe.onUpdate = ->
+      inputElement.val($.trim scope.nodeTypeTitle)
       @setter(scope.nodeTypeTitle)
       # ISSUE, HACK - why do we need to defer this?
       $timeout -> $parse(attrs.onUpdate)(scope.$parent)
@@ -156,6 +158,8 @@ app.directive 'inPlace', ($parse) ->
           if revert
             scope.model = JSON.parse originalValue
           else
+            scope.model = $.trim(scope.model)
+            inputElement.val(scope.model)
             res = onUpdate(scope.$parent)
 
           originalValue = null
