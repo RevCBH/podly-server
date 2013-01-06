@@ -31,6 +31,10 @@ background-repeat: no-repeat;
   display: inline;
 }
 
+.icon-play {
+  margin-top: -1px;
+}
+
 .twitterNodeShare{
   display: none;
   float: right;
@@ -239,7 +243,7 @@ background-repeat: no-repeat;
   display: inline-block;
   width: 35px;
   height: 35px;
-  margin: 0px 10px 0px 10px;
+  margin: 1px 10px 0px 10px;
   padding: 0px;
   vertical-align: top;
   border: 0px dashed green;

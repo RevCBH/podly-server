@@ -115,6 +115,8 @@ return ($scope, $routeParams, $http, scrollManager, MediaPlayer, PublishedState)
     setTimeout (-> scrollManager.makeTwitterButtons(jQuery '#listOfNodes')), 0
 
   scrollManager.watch (jQuery '#listOfNodes')
+  $scope.$watch "nodeFilter", ->
+    setTimeout (-> scrollManager.makeTwitterButtons(jQuery '#listOfNodes')), 0
 
   $scope.player = undefined
   $scope.mediaPlaybackOffset = 0
