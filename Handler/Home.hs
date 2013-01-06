@@ -37,14 +37,13 @@ handleHomeR = do
                     deleteSession "StartAt"
                     return x
                   Nothing -> return "0"
-  --let approot = YIC.resolveApproot approot undefined
   req <- waiRequest
   let proto = if W.isSecure req then "https" else "http" :: String
   --let hostname = B8.unpack $ W.serverName req
   let hostname = "podly.co"
   --let port = if (W.serverPort req) `elem` [80, 443] then "" else (":" ++ show (W.serverPort req))
   let port = ""
-  let approot = proto ++ "://" ++ hostname ++ port ++ "/" -- :: Text
+  let approot = proto ++ "://" ++ hostname ++ port ++ "/"
 
   runNgModule (Just "playerMod") $ do
     cmdSetNodeInstance <- addCommand $ \() -> do
