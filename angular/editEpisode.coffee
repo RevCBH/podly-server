@@ -420,6 +420,12 @@ return ($scope, $routeParams, $http, nodeCsvParser, $compile, PublishedState, Me
     q.error -> $scope.episode.nodes = original
 
   $scope.newNodeTitle = ""
+  $scope.$watch "newNodeTitle", (newValue, oldValue) ->
+    if newValue.length > 0 && oldValue.length == 0
+      $scope.pause()
+    # if newValue.length == 0 && oldValue.length > 0
+    #   $scope.play()
+
   $scope.createNode = ->
     return unless $scope.newNodeTitle?.length > 0
     n = {
@@ -432,12 +438,14 @@ return ($scope, $routeParams, $http, nodeCsvParser, $compile, PublishedState, Me
     # n.validate()
     n.update()
 
+    $scope.lastCreatedNode = n
     $scope.nodeRows.push(n)
     $scope.newNodeTitle = ""
+    $scope.seek($scope.time - 2)
 
   $scope.syncTime = (n, evt) ->
     # console.log "syncTime - this:", @, "n:", n, "evt:", evt
-    if evt.shiftKey
+    if evt?.shiftKey
       n.manualMode = true
       window.fi = $filter
       n.newTimeBuffer = $filter('formatOffset')(n.time)
@@ -607,7 +615,8 @@ return ($scope, $routeParams, $http, nodeCsvParser, $compile, PublishedState, Me
 
   $scope.pause = -> guardPlayer (p) -> p.api 'pause'
 
-  $scope.togglePlay = ->
+  $scope.togglePlay = (evt)->
+    evt.preventDefault() if evt?.preventDefault
     if $scope.isPlaying
       $scope.pause()
     else

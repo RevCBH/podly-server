@@ -77,7 +77,7 @@
                   <span class="add-on" type="text" class="input-mini" disabled>
                     {{time | formatOffset}}
                   <!--Title Input-->
-                  <input type="text" class="span2" placeholder="Topic" ng-model="newNodeTitle">
+                  <input type="text" class="span2" placeholder="Topic" ng-model="newNodeTitle" ui-keydown="{enter: 'createNode()', 'ctrl-space': 'togglePlay($event)', 'ctrl-188 ctrl-219': 'seek(time - 5)', 'ctrl-190 ctrl-221': 'seek(time + 5)', 'ctrl-enter': 'syncTime(lastCreatedNode)', 'shift-enter': 'seek(lastCreatedNode.time)'}">
                   <!--Add Button-->
                   <a class="btn" type="button" ng-click="createNode()"><i class="icon-plus"></i>Add
               <!--End Input for Nodes-->
