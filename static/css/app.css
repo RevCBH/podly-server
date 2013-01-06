@@ -119,6 +119,10 @@ background-repeat: no-repeat;
 #listControlTop .btn
 {
   float: right;
+  max-width: 300px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 #listControlTop .navbar-search
