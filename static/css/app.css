@@ -249,6 +249,10 @@ background-repeat: no-repeat;
   border: 0px dashed green;
 }
 
+audio {
+  width: 640px;
+}
+
 /*
 Wordy Bits
 */

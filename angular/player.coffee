@@ -114,6 +114,8 @@ return ($scope, $routeParams, $http, scrollManager, MediaPlayer, PublishedState)
     # $scope.mediaPlayer.loadVimeoPlayer(data.mediaSources[0].resource, $('#videoContainerCell'))
     # $scope.mediaPlayer.loadYoutubePlayer(data.mediaSources[0].resource)
     source = _(data.mediaSources).find (x) -> x.kind.VideoYouTube
+    source ||= _(data.mediaSources).find (x) -> x.kind.VideoVimeo
+    source ||= _(data.mediaSources).find (x) -> x.kind.AudioMp3
     $scope.mediaPlayer.loadSource(source || data.mediaSources[0])
     setTimeout (-> scrollManager.makeTwitterButtons(jQuery '#listOfNodes')), 0
 

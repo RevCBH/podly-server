@@ -56,6 +56,8 @@ class MediaPlayer
       @loadVimeoPlayer(source.resource)
     else if source.kind.VideoYouTube
       @loadYoutubePlayer(source.resource)
+    else if source.kind.AudioMp3
+      @loadAudioPlayer(source.resource)
 
   loadYoutubePlayer: (resource) ->
     plrId = "youtube-player-#{@constructor.__plr_id++}"
@@ -138,5 +140,20 @@ class MediaPlayer
             ensurePlayAt @autoplay.start), 0
         else
           setTimeout (-> plr.api 'play'), 0
+
+  loadAudioPlayer: (resource) ->
+    plrId = "mp3-player-#{@constructor.__plr_id++}"
+    jqElem = jQuery """<audio id="#{plrId}" controls><source src="#{resource}" type="audio/mpeg"></audio>"""
+    @container.html jqElem
+    @container.height '30px'
+    @player = jqElem[0]
+    jQuery(window).resize()
+
+    @player.addEventListener 'timeupdate', => @scope.$apply "time = #{@player.currentTime}"
+
+    @play = => @player.play()
+    @pause = => @player.pause()
+    @seekTo = (t) => @player.currentTime = t
+    @scope.player = this
 
 app.constant 'MediaPlayer', MediaPlayer
