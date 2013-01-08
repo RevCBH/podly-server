@@ -370,7 +370,7 @@ class NodeRowWrapper extends ModelWrapper
   isNew: => @model._id
   manualMode: false
 
-return ($scope, $routeParams, $http, nodeCsvParser, $compile, PublishedState, MediaPlayer, Permission, Privilege, $filter) ->
+return ($scope, $routeParams, $http, nodeCsvParser, $compile, PublishedState, MediaPlayer, Permission, Privilege, $filter, mediaService) ->
   window.sc = $scope
   $scope.csvData = null
 
@@ -626,3 +626,26 @@ return ($scope, $routeParams, $http, nodeCsvParser, $compile, PublishedState, Me
       $scope.pause()
     else
       $scope.play()
+
+  $scope.$watch 'newMediaSourceUrl', (newValue) ->
+    $scope.newMediaSource = mediaService.parseMediaUrl(newValue)
+    console.log $scope.newMediaSource
+    ($ '#newMediaPreview').html mediaService.embeddedPlayerFor($scope.newMediaSource)
+
+  $scope.removeMediaSource = (x) ->
+    originalValue = JSON.stringify $scope.episode.mediaSources
+    $scope.episode.mediaSources = _($scope.episode.mediaSources).without(x)
+    q = $http.post("%{cmdRemoveMediaSource}", [$scope.episode._id, x.kind])
+    q.error ->
+      $scope.episode.mediaSources = JSON.parse originalValue
+
+  $scope.addMediaSource = ->
+    return unless $scope.newMediaSource
+    originalValue = JSON.stringify $scope.episode.mediaSources
+    $scope.episode.mediaSources = _($scope.episode.mediaSources).push($scope.newMediaSource)
+    q = $http.post("%{cmdAddMediaSource}", [$scope.episode._id, $scope.newMediaSource])
+    q.success ->
+      $scope.newMediaSource = undefined
+      $scope.newMediaSourceUrl = ""
+    q.error ->
+      $scope.episode.mediaSources = JSON.parse originalValue

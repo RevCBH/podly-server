@@ -47,6 +47,7 @@ requireEpisodePermission r msg perms epId = do
 requireManageUsers = requireRole AsManager "You don't have permission to manage users"
 requireCreateEpisode = requireRole AsEditor "You don't have permission to create episodes"
 requireEditEpisode = requireEpisodePermission AsEditor "You don't have permission to edit this episode"
+requireManageEpisode = requireEpisodePermission AsManager "You don't have permission to manage this episode"
 requirePublishEpisode = requireEpisodePermission AsPublisher "You don't have permission to publish this episode"
 
 requireSubmitEpisode perms epId = do

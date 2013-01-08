@@ -49,6 +49,18 @@
           <label class="control-label" for="episodeNumber">Episode Number
           <div in-place class="controls" model=episode.number on-update="saveProperty('number')">
             <input type=number name="episodeNumber" ng-model=episode.number>
+      <div id="mediaSourcePanel">
+        <div>
+          <h5>Add Media
+          <input type="url" id="newMediaSource" ng-model="newMediaSourceUrl" ui-keypress="{enter: 'addMediaSource()'}">
+          <br>
+          <span ng-show="newMediaSource" class="label label-info">{{newMediaSource.kind.toString()}}
+          <div ng-show="newMediaSource" id="newMediaPreview">
+        <div ng-repeat="x in episode.mediaSources">
+          [<a ng-click="removeMediaSource(x)">x</a>]
+          <span class="label label-info">{{x.kind}}
+          {{x.resource}}
+
         <!-- <div class="control-group">
           <div class="controls">
             <label class="checkbox">

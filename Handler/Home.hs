@@ -144,6 +144,19 @@ handleAdminR = do
       doc <- runDB $ documentFromEpisode (Entity tid episode)
       return doc
 
+    cmdRemoveMediaSource <- addCommand $ \(epId, kind) -> do
+      requireManageEpisode rights epId
+      runDB $ deleteWhere [MediaSourceEpisodeId ==. epId, MediaSourceKind ==. kind]
+      runDB $ touchEpisode epId
+      return $ Singleton ("OK" :: String)
+
+    cmdAddMediaSource <- addCommand $ \(epId, DocMediaSource kind res offset) -> do
+      requireManageEpisode rights epId
+      runDB $ do
+        insert $ MediaSource epId kind offset res
+        touchEpisode epId
+      return $ Singleton ("OK" :: String)
+
     cmdSubmitForReview <- addCommand $ \(Singleton epId) ->
       guardUpdateEpisode requireSubmitEpisode epId [EpisodePublished =. StateSubmitted] documentFromEpisode
 
@@ -197,6 +210,7 @@ handleAdminR = do
                                EpisodeGrantPrivilege ==. role,
                                EpisodeGrantEpisodeId ==. epId]
           return $ Singleton ("OK" :: String)
+
     cmdGetUserForEmail <- addCommand $ \(Singleton email) -> runDB $ getBy404 $ UniqueUser email
 
     addExtLib "ui"
