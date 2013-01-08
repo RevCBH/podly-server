@@ -118,7 +118,7 @@ class MediaPlayer
     jqElem = jQuery """<iframe podly-vimeo id="#{plrId}" src="#{vimeoUrl}" width="#{@width}" height="#{@height}" frameborder="0" webkitAllowFullScreen mozallowfullscreen allowFullScreen>"""
     @container.html jqElem
     plr = $f(plrId)
-    @player = @scope.player = plr
+    @player = plr
 
     plr.addEvent 'ready', =>
       plr.addEvent 'playProgress', (data, id) => @scope.$apply "time = #{data.seconds}"
@@ -141,6 +141,11 @@ class MediaPlayer
         else
           setTimeout (-> plr.api 'play'), 0
 
+    @play = => @player.api 'play'
+    @pause = => @player.api 'pause'
+    @seekTo = (t) => @player.api 'seekTo', t
+    @scope.player = this
+
   loadAudioPlayer: (resource) ->
     plrId = "mp3-player-#{@constructor.__plr_id++}"
     jqElem = jQuery """<audio id="#{plrId}" controls><source src="#{resource}" type="audio/mpeg"></audio>"""
@@ -150,6 +155,14 @@ class MediaPlayer
     jQuery(window).resize()
 
     @player.addEventListener 'timeupdate', => @scope.$apply "time = #{@player.currentTime}"
+    @player.addEventListener 'play', => @scope.$apply "isPlaying = true"
+    setStopped = => @scope.$apply "isPlaying = false"
+    for x in ['pause', 'ended', 'seeking', 'stalled', 'suspend', 'waiting']
+      @player.addEventListener x, setStopped
+    @player.addEventListener 'canplay', =>
+      if @autoplay
+        @seekTo(@autoplay.start) if @autoplay.start
+        @play()
 
     @play = => @player.play()
     @pause = => @player.pause()

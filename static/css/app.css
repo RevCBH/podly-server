@@ -31,8 +31,12 @@ background-repeat: no-repeat;
   display: inline;
 }
 
-.icon-play {
+.btn-mini .icon-play {
   margin-top: -1px;
+}
+
+.btn-group .btn-mini .icon-play {
+  margin-top: 1px;
 }
 
 .twitterNodeShare{
