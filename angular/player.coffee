@@ -111,7 +111,9 @@ return ($scope, $routeParams, $http, scrollManager, MediaPlayer, PublishedState)
     data.published = PublishedState.fromJSON(data.published)
     # END HACK
     $scope.episode = data
-    $scope.mediaPlayer.loadVimeoPlayer(data.mediaSources[0].resource, $('#videoContainerCell'))
+    # $scope.mediaPlayer.loadVimeoPlayer(data.mediaSources[0].resource, $('#videoContainerCell'))
+    # $scope.mediaPlayer.loadYoutubePlayer(data.mediaSources[0].resource)
+    $scope.mediaPlayer.loadSource(data.mediaSources[0])
     setTimeout (-> scrollManager.makeTwitterButtons(jQuery '#listOfNodes')), 0
 
   scrollManager.watch (jQuery '#listOfNodes')
@@ -125,8 +127,8 @@ return ($scope, $routeParams, $http, scrollManager, MediaPlayer, PublishedState)
   guardPlayer = (f) -> f($scope.player) if $scope.player
 
   $scope.seek = (time) -> guardPlayer (p) ->
-    p.api 'seekTo', time + $scope.mediaPlaybackOffset
-    p.api 'play'
+    p.seekTo(time + $scope.mediaPlaybackOffset)
+    p.play()
 
     scrollOpts = null
     if $scope.nodeFilter?.length > 0
@@ -141,11 +143,8 @@ return ($scope, $routeParams, $http, scrollManager, MediaPlayer, PublishedState)
         $scope.scrollTo $scope.currentNode(), scrollOpts
       ), 0
 
-  $scope.play = -> guardPlayer (p) ->
-    p.api 'play'
-
-  $scope.pause = -> guardPlayer (p) ->
-    p.api 'pause'
+  $scope.play = -> guardPlayer (p) -> p.play()
+  $scope.pause = -> guardPlayer (p) -> p.pause()
 
   lastNode = null
   # TODO - rate-limit, caching ?

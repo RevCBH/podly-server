@@ -75,6 +75,12 @@
         <a ng-click="loadEpisodePage(episodePages.current + 1)">Next</a>
 
 <script>
+  var tag = document.createElement('script');
+  tag.src = "//www.youtube.com/iframe_api";
+  var firstScriptTag = document.getElementsByTagName('script')[0];
+  firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+  window.onYouTubeIframeAPIReady = function() { delete window.onYouTubeIframeAPIReady; }
+<script>
   jQuery(document).ready(function(){
     var setNodeListSize = function () {
       // ISSUE, HACK - don't rely on JS for this, don't hardcode heights if you have to

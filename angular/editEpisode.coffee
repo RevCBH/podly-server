@@ -394,7 +394,8 @@ return ($scope, $routeParams, $http, nodeCsvParser, $compile, PublishedState, Me
     data.published = PublishedState.fromJSON(data.published)
     # END HACK
     $scope.episode = data
-    $scope.mediaPlayer.loadVimeoPlayer(data.mediaSources[0].resource, $('#videoContainerCell'))
+    $scope.mediaPlayer.loadSource(data.mediaSources[0])
+    # $scope.mediaPlayer.loadVimeoPlayer(data.mediaSources[0].resource, $('#videoContainerCell'))
 
     q = $http.post("%{cmdGrantsForEpisode}", [$scope.episode._id])
     q.success (data) ->
@@ -612,12 +613,12 @@ return ($scope, $routeParams, $http, nodeCsvParser, $compile, PublishedState, Me
   guardPlayer = (f) -> f($scope.player) if $scope.player
 
   $scope.seek = (time) -> guardPlayer (p) ->
-    p.api 'seekTo', time
-    p.api 'play'
+    p.seekTo(time)
+    p.play()
 
-  $scope.play = -> guardPlayer (p) -> p.api 'play'
+  $scope.play = -> guardPlayer (p) -> p.play()
 
-  $scope.pause = -> guardPlayer (p) -> p.api 'pause'
+  $scope.pause = -> guardPlayer (p) -> p.pause()
 
   $scope.togglePlay = (evt)->
     evt.preventDefault() if evt?.preventDefault
