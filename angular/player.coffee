@@ -3,9 +3,9 @@ app = angular.module 'playerMod'
 app.service 'scrollManager', () ->
   isAutoScrolling = false
   finishedAutoScrolling = false
-  shouldAutoScroll = true
-  this.disable = () -> shouldAutoScroll = false
-  this.enable = () -> shouldAutoScroll = true
+  this.shouldAutoScroll = true
+  this.disable = => this.shouldAutoScroll = false
+  this.enable = => this.shouldAutoScroll = true
 
   this.makeTwitterButtons = (container) ->
     # TODO - this is a specific function that should be moved elsewhere
@@ -34,12 +34,16 @@ app.service 'scrollManager', () ->
       @makeTwitterButtons(container)
       if finishedAutoScrolling
         finishedAutoScrolling = false
-        isAutoScrolling = false
+        tmpShould = this.shouldAutoScroll
+        setTimeout (=>
+            isAutoScrolling = false
+            this.shouldAutoScroll = tmpShould
+          ), 100
         return
 
       @disable() unless isAutoScrolling
 
-  this.getShouldAutoScroll = () -> shouldAutoScroll
+  this.getShouldAutoScroll = => this.shouldAutoScroll
 
   beginAutoScroll = (container) ->
     container.css 'overflow', 'hidden'
@@ -51,7 +55,7 @@ app.service 'scrollManager', () ->
     finishedAutoScrolling = true
 
   this.scrollTo = (opts) ->
-    return unless shouldAutoScroll
+    return if (not this.shouldAutoScroll) or isAutoScrolling
 
     container = opts.container
     elem = opts.target
@@ -59,11 +63,12 @@ app.service 'scrollManager', () ->
 
     if opts.animate
       beginAutoScroll(container)
-      container.animate {scrollTop: top},
+      container.stop().animate {scrollTop: top},
         duration: 1000
-        complete: () -> endAutoScroll(container)
+        complete: ->
+          endAutoScroll(container)
     else
-      container.scrollTop(top)
+      container.stop().scrollTop(top)
       endAutoScroll(container)
 
   return this
@@ -137,14 +142,14 @@ return ($scope, $routeParams, $http, scrollManager, MediaPlayer, PublishedState)
     if $scope.nodeFilter?.length > 0
       $scope.nodeFilter = ""
       scrollOpts = animate: false
-
-    setTimeout (->
-        $scope.time = time + $scope.mediaPlaybackOffset
-        scrollManager.disable()
-        $scope.currentNode()
-        scrollManager.enable()
-        $scope.scrollTo $scope.currentNode(), scrollOpts
-      ), 0
+    setTimeout (-> scrollManager.shouldAutoScroll = true), 0
+      # setTimeout (->
+      #     $scope.time = time + $scope.mediaPlaybackOffset
+      #     scrollManager.disable()
+      #     $scope.currentNode()
+      #     scrollManager.enable()
+      #     $scope.scrollTo $scope.currentNode(), scrollOpts
+      #   ), 0
 
   $scope.play = -> guardPlayer (p) -> p.play()
   $scope.pause = -> guardPlayer (p) -> p.pause()

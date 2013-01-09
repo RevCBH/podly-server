@@ -3,6 +3,7 @@ Default: &defaults
   port: 3000
   approot: "http://localhost:3000"
   copyright:  © 2012 by Nerd Tribe
+  mixpanel: fb9dacb040c67ca281bbd20b30809eb8
 
 Development:
   <<: *defaults
@@ -16,5 +17,7 @@ Staging:
 Production:
   approot: "http://podly.co"
   port: 80
-  analytics: UA-37496670-1
+  googleAnalytics: UA-37496670-1
+  # TODO - enable live metrics mixpanel: b0067de423831de083e85861614df4ba
+  mixpanel: fb9dacb040c67ca281bbd20b30809eb8
   <<: *defaults
