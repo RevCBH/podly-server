@@ -156,7 +156,7 @@ class MediaPlayer
     @player.addEventListener 'timeupdate', => @scope.$apply "time = #{@player.currentTime}"
     @player.addEventListener 'play', => @scope.$apply "isPlaying = true"
     setStopped = => @scope.$apply "isPlaying = false"
-    for x in ['pause', 'ended', 'seeking', 'stalled', 'suspend', 'waiting']
+    for x in ['pause', 'ended']
       @player.addEventListener x, setStopped
     @player.addEventListener 'canplay', =>
       if @autoplay

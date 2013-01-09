@@ -76,6 +76,8 @@ amazonEntity url = do
   return $ AmazonEntity m
 
 -- TODO - amazon search pages
+-- TODO - http://www.amazon.com/gp/feature.html?ie=UTF8&docId=1000664761
+-- TODO - http://www.amazon.com/b/ref=sr_tc_sc_2_0?node=133141011&pf_rd_r=2052D86DEB1345DBBB48&pf_rd_m=ATVPDKIKX0DER&pf_rd_t=301&pf_rd_i=kindle&pf_rd_p=1396097482&pf_rd_s=structured-results-2&qid=1354306284&sr=8-2-tc
 
 data AmazonLink =
   AmazonProduct String
