@@ -127,7 +127,13 @@ return ($scope, $routeParams, $http, scrollManager, MediaPlayer, PublishedState)
 
   $scope.seek = (node) -> guardPlayer (p) ->
     time = node.time
-    mixpanel?.track 'Seek Node', { 'time': time, 'node.id': node.relId, 'episode.id': $scope.episode._id, 'episode.number': $scope.episode.number, 'podcast': $scope.episode.podcast }
+    mixpanel?.track 'Seek Node',
+      'node.time': node.time
+      'node.id': node.relId
+      'episode.id': $scope.episode._id
+      'episode.number': $scope.episode.number
+      'podcast': $scope.episode.podcast
+
     p.seekTo(time + $scope.mediaPlaybackOffset)
     p.play()
 
