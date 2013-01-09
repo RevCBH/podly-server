@@ -198,3 +198,11 @@ return ($scope, $routeParams, $http, scrollManager, MediaPlayer, PublishedState)
     over = txt.length - avail
     topicTxt = topicTxt.substring(0, topicTxt.length - (over + 3)) + '...'
     return template.replace('@1', topicTxt).replace('@2', '')
+
+  $scope.trackExit = (node) ->
+    mixpanel?.track 'Exit Node',
+      'node.url': node.url
+      'node.id': node.relId
+      'episode.id': $scope.episode._id
+      'episode.number': $scope.episode.number
+      'podcast': $scope.episode.podcast
