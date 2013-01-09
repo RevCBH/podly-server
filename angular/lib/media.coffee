@@ -41,7 +41,7 @@ app.service 'mediaService', (MediaKind) ->
             <source src="#{source.resource}" type="audio/mpeg">
           </audio>"""
     else if source?.kind?.VideoYouTube
-      youtubeUrl = "http://www.youtube.com/embed/e-BoPxOZYu0"
+      youtubeUrl = "http://www.youtube.com/embed/#{source.resource}"
       """<iframe type="text/html" src="#{youtubeUrl}" frameborder="0"></iframe>"""
     else
       """<div>Invalid media source</div>"""
@@ -52,17 +52,23 @@ class MediaPlayer
     @player = null
 
   loadSource: (source) ->
+    kind = null
     if source.kind.VideoVimeo
+      kind = 'Vimeo'
       @loadVimeoPlayer(source.resource)
     else if source.kind.VideoYouTube
+      kind = 'YouTube'
       @loadYoutubePlayer(source.resource)
     else if source.kind.AudioMp3
+      kind = 'Mp3'
       @loadAudioPlayer(source.resource)
+    mixpanel?.track 'Load Media', {resource: "#{kind}@#{source.resource}"}
+
 
   loadYoutubePlayer: (resource) ->
     plrId = "youtube-player-#{@constructor.__plr_id++}"
     host = window.location.protocol + '//' + window.location.host
-    youtubeUrl = "http://www.youtube.com/embed/e-BoPxOZYu0?enablejsapi=1&origin=#{host}"
+    youtubeUrl = "http://www.youtube.com/embed/#{resource}?enablejsapi=1&origin=#{host}"
     jqElem = """<iframe id="#{plrId}" type="text/html" width="#{@width}" height="#{@height}"
                         src="#{youtubeUrl}" frameborder="0"></iframe>"""
     @container.html jqElem

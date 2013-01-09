@@ -32,7 +32,7 @@
             <div class="playTime">
               <!--Button -->
               <div class="playButton">
-                <button type="submit" class="btn btn-mini" ng-click="seek(node.time)">
+                <button type="submit" class="btn btn-mini" ng-click="seek(node)">
                   <i class="icon-play icon-black">
 
               <!--Time Test-->

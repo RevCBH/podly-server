@@ -33,7 +33,6 @@ return ($scope, $routeParams, $http, mediaService, EpisodeDoc) ->
   $scope.isValid = ->
     $scope.mediaSource && true
 
-
     # $http.post("%{cmdSum}", [1, 2]).success (data) ->
       # console.log "+:", data
     # console.log "em:", data

@@ -111,8 +111,6 @@ return ($scope, $routeParams, $http, scrollManager, MediaPlayer, PublishedState)
     data.published = PublishedState.fromJSON(data.published)
     # END HACK
     $scope.episode = data
-    # $scope.mediaPlayer.loadVimeoPlayer(data.mediaSources[0].resource, $('#videoContainerCell'))
-    # $scope.mediaPlayer.loadYoutubePlayer(data.mediaSources[0].resource)
     source = _(data.mediaSources).find (x) -> x.kind.VideoYouTube
     source ||= _(data.mediaSources).find (x) -> x.kind.VideoVimeo
     source ||= _(data.mediaSources).find (x) -> x.kind.AudioMp3
@@ -129,7 +127,9 @@ return ($scope, $routeParams, $http, scrollManager, MediaPlayer, PublishedState)
 
   guardPlayer = (f) -> f($scope.player) if $scope.player
 
-  $scope.seek = (time) -> guardPlayer (p) ->
+  $scope.seek = (node) -> guardPlayer (p) ->
+    time = node.time
+    mixpanel?.track 'Seek Node', { 'time': time, 'node.id': node.relId, 'episode.id': $scope.episode._id, 'episode.number': $scope.episode.number, 'podcast': $scope.episode.podcast }
     p.seekTo(time + $scope.mediaPlaybackOffset)
     p.play()
 
