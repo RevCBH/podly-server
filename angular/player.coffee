@@ -19,7 +19,6 @@ app.service 'scrollManager', () ->
       xtop = x.offset().top
       xbot = xtop + x.height()
       if (bottom >= xtop >= top) or (bottom >= xbot >= top)
-        # Socialite.load(x[0]) unless x.find('.socialite-instance').length > 0
         x.addClass('visible-node')
       else
         x.removeClass('visible-node')
@@ -75,12 +74,6 @@ app.service 'scrollManager', () ->
 
 app.directive 'podlyVimeo', ($http) ->
   (scope, element, attrs) ->
-    # scope.player = $f 'vimeo-player'
-    # scope.player.addEvent 'ready', (x) ->
-    #   scope.player.addEvent 'playProgress', (data, id) ->
-    #     scope.$apply "time = #{data.seconds}"
-    #   scope.play()
-
     scope.episodePages =
       current: 1
       max: 1
@@ -143,13 +136,6 @@ return ($scope, $routeParams, $http, scrollManager, MediaPlayer, PublishedState)
       $scope.nodeFilter = ""
       scrollOpts = animate: false
     setTimeout (-> scrollManager.shouldAutoScroll = true), 0
-      # setTimeout (->
-      #     $scope.time = time + $scope.mediaPlaybackOffset
-      #     scrollManager.disable()
-      #     $scope.currentNode()
-      #     scrollManager.enable()
-      #     $scope.scrollTo $scope.currentNode(), scrollOpts
-      #   ), 0
 
   $scope.play = -> guardPlayer (p) -> p.play()
   $scope.pause = -> guardPlayer (p) -> p.pause()

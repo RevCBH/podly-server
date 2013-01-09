@@ -1,12 +1,5 @@
 app = angular.module('media', ['models'])
 
-# class MediaPlayer
-#   initialize: (@container, @scope) ->
-
-#   loadVimeoPlayer: ->
-
-#     """<iframe podly-vimeo id="vimeo-player" src="{{vimeoUrl()}}" width="640" height="360" frameborder="0" webkitAllowFullScreen mozallowfullscreen allowFullScreen>"""
-
 app.service 'mediaService', (MediaKind) ->
   makeSource = (k, res) ->
     {resource: res, kind: MediaKind[k], offset: 0}
