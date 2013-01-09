@@ -4,6 +4,7 @@ Default: &defaults
   approot: "http://localhost:3000"
   copyright:  © 2012 by Nerd Tribe
   mixpanel: fb9dacb040c67ca281bbd20b30809eb8
+  amazonAffiliate: nerdtrcom-20
 
 Development:
   <<: *defaults

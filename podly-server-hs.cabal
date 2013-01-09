@@ -37,6 +37,7 @@ library
                      Handler.Episode
                      Util.TH
                      Podly.Auth
+                     Podly.Affiliate
                      -- Handler.NodeInstance
                      Handler.NodeType
                      Fixtures
@@ -102,6 +103,8 @@ library
                  , old-locale
                  , mtl
                  , wai
+                 , network
+                 , regex-posix
                  , unordered-containers
                  , blaze-markup
                  -- , yesod-fay                     >= 0.1

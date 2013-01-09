@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+ghci -XFlexibleInstances -XRankNTypes -XDeriveGeneric -XCPP -XTemplateHaskell -XQuasiQuotes -XOverloadedStrings -XNoImplicitPrelude -XKindSignatures -XTypeFamilies -XFlexibleContexts -XGADTs -XMultiParamTypeClasses $*

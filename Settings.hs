@@ -76,6 +76,7 @@ data Extra = Extra
     { extraCopyright :: Text
     , extraGoogleAnalytics :: Maybe Text -- ^ Google Analytics
     , extraMixpanel :: Maybe Text -- ^ Mixpanel Analytics
+    , extraAmazonAffiliate :: Maybe Text -- ^ Amazon Affiliate Id
     } deriving Show
 
 parseExtra :: DefaultEnv -> Object -> Parser Extra
@@ -83,3 +84,4 @@ parseExtra _ o = Extra
     <$> o .:  "copyright"
     <*> o .:? "googleAnalytics"
     <*> o .:? "mixpanel"
+    <*> o .:? "amazonAffiliate"

@@ -3,6 +3,7 @@ module Handler.Episode where
 
 import Import
 import Handler.Util
+import Podly.Affiliate
 
 import Data.Aeson (Result(..), FromJSON(..), fromJSON, ToJSON(..))
 import Data.Aeson.TH (deriveJSON)
@@ -71,13 +72,16 @@ getPodcastEpisodeR name number = do
     entity@(Entity episodeId episode) <- runDB $ getBy404 $ UniqueEpisodeNumber name number
     ensureStale $ episodeLastModified episode
     episodeDoc <- runDB $ documentFromEpisode entity
-    --nodes <- runDB $ selectList [] [Asc NodeTitle]
-    --(formWidget, enctype) <- generateFormPost $ newNodeInstanceForm episodeId nodes
-    --let widget = do
-    --    setTitle $ toHtml $ name <> " #" <> (pack $ show number) <> " - " <> (episodeTitle episode)
-    --    $(widgetFile "episodes/show")
-    --defaultLayoutJson widget json
-    jsonToRepJson episodeDoc
+    nodes <- mapM updateNodeUrl $ docEpisodeNodes episodeDoc --episodeDoc
+
+    jsonToRepJson $ episodeDoc { docEpisodeNodes = nodes }
+  where
+    updateNodeUrl n = do
+      case docNodeUrl n of
+        Just url -> do
+          newUrl <- rewriteLink $ unpack url
+          return n {docNodeUrl = Just $ pack newUrl}
+        Nothing -> return n
 
 instance FromJSON Day where
     parseJSON val = do
