@@ -446,7 +446,7 @@ return ($scope, $routeParams, $http, nodeCsvParser, $compile, PublishedState, Me
     $scope.lastCreatedNode = n
     $scope.nodeRows.push(n)
     $scope.newNodeTitle = ""
-    $scope.seek($scope.time - 2)
+    $scope.seek($scope.time - 5)
 
   $scope.syncTime = (n, evt) ->
     # console.log "syncTime - this:", @, "n:", n, "evt:", evt
