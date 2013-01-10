@@ -26,9 +26,10 @@ hostname url = do
   return $ uriRegName auth
 
 urlPath :: String -> Maybe String
-urlPath url = do
-  uri <- parseURI url
-  return $ uriPath uri
+urlPath url = parseURI url >>= return . uriPath
+
+urlQuery :: String -> Maybe String
+urlQuery url = parseURI url >>= return . uriQuery
 
 firstMaybe :: [Maybe a] -> Maybe a
 firstMaybe (Just x:xs) = Just x
@@ -75,18 +76,35 @@ amazonEntity url = do
   m <- firstMatchAt 1 p ["/([^/?]+)/e/([^/?]+)", "/(l)/([^/?]+)"]
   return $ AmazonEntity m
 
+amazonOther :: String -> Maybe AmazonLink
+amazonOther url = do
+  h <- hostname url >>= maybeMatches "^(www.)?(amazon.com)|(amzn.com)"
+  p <- urlPath url
+  q <- urlQuery url
+  let pattern = "tag=([^&?=]*)[&?=]?" :: String
+  let (pBefore, _, pAfter) = p =~ pattern :: (String, String, String)
+  let (qBefore, _, qAfter) = q =~ pattern :: (String, String, String)
+  let q' = qBefore ++ qAfter
+  let post = if length q' == 0
+                then "?"
+                else "&"
+
+  return $ AmazonGeneric $ h ++ pBefore ++ pAfter ++ q' ++ post
+
 -- TODO - amazon search pages
--- TODO - http://www.amazon.com/gp/feature.html?ie=UTF8&docId=1000664761
+-- TODO - http://www.amazon.com/gp/feature.html?tag=fake&ie=UTF8&docId=1000664761
 -- TODO - http://www.amazon.com/b/ref=sr_tc_sc_2_0?node=133141011&pf_rd_r=2052D86DEB1345DBBB48&pf_rd_m=ATVPDKIKX0DER&pf_rd_t=301&pf_rd_i=kindle&pf_rd_p=1396097482&pf_rd_s=structured-results-2&qid=1354306284&sr=8-2-tc
 
 data AmazonLink =
   AmazonProduct String
   | AmazonEntity String
+  | AmazonGeneric String
  deriving (Show)
 
 makeAmazonLink :: String -> String -> Maybe String
 makeAmazonLink tag url = do
-  x <- firstMaybe [amazonProduct url, amazonShortProduct url, amazonEntity url]
+  x <- firstMaybe [amazonProduct url, amazonShortProduct url, amazonEntity url, amazonOther url]
   case x of
-    AmazonProduct p -> return $ "http://www.amazon.com/dp/" ++ p ++ "/?tag=" ++ tag
-    AmazonEntity e -> return $ "http://www.amazon.com/l/" ++ e ++ "/?tag=" ++ tag
+    AmazonProduct p -> return $ "http://amzn.com/" ++ p ++ "?tag=" ++ tag
+    AmazonEntity e -> return $ "http://amzn.com/l/" ++ e ++ "?tag=" ++ tag
+    AmazonGeneric url -> return $ "http://" ++ url ++ "tag=" ++ tag
