@@ -5,6 +5,8 @@ Default: &defaults
   copyright:  © 2012 by Nerd Tribe
   mixpanel: fb9dacb040c67ca281bbd20b30809eb8
   amazonAffiliate: nerdtrcom-20
+  upgradedAffiliate: 50c284d6dd24a
+  onnitAffiliate: thepodly
 
 Development:
   <<: *defaults

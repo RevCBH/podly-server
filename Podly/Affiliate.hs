@@ -12,7 +12,9 @@ import Debug.Trace
 rewriteLink :: String -> Handler String
 rewriteLink lnk = do
   liftIO $ traceIO $ "rewriteLink: " ++ lnk
-  let parsers = [liftM makeAmazonLink <$> liftM unpack . extraAmazonAffiliate]
+  let parsers = [liftM makeAmazonLink <$> liftM unpack . extraAmazonAffiliate,
+                 liftM (makeAidLink "upgradedself.com") <$> liftM unpack . extraUpgradedAffiliate,
+                 liftM (makeAidLink "onnit.com") <$> liftM unpack . extraOnnitAffiliate]
   extra <- getExtra
   let ps = mapMaybe ($ extra) parsers
   case firstMaybe $ map ($ lnk) ps of
@@ -108,3 +110,11 @@ makeAmazonLink tag url = do
     AmazonProduct p -> return $ "http://amzn.com/" ++ p ++ "?tag=" ++ tag
     AmazonEntity e -> return $ "http://amzn.com/l/" ++ e ++ "?tag=" ++ tag
     AmazonGeneric url -> return $ "http://" ++ url ++ "tag=" ++ tag
+
+-- TODO - support for multiple a_aid program camaigns, specifically onnit suppliments.
+
+makeAidLink :: String -> String -> String -> Maybe String
+makeAidLink host tag url = do
+  hostname url >>= maybeMatches ("^(www.)?" ++ host ++ "$")
+  p <- urlPath url
+  return $ "http://" ++ host ++ p ++ "?a_aid=" ++ tag
