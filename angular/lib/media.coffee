@@ -57,8 +57,10 @@ class MediaPlayer
       @loadAudioPlayer(source.resource)
     mixpanel?.track 'Load Media', {resource: "#{kind}@#{source.resource}"}
 
-
   loadYoutubePlayer: (resource) ->
+    unless window.YT
+      window.onYouTubeIframeAPIReady = -> delete window.onYouTubeIframeAPIReady
+
     plrId = "youtube-player-#{@constructor.__plr_id++}"
     host = window.location.protocol + '//' + window.location.host
     youtubeUrl = "http://www.youtube.com/embed/#{resource}?enablejsapi=1&origin=#{host}"
