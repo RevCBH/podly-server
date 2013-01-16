@@ -106,7 +106,7 @@ library
                  , wai
                  , network
                  , regex-posix
-                 , regex-pcre
+                 , regex-pcre-builtin
                  , unordered-containers
                  , blaze-markup
                  -- , yesod-fay                     >= 0.1
