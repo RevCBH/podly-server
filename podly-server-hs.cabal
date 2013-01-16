@@ -38,6 +38,7 @@ library
                      Util.TH
                      Podly.Auth
                      Podly.Affiliate
+                     Podly.Middleware.Mobile
                      -- Handler.NodeInstance
                      Handler.NodeType
                      Fixtures
@@ -105,6 +106,7 @@ library
                  , wai
                  , network
                  , regex-posix
+                 , regex-pcre
                  , unordered-containers
                  , blaze-markup
                  -- , yesod-fay                     >= 0.1
