@@ -2,8 +2,10 @@
 {-# LANGUAGE QuasiQuotes       #-}
 {-# LANGUAGE RecordWildCards   #-}
 {-# LANGUAGE TemplateHaskell   #-}
+{-# LANGUAGE ImpredicativeTypes #-}
 module Yesod.Angular
     ( YesodAngular (..)
+    , ModuleConfig (..)
     , runAngular
     , runNgModule
     , addCommand
@@ -20,7 +22,7 @@ import           Control.Monad.Trans.Writer (WriterT, runWriterT, tell)
 import           Data.Aeson                 (FromJSON, ToJSON)
 import           Data.Map                   (Map)
 import qualified Data.Map                   as Map
-import           Data.Maybe                 (fromMaybe, Maybe(..), catMaybes)
+import           Data.Maybe                 (fromMaybe, Maybe(..), catMaybes, maybe)
 import           Data.Monoid                (First (..), Monoid (..))
 import           Data.Text                  (Text)
 import           Text.Hamlet                (HtmlUrl, hamletFile)
@@ -42,6 +44,8 @@ import Data.Either (Either(..))
 import Control.Monad
 import GHC.Base
 
+type Layout sub master = GWidget sub master () -> GHandler sub master RepHtml
+
 class Yesod master => YesodAngular master where
     urlAngularJs :: master -> Either (Route master) Text
     urlAngularJs _ = Right "//ajax.googleapis.com/ajax/libs/angularjs/1.0.3/angular.js"
@@ -61,8 +65,8 @@ class Yesod master => YesodAngular master where
     urlSocialite :: master -> Either (Route master) Text
     urlSocialite _ = Right "https://raw.github.com/dbushell/Socialite/master/socialite.js"
 
-    wrapAngular :: Text -> GWidget sub master () -> GHandler sub master RepHtml
-    wrapAngular modname widget = defaultLayout [whamlet|<div ng-app=#{modname}>^{widget}|]
+    wrapAngular :: Text -> Layout sub master -> GWidget sub master () -> GHandler sub master RepHtml
+    wrapAngular modname layout widget = layout [whamlet|<div ng-app=#{modname}>^{widget}|]
 
 data AngularWriter sub master = AngularWriter
     { awCommands     :: Map Text (GHandler sub master ())
@@ -89,13 +93,15 @@ type GAngular sub master = WriterT (AngularWriter sub master) (GHandler sub mast
 runAngular :: YesodAngular master
            => GAngular sub master ()
            -> GHandler sub master RepHtml
-runAngular ga = runNgModule Nothing ga
+runAngular ga = runNgModule (ModuleConfig Nothing Nothing) ga
+
+data ModuleConfig sub master = ModuleConfig { modName :: Maybe Text, modLayout :: Maybe (Layout sub master) }
 
 runNgModule :: YesodAngular master
-            => Maybe Text
+            => ModuleConfig sub master
             -> GAngular sub master ()
             -> GHandler sub master RepHtml
-runNgModule mModname ga = do
+runNgModule cfg ga = do
     master <- getYesod
     ((), AngularWriter{..}) <- runWriterT ga
     mc <- lookupGetParam "command"
@@ -104,11 +110,12 @@ runNgModule mModname ga = do
     case mp >>= flip Map.lookup awPartials of
         Nothing -> return ()
         Just htmlurl -> getUrlRenderParams >>= sendResponse . RepHtml . toContent . htmlurl
-
-    modname <- do
-        case mModname of
-            Just name -> return name
-            Nothing -> newIdent
+    --modname <- do
+    --    case modName cfg of
+    --        Just name -> return name
+    --        Nothing -> newIdent
+    modname <- maybe newIdent return (modName cfg)
+    let layout = maybe defaultLayout id (modLayout cfg)
 
     let defaultRoute =
             case awDefaultRoute of
@@ -120,7 +127,7 @@ runNgModule mModname ga = do
                        f = \x -> T.concat ["\"", x, "\","]
                    in T.concat (map f ks)
 
-    wrapAngular modname $ do
+    wrapAngular modname layout $ do
         addScriptEither $ urlJqueryUi master
         addScriptEither $ urlJqueryMaskedInput master
         addScriptEither $ urlAngularJs master

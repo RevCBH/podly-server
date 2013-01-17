@@ -1,11 +1,11 @@
 name:              podly-server-hs
-version:           0.0.0
-license:           BSD3
+version:           0.0.1
+license:           PROPRIETARY
 license-file:      LICENSE
 author:            Bennett Hoffman
 maintainer:        Bennett Hoffman
-synopsis:          The greatest Yesod web application ever.
-description:       I'm sure you can say something clever here if you try.
+synopsis:          podly.co
+description:       Something clever.
 category:          Web
 stability:         Experimental
 cabal-version:     >= 1.8

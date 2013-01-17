@@ -4,6 +4,7 @@ module Handler.Home where
 import Import
 import Yesod.Auth
 import Yesod.Angular
+import Yesod.Default.Config (appExtra)
 import qualified Network.Wai as W
 
 import Handler.Util
@@ -20,6 +21,7 @@ import qualified Data.Map as Map
 import Text.Coffee (coffeeFile)
 import Control.Monad (liftM)
 import Control.Monad.Trans.Maybe
+import Text.Hamlet (hamletFile)
 
 import Debug.Trace
 
@@ -45,7 +47,8 @@ handleHomeR = do
   let port = ""
   let approot = proto ++ "://" ++ hostname ++ port ++ "/"
 
-  runNgModule (Just "playerMod") $ do
+  let cfg = ModuleConfig (Just "playerMod") Nothing
+  runNgModule cfg $ do
     cmdSetNodeInstance <- addCommand $ \() -> do
       notFound
       return $ Singleton ("OK" :: String)
@@ -64,6 +67,35 @@ getPlayNodeR nid = do
   setSession (pack "StartAt") (pack . show $ nodeInstanceTime inst)
   -- HACK
   redirect $ "/#/player/" ++ (unpack $ episodePodcast ep) ++ "/" ++ (show $ episodeNumber ep)
+
+embeddedLayout :: GWidget sub App () -> GHandler sub App RepHtml
+embeddedLayout widget = do
+  master <- getYesod
+  pc <- widgetToPageContent $ do
+      addStylesheet $ StaticR css_bootstrap_css
+      addStylesheet $ StaticR css_embed_css
+      $(widgetFile "embedded/default-layout")
+  hamletToRepHtml $(hamletFile "templates/embedded/default-layout-wrapper.hamlet")
+
+handleEmbedPlayerR :: EpisodeId -> Handler RepHtml
+handleEmbedPlayerR epId = do
+  episode <- runDB $ get404 epId
+
+  let startAt = "0" :: String
+  let approot = "http://podly.co/" :: String
+  let cfg = ModuleConfig (Just "playerMod") (Just embeddedLayout)
+  runNgModule cfg $ do
+    cmdSetNodeInstance <- addCommand $ \() -> do
+      notFound
+      return $ Singleton ("OK" :: String)
+
+    $(addLib "filters")
+    $(addLib "models")
+    $(addLib "media")
+    $(addCtrl "/:podcastName/:episodeNumber" "embedded/player")
+    -- $(addCtrl "/:epId" "embedded/player")
+
+    setDefaultRoute $ pack $ "/The Joe Rogan Experience/" ++ (show $ episodeNumber episode)
 
 newtype Singleton a = Singleton { unSingleton :: a }
 instance A.ToJSON a => A.ToJSON (Singleton a) where
@@ -104,7 +136,8 @@ handleAdminR = do
 
   icons <- runDB $ selectList [] [Asc IconName]
 
-  runNgModule (Just "admin") $ do
+  let cfg = ModuleConfig (Just "admin") Nothing
+  runNgModule cfg $ do
     cmdCreateEpisode <- addCommand $ \ep -> do
       requireCreateEpisode rights
       --episode <- tryInsertEpisode ep
