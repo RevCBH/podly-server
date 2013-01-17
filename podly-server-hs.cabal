@@ -1,6 +1,6 @@
 name:              podly-server-hs
 version:           0.0.1
-license:           PROPRIETARY
+license:           AllRightsReserved
 license-file:      LICENSE
 author:            Bennett Hoffman
 maintainer:        Bennett Hoffman

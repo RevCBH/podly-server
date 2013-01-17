@@ -1,25 +1,28 @@
-module Podly.Affiliate where -- (rewriteLink) where
+module Podly.Affiliate (rewriteLink) where
 
 import Import
 import Control.Monad (liftM)
 import Data.Maybe
 import Data.Text (pack, unpack)
-import Text.Regex.Posix
+import Text.Regex.PCRE
 import Network.URI
 
 import Debug.Trace
 
 rewriteLink :: String -> Handler String
 rewriteLink lnk = do
-  liftIO $ traceIO $ "rewriteLink: " ++ lnk
+  extra <- getExtra
+  return $ selectRewrite extra lnk
+
+selectRewrite :: Extra -> String -> String
+selectRewrite extra lnk =
   let parsers = [liftM makeAmazonLink <$> liftM unpack . extraAmazonAffiliate,
                  liftM (makeAidLink "upgradedself.com") <$> liftM unpack . extraUpgradedAffiliate,
                  liftM (makeAidLink "onnit.com") <$> liftM unpack . extraOnnitAffiliate]
-  extra <- getExtra
-  let ps = mapMaybe ($ extra) parsers
-  case firstMaybe $ map ($ lnk) ps of
-    Just x -> return $ trace ("\tto: " ++ x) x
-    Nothing -> return lnk
+      ps = mapMaybe ($ extra) parsers
+  in case firstMaybe $ map ($ lnk) ps of
+      Just x -> x
+      Nothing -> lnk
 
 hostname :: String -> Maybe String
 hostname url = do
@@ -61,7 +64,7 @@ amazonShortProduct :: String -> Maybe AmazonLink
 amazonShortProduct url = do
   hostname url >>= maybeMatches "amzn.com"
   p <- urlPath url
-  m <- firstMatchAt 0 p ["^/([^/?]+)"]
+  m <- firstMatchAt 1 p ["^(/[ledp]+)?/([^/?]+)"]
   return $ AmazonProduct m
 
 amazonProduct :: String -> Maybe AmazonLink
