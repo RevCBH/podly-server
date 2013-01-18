@@ -1,23 +1,5 @@
 app = angular.module 'playerMod'
 
-app.directive 'podlyVimeo', ($http) ->
-  (scope, element, attrs) ->
-    scope.episodePages =
-      current: 1
-      max: 1
-      episodes: []
-
-    scope.loadEpisodePage = (n) ->
-      console.log "loadEpisodePage:", n
-      n = Math.max 0, Math.min(n, scope.episodePages?.max)
-      q = $http.get "/episodes?page=#{n}"
-      q.success (data) =>
-        scope.episodePages.current = data.pageInfo?.page
-        scope.episodePages.max = data.pageInfo?.of
-        scope.episodePages.episodes = data.episodes
-
-    scope.loadEpisodePage(1)
-
 return ($scope, $routeParams, $http, scrollManager, MediaPlayer, PublishedState) ->
   window.sc = $scope
   window.sm = scrollManager

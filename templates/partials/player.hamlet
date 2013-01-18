@@ -48,7 +48,7 @@
     <!--End Row -->
 
 <script>
-  jQuery(document).ready(function(){
+  (function(){
     var setNodeListSize = function () {
       // ISSUE, HACK - don't rely on JS for this, don't hardcode heights if you have to
       x = jQuery('#listOfNodes');
@@ -60,4 +60,4 @@
 
     jQuery(window).resize(setNodeListSize);
     setNodeListSize();
-  });
+  })();
