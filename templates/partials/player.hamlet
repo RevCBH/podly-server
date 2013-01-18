@@ -1,0 +1,63 @@
+<!--Table holding Video & List Controls-->
+<table class="table" id="topContent">
+  <tbody>
+    <tr>
+      <td id="videoContainerCell">
+    <!--List Controls Top-->
+    <tr>
+      <td id="listControlTop">
+        <a class="btn btn-small" ng-click="scrollToCurrent()" ng-hide="shouldHideSnapButton()">{{currentNodeTitle()}}
+
+        <form class="navbar-search pull-right">
+          <input type="text" class="search-query" placeholder="Search this episode" ng-model="nodeFilter">
+    <!--End List Controls Top-->
+<!--End Table holding Video & List Controls-->
+
+<!--List o' Nodes-->
+<div id="listOfNodes">
+  <table class="table table-striped">
+    <!--Node Elements Row 1-->
+    <tr ng-repeat="node in episode.nodes | filter:nodeFilter" data-node-id="{{node.relId}}" ng-class="classesForNode(node)">
+      <td>
+        <div class="nodeElements">
+          <!--Play Time-->
+          <div class="playTime">
+            <!--Button -->
+            <div class="playButton">
+              <button type="submit" class="btn btn-mini" ng-click="seek(node)">
+                <i class="icon-play icon-black">
+
+            <!--Time Test-->
+            <div class="playButtonTime">{{node.time | formatOffset}}
+          <!--End Play Time-->
+
+          <!--Icon-->
+          <div class="icon">
+            <img ng-src="/static/img/{{node.nodeType.icon}}">
+          <!--End Icon-->
+
+          <!--Wordy Bits -->
+          <div class="wordyBits">
+            <div class="category">{{node.nodeType.title}}
+            <div class="wordLinks">
+              <a href="{{node.url}}" target="_blank" ng-click="trackExit(node)">{{node.title}}
+          <!--End Wordy Bits -->
+          <div class="twitterNodeShare">
+            <a href="https://twitter.com/share" class="socialite twitter-share" data-text="{{tweetText(node)}}" data-url="{{linkToNode(node)}}" data-via="ThePodly" data-size="large" data-related="JoeRoganExp" data-count="none" data-hashtags="podly,{{node.nodeType.title}}"></a>
+        <!--End Node Elements-->
+    <!--End Row -->
+
+<script>
+  jQuery(document).ready(function(){
+    var setNodeListSize = function () {
+      // ISSUE, HACK - don't rely on JS for this, don't hardcode heights if you have to
+      x = jQuery('#listOfNodes');
+      before = jQuery('#topContent');
+      t = before.offset().top + before.height();
+      h = Math.max(55*3, $(window).height() - t - 3);
+      x.height(h);
+    };
+
+    jQuery(window).resize(setNodeListSize);
+    setNodeListSize();
+  });

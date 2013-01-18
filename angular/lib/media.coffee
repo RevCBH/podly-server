@@ -66,7 +66,7 @@ class MediaPlayer
     youtubeUrl = "http://www.youtube.com/embed/#{resource}?enablejsapi=1&origin=#{host}"
     jqElem = """<iframe id="#{plrId}" type="text/html" width="#{@width}" height="#{@height}"
                         src="#{youtubeUrl}" frameborder="0"></iframe>"""
-    @container.html jqElem
+    $(@container).html jqElem
 
     onPlayerReady = =>
       if @autoplay
@@ -117,7 +117,7 @@ class MediaPlayer
     vimeoUrl = "http://player.vimeo.com/video/#{resource}?api=1&amp;player_id=#{plrId}"
     key = "vimeo-#{resource}"
     jqElem = jQuery """<iframe podly-vimeo id="#{plrId}" src="#{vimeoUrl}" width="#{@width}" height="#{@height}" frameborder="0" webkitAllowFullScreen mozallowfullscreen allowFullScreen>"""
-    @container.html jqElem
+    $(@container).html jqElem
     plr = $f(plrId)
     @player = plr
 
@@ -150,8 +150,8 @@ class MediaPlayer
   loadAudioPlayer: (resource) ->
     plrId = "mp3-player-#{@constructor.__plr_id++}"
     jqElem = jQuery """<audio id="#{plrId}" controls><source src="#{resource}" type="audio/mpeg"></audio>"""
-    @container.html jqElem
-    @container.height '30px'
+    $(@container).html jqElem
+    $(@container).height '30px'
     @player = jqElem[0]
     jQuery(window).resize()
 
