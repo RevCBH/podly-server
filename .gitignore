@@ -1,3 +1,4 @@
 dist/
 yesod-devel/
 static/tmp/
+.DS_Store
