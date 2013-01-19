@@ -108,7 +108,7 @@ data AmazonLink =
 
 makeAmazonLink :: String -> String -> Maybe String
 makeAmazonLink tag url = do
-  x <- firstMaybe [amazonProduct url, amazonShortProduct url, amazonEntity url, amazonOther url]
+  x <- firstMaybe [amazonProduct url, amazonEntity url, amazonShortProduct url, amazonOther url]
   case x of
     AmazonProduct p -> return $ "http://amzn.com/" ++ p ++ "?tag=" ++ tag
     AmazonEntity e -> return $ "http://amzn.com/l/" ++ e ++ "?tag=" ++ tag
