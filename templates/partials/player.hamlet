@@ -46,23 +46,3 @@
             <a href="https://twitter.com/share" class="socialite twitter-share" data-text="{{tweetText(node)}}" data-url="{{linkToNode(node)}}" data-via="ThePodly" data-size="large" data-related="JoeRoganExp" data-count="none" data-hashtags="podly,{{node.nodeType.title}}"></a>
         <!--End Node Elements-->
     <!--End Row -->
-
-<script>
-  (function(){
-    var setNodeListSize = function () {
-      // ISSUE, HACK - don't rely on JS for this, don't hardcode heights if you have to
-      x = jQuery('#listOfNodes');
-      before = jQuery('#topContent');
-      t = before.offset().top + before.height();
-      h = Math.max(55*3, $(window).height() - t - 3);
-      x.height(h);
-    };
-
-    jQuery(window).resize(setNodeListSize);
-    setNodeListSize();
-  })();
-
-  var tag = document.createElement('script');
-  tag.src = "//www.youtube.com/iframe_api";
-  var firstScriptTag = document.getElementsByTagName('script')[0];
-  firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);

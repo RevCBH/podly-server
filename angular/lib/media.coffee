@@ -62,13 +62,10 @@ class MediaPlayer
       window.onYouTubeIframeAPIReady = -> delete window.onYouTubeIframeAPIReady
 
     plrId = "youtube-player-#{@constructor.__plr_id++}"
-    host = window.location.protocol + '//' + window.location.host
-    youtubeUrl = "http://www.youtube.com/embed/#{resource}?enablejsapi=1&origin=#{host}"
-    jqElem = """<iframe id="#{plrId}" type="text/html" width="#{@width}" height="#{@height}"
-                        src="#{youtubeUrl}" frameborder="0"></iframe>"""
-    $(@container).html jqElem
+    $(@container).html "<div id='#{plrId}'></div>"
 
-    onPlayerReady = =>
+    onPlayerReady = (event) =>
+      @player = event.target
       if @autoplay
         @seekTo(@autoplay.start) if @autoplay.start
         @play()
@@ -84,14 +81,18 @@ class MediaPlayer
     mkPlayer = =>
       # HACK - don't use polling here
       return setTimeout(mkPlayer, 10) if window.onYouTubeIframeAPIReady
-      @player = new YT.Player plrId,
+
+      new YT.Player plrId,
+        width: @width
+        height: @height
+        videoId: resource
         events:
           onReady: onPlayerReady
           onStateChange: onPlayerStateChange
         playerVars:
           autohide: 1
           disablekb: 1
-          controls: 0
+          controls: 1
           modestbranding: 1
           showinfo: 0
     mkPlayer()
