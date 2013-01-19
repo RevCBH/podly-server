@@ -100,7 +100,15 @@ handleEmbedPlayerR epId = do
     setDefaultRoute $ pack $ "/The Joe Rogan Experience/" ++ (show $ episodeNumber episode)
 
 getPartialsPlayerR :: Handler RepHtml
-getPartialsPlayerR = hamletToRepHtml $(hamletFile "templates/partials/player.hamlet")
+getPartialsPlayerR = do
+  pc <- widgetToPageContent $ do
+    -- $(widgetFile "partials/player")
+    addHamlet $(hamletFile "templates/partials/player.hamlet")
+    addJuliusBody $(coffeeFile "templates/partials/player.coffee")
+  hamletToRepHtml [hamlet|
+    ^{pageBody pc}
+  |]
+  -- hamletToRepHtml $(hamletFile "templates/partials/player.hamlet")
 
 newtype Singleton a = Singleton { unSingleton :: a }
 instance A.ToJSON a => A.ToJSON (Singleton a) where
