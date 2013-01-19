@@ -56,6 +56,7 @@ handleHomeR = do
     $(addLib "filters")
     $(addLib "models")
     $(addLib "media")
+    $(addLib "scroll")
     $(addCtrl "/player/:podcastName/:episodeNumber" "player")
 
     setDefaultRoute $ pack $ "/player/The Joe Rogan Experience/" ++ (show $ episodeNumber episode)
@@ -92,10 +93,22 @@ handleEmbedPlayerR epId = do
     $(addLib "filters")
     $(addLib "models")
     $(addLib "media")
+    $(addLib "scroll")
     $(addCtrl "/:podcastName/:episodeNumber" "embedded/player")
     -- $(addCtrl "/:epId" "embedded/player")
 
     setDefaultRoute $ pack $ "/The Joe Rogan Experience/" ++ (show $ episodeNumber episode)
+
+getPartialsPlayerR :: Handler RepHtml
+getPartialsPlayerR = do
+  pc <- widgetToPageContent $ do
+    -- $(widgetFile "partials/player")
+    addHamlet $(hamletFile "templates/partials/player.hamlet")
+    addJuliusBody $(coffeeFile "templates/partials/player.coffee")
+  hamletToRepHtml [hamlet|
+    ^{pageBody pc}
+  |]
+  -- hamletToRepHtml $(hamletFile "templates/partials/player.hamlet")
 
 newtype Singleton a = Singleton { unSingleton :: a }
 instance A.ToJSON a => A.ToJSON (Singleton a) where

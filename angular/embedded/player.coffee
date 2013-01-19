@@ -1,106 +1,10 @@
 app = angular.module 'playerMod'
 
-app.service 'scrollManager', () ->
-  isAutoScrolling = false
-  finishedAutoScrolling = false
-  this.shouldAutoScroll = true
-  this.disable = => this.shouldAutoScroll = false
-  this.enable = => this.shouldAutoScroll = true
-
-  this.makeTwitterButtons = (container) ->
-    # TODO - this is a specific function that should be moved elsewhere
-    height = container.height()
-    inner = $(container.children()[0])
-    top = container.offset().top
-    bottom = top + container.height()
-    elems = inner.find('.nodeElements').parent()
-    for x in elems
-      x = $(x)
-      xtop = x.offset().top
-      xbot = xtop + x.height()
-      if (bottom >= xtop >= top) or (bottom >= xbot >= top)
-        x.addClass('visible-node')
-      else
-        x.removeClass('visible-node')
-    # END TODO
-
-  this.watch = (container) =>
-    container.on 'mouseover', '.visible-node', {}, (evt) ->
-      Socialite.load(evt.target)
-
-    @makeTwitterButtons(container)
-    container.scroll () =>
-      @makeTwitterButtons(container)
-      if finishedAutoScrolling
-        finishedAutoScrolling = false
-        tmpShould = this.shouldAutoScroll
-        setTimeout (=>
-            isAutoScrolling = false
-            this.shouldAutoScroll = tmpShould
-          ), 100
-        return
-
-      @disable() unless isAutoScrolling
-
-  this.getShouldAutoScroll = => this.shouldAutoScroll
-
-  beginAutoScroll = (container) ->
-    container.css 'overflow', 'hidden'
-    isAutoScrolling = true
-    finishedAutoScrolling = false
-
-  endAutoScroll = (container) ->
-    container.css 'overflow', 'auto'
-    finishedAutoScrolling = true
-
-  this.scrollTo = (opts) ->
-    return if (not this.shouldAutoScroll) or isAutoScrolling
-
-    container = opts.container
-    elem = opts.target
-    top = elem.offset().top - container.offset().top + container.scrollTop()
-
-    if opts.animate
-      beginAutoScroll(container)
-      container.stop().animate {scrollTop: top},
-        duration: 1000
-        complete: ->
-          endAutoScroll(container)
-    else
-      container.stop().scrollTop(top)
-      endAutoScroll(container)
-
-  return this
-
-app.directive 'podlyVimeo', ($http) ->
-  (scope, element, attrs) ->
-    scope.episodePages =
-      current: 1
-      max: 1
-      episodes: []
-
-    scope.loadEpisodePage = (n) ->
-      console.log "loadEpisodePage:", n
-      n = Math.max 0, Math.min(n, scope.episodePages?.max)
-      q = $http.get "/episodes?page=#{n}"
-      q.success (data) =>
-        scope.episodePages.current = data.pageInfo?.page
-        scope.episodePages.max = data.pageInfo?.of
-        scope.episodePages.episodes = data.episodes
-
-    scope.loadEpisodePage(1)
-
-app.filter 'range', ->
-  (start, end) ->
-    start = parseInt(start)
-    end = parseInt(end)
-    num for num in [start..end]
-
 return ($scope, $routeParams, $http, scrollManager, MediaPlayer, PublishedState) ->
   window.sc = $scope
   window.sm = scrollManager
 
-  $scope.mediaPlayer = new MediaPlayer($('#videoContainerCell'), $scope, {start: %{startAt}})
+  $scope.mediaPlayer = new MediaPlayer('#videoContainerCell', $scope, {start: %{startAt}})
   $scope.episode = {title: "loading...", number: $routeParams.episodeNumber}
 
   q = $http.get "/podcasts/#{$routeParams.podcastName}/episodes/#{$routeParams.episodeNumber}"
@@ -109,13 +13,17 @@ return ($scope, $routeParams, $http, scrollManager, MediaPlayer, PublishedState)
     data.published = PublishedState.fromJSON(data.published)
     # END HACK
     $scope.episode = data
+    $scope.loadMedia()
+
+  $scope.loadMedia = ->
+    data = $scope.episode
     source = _(data.mediaSources).find (x) -> x.kind.VideoYouTube
     source ||= _(data.mediaSources).find (x) -> x.kind.VideoVimeo
     source ||= _(data.mediaSources).find (x) -> x.kind.AudioMp3
     $scope.mediaPlayer.loadSource(source || data.mediaSources[0])
     setTimeout (-> scrollManager.makeTwitterButtons(jQuery '#listOfNodes')), 0
+    scrollManager.watch (jQuery '#listOfNodes')
 
-  scrollManager.watch (jQuery '#listOfNodes')
   $scope.$watch "nodeFilter", ->
     setTimeout (-> scrollManager.makeTwitterButtons(jQuery '#listOfNodes')), 0
 

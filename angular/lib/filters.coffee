@@ -16,3 +16,9 @@ app.filter 'formatOffset', -> (input) ->
     return x
 
   c.join ':'
+
+app.filter 'range', ->
+  (start, end) ->
+    start = parseInt(start)
+    end = parseInt(end)
+    num for num in [start..end]
