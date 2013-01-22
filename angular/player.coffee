@@ -22,7 +22,13 @@ return ($scope, $routeParams, $http, scrollManager, MediaPlayer, PublishedState)
   window.sc = $scope
   window.sm = scrollManager
 
-  $scope.mediaPlayer = new MediaPlayer('#videoContainerCell', $scope, {start: %{startAt}})
+  unless window.firstLoad
+    startAt = %{startAt}
+    window.firstLoad = true
+  else
+    startAt = 0
+
+  $scope.mediaPlayer = new MediaPlayer('#videoContainerCell', $scope, {start: startAt})
   $scope.episode = {title: "loading...", number: $routeParams.episodeNumber}
 
   q = $http.get "/podcasts/#{$routeParams.podcastName}/episodes/#{$routeParams.episodeNumber}"
