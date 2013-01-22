@@ -16,7 +16,7 @@
   <ul class="nav nav-tabs nav-stacked red">
     <li ng-repeat="ep in episodePages.episodes" ng-class="{active: ep.number == episode.number}">
       <a href="#/player/{{ep.podcast}}/{{ep.number}}">{{ep.number}} - {{ep.title}}</a>
-  <div class="pagination" ng-hide="episodePages.max < 2">
+  <div class="pagination pagination-small" ng-hide="episodePages.max < 2" style="text-align:center;">
     <ul>
       <li ng-class="{active: episodePages.current <= 1}">
         <a ng-click="loadEpisodePage(episodePages.current - 1)">Prev</a>
