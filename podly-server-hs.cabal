@@ -116,6 +116,7 @@ library
                  , conduit
                  , ghc-prim
                  , data-default
+                 , process
 
 executable         podly-server-hs
     if flag(library-only)

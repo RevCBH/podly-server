@@ -6,6 +6,7 @@ import Control.Concurrent (forkIO)
 import System.Directory (doesFileExist, removeFile)
 import System.Exit (exitSuccess)
 import Control.Concurrent (threadDelay)
+import System.Process
 
 main :: IO ()
 main = do
@@ -18,7 +19,8 @@ main = do
 
 loop :: IO ()
 loop = do
-  threadDelay 100000
+  --threadDelay 100000
+  system "sleep 1"
   e <- doesFileExist "dist/devel-terminate"
   if e then terminateDevel else loop
 
