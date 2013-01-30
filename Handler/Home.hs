@@ -22,6 +22,8 @@ import Text.Coffee (coffeeFile)
 import Control.Monad (liftM)
 import Control.Monad.Trans.Maybe
 import Text.Hamlet (hamletFile)
+import Database.Persist.GenericSql (rawSql)
+import qualified Database.Persist.Store as DSP
 
 import Debug.Trace
 
@@ -81,8 +83,11 @@ embeddedLayout widget = do
 handleEmbedPlayerR :: EpisodeId -> Handler RepHtml
 handleEmbedPlayerR epId = do
   episode <- runDB $ get404 epId
+  tParam <- lookupGetParam "t"
+  let startAt = case tParam of
+                  Nothing -> "0"
+                  Just t -> show t
 
-  let startAt = "0" :: String
   let approot = "http://podly.co/" :: String
   let cfg = ModuleConfig (Just "playerMod") (Just embeddedLayout)
   runNgModule cfg $ do
@@ -109,6 +114,16 @@ getPartialsPlayerR = do
     ^{pageBody pc}
   |]
   -- hamletToRepHtml $(hamletFile "templates/partials/player.hamlet")
+
+getSearchR :: Handler RepJson
+getSearchR = do
+  query <- liftM DSP.PersistText $ maybe404 $ lookupGetParam "q"
+  let niQ = "SELECT ?? FROM node_instance WHERE to_tsvector(title) @@ plainto_tsquery( ? )"
+  let epQ = "SELECT ?? FROM episode WHERE to_tsvector(title) @@ plainto_tsquery( ? )"
+  nodes <- runDB $ rawSql niQ [query]
+  --episodes <- runDB $ rawSql epQ [query]
+  nodeDocs <- runDB . runMaybeT $ mapM documentFromNodeInstance nodes
+  jsonToRepJson nodeDocs
 
 newtype Singleton a = Singleton { unSingleton :: a }
 instance A.ToJSON a => A.ToJSON (Singleton a) where

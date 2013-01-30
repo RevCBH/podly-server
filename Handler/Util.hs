@@ -39,3 +39,6 @@ ensureEntity item constraint = do
     Nothing -> do
       tid <- runDB $ insert item
       return $ Entity tid item
+
+maybe404 ::  GHandler sub master (Maybe b) -> GHandler sub master b
+maybe404 action = action >>= maybe notFound return

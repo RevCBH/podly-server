@@ -4,18 +4,7 @@
   </head>
   <body>
     <h1>Embedded episode goes here</h1>
-    <div class='podly-player' data-episode-id='22'>Loading...</div>
-    <script>
-      var x = document.getElementsByClassName('podly-player')[0];
-      var epId = x.getAttribute('data-episode-id');
-
-      var f = document.createElement('iframe');
-      f.src = 'http://localhost:3000/embed/' + epId;
-      f.setAttribute('frameBorder', 0);
-      f.width = 660;
-      f.height = 598;
-      document.body.insertBefore(f, x);
-      document.body.removeChild(x);
-    </script>
+    <div class='podly-player' data-episode-id='22' data-start-time='180'>Loading...</div>
+    <script src="//podly.co/static/js/podly-embed.js"></script>
   </body>
 </html>

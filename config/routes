@@ -7,6 +7,7 @@
 /admin AdminR
 / HomeR
 /embed/#EpisodeId EmbedPlayerR
+/search SearchR GET
 
 /ni/#NodeInstanceId PlayNodeR GET
 
