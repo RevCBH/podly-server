@@ -6,7 +6,7 @@
     <!--List Controls Top-->
     <tr>
       <td id="listControlTop">
-        <a class="btn btn-small" ng-click="scrollToCurrent()" ng-hide="shouldHideSnapButton()">{{currentNodeTitle()}}
+        <a class="btn btn-small" ng-click="scrollToCurrent()" ng-hide="shouldHideSnapButton()">Now Playing
 
         <form class="navbar-search pull-right">
           <input type="text" class="search-query" placeholder="Search this episode" ng-model="nodeFilter">
@@ -19,7 +19,7 @@
     <!--Node Elements Row 1-->
     <tr ng-repeat="node in episode.nodes | filter:nodeFilter" data-node-id="{{node.relId}}" ng-class="classesForNode(node)">
       <td>
-        <div class="nodeElements">
+        <div class="nodeElements" ng-click="seek(node)">
           <!--Play Time-->
           <div class="playTime">
             <!--Button -->
@@ -38,7 +38,7 @@
 
           <!--Wordy Bits -->
           <div class="wordyBits">
-            <div class="category">{{node.nodeType.title}}
+            <div class="category">{{node.nodeType.title | categoryTitle}}
             <div class="wordLinks">
               <a href="{{node.url}}" target="_blank" ng-click="trackExit(node)">{{node.title}}
           <!--End Wordy Bits -->

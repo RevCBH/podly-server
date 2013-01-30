@@ -14,20 +14,10 @@
           <script type="text/javascript">jQuery("#toolbar-logout-link").tooltip();</script>
       $nothing
         <ul #socialNavTop .nav .pull-right>
-          <!--Facebook Like Button-->
-          <li>
-            <div class="socialite facebook-like" data-href="http://ThePodly.com" data-send="false" data-layout="button_count" data-width="450" data-show-faces="false">
-          <!--End Facebook Like Button-->
-
           <!--Twitter 'Follow ThePodly'-->
           <li>
-              <a href="https://twitter.com/thePodly" class="twitter-follow-button" data-show-count="false">Follow @thePodly</a>
+              <a href="https://twitter.com/thePodly" class="socialite twitter-follow" data-show-count="false">Follow @thePodly</a>
           <!--End Twitter 'Follow ThePodly'-->
-
-          <!--Twitter 'Share a link'-->
-          <li>
-              <a href="https://twitter.com/share" class="socialite twitter-share" data-url="http://thePodly.com" data-via="thePodly">Tweet</a>
-          <!--End Twitter 'Share a link'-->
 <script>
   \$(document).ready(function(){
     Socialite.load($('page-navbar'));

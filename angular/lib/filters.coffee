@@ -22,3 +22,10 @@ app.filter 'range', ->
     start = parseInt(start)
     end = parseInt(end)
     num for num in [start..end]
+
+app.filter 'categoryTitle', -> (txt) ->
+  prefix = 'sponsor: '
+  if txt.toLowerCase().indexOf(prefix) is 0
+    'Sponsor'
+  else
+    txt
