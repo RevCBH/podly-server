@@ -1,12 +1,402 @@
-<!DOCTYPE html>
-<html>
+<!DOCTYPE HTML>
+
+<html lang="en">
   <head>
-    <title>Podly</title>
-    <link rel="stylesheet" type="text/css" href="/static/css/bootstrap.css">
+    <meta charset="utf-8">
+    <title>Podly: The Media Browser</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <!-- Le styles -->
+      <style>
+
+
+    /*Link Colors*/
+      a:link
+      {color:blue;}
+
+      a:visited
+      {color:blue;}
+
+      a:hover
+      {color:blue;}
+
+    html, body{
+      font-family: sans-serif;
+      text-align: center;
+      margin: 0px;
+      padding: 0px;
+      height: 100%;
+    }
+
+    #textArea{
+        /* IE10 Consumer Preview */
+        background-image: -ms-linear-gradient(top, #FFFFFF 0%, #A3C7D9 100%);
+
+        /* Mozilla Firefox */
+        background-image: -moz-linear-gradient(top, #FFFFFF 0%, #A3C7D9 100%);
+
+        /* Opera */
+        background-image: -o-linear-gradient(top, #FFFFFF 0%, #A3C7D9 100%);
+
+        /* Webkit (Safari/Chrome 10) */
+        background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0, #FFFFFF), color-stop(1, #A3C7D9));
+
+        /* Webkit (Chrome 11+) */
+        background-image: -webkit-linear-gradient(top, #FFFFFF 0%, #A3C7D9 100%);
+
+        /* W3C Markup, IE10 Release Preview */
+        background-image: linear-gradient(to bottom, #FFFFFF 0%, #A3C7D9 100%);
+
+        background-repeat: no-repeat;
+      }
+
+
+    /*[horizontal] iPad HD*/
+    @media screen and (max-width:2048px) {
+      div{
+       padding-top: .5em;
+       margin-left: .4em;
+       margin-right: .4em;
+      }
+
+      .picture{
+        margin-left: auto;
+        margin-right: auto;
+        display: block;
+        width: 16em;
+        height: 16em;
+        margin-top: 6em;
+        margin-bottom: 6em;
+      }
+
+      .heading{
+        font-weight: ;
+        font-family: sans-serif;
+      }
+
+      .line1{
+        font-size: 3em;
+      }
+      .line2{
+        font-weight: bold;
+        font-size: 3em;
+      }
+      .line3{
+
+        font-size: 3em;
+      }
+      .line4{
+        font-size: 3em;
+      }
+      .line5{
+        font-size: 3em;
+      }
+
+
+      #textArea{
+        margin:0px;
+        padding: 0px;
+        height: 75%;
+     }
+    }
+
+    /*[vertical] iPad HD*/
+    @media screen and (max-width:1536px) {
+      div{
+       padding-top: 2em;
+       margin-left: .4em;
+       margin-right: .4em;
+      }
+
+      .picture{
+        margin-left: auto;
+        margin-right: auto;
+        display: block;
+        width: 8em;
+        height: 8em;
+        margin-top: 8em;
+        margin-bottom: 3em;
+      }
+
+      .heading{
+        font-weight: ;
+        font-family: sans-serif;
+      }
+
+      .line1{
+        font-size: 2em;
+      }
+      .line2{
+        font-weight: bold;
+        font-size: 2em;
+      }
+      .line3{
+
+        font-size: 2em;
+      }
+      .line4{
+        font-size: 2em;
+      }
+      .line5{
+        font-size: 2em;
+      }
+
+      #textArea{
+        margin:0px;
+        padding: 0px;
+        height: 75%;
+     }
+    }
+
+    /*[horizontal] iPad mini + iPad*/
+    @media screen and (max-width:1024px) {
+      div{
+       padding-top: 1em;
+       margin-left: .4em;
+       margin-right: .4em;
+      }
+
+      .picture{
+        margin-left: auto;
+        margin-right: auto;
+        display: block;
+        width: 8em;
+        height: 8em;
+        margin-top: 8em;
+        margin-bottom: 3em;
+      }
+
+      .heading{
+        font-weight: ;
+        font-family: sans-serif;
+      }
+
+      .line1{
+        font-size: 2em;
+      }
+      .line2{
+        font-weight: bold;
+        font-size: 2em;
+      }
+      .line3{
+
+        font-size: 2em;
+      }
+      .line4{
+        font-size: 2em;
+      }
+      .line5{
+        font-size: 2em;
+      }
+
+
+      #textArea{
+        margin:0px;
+        padding: 0px;
+        height: 75%;
+     }
+    }
+
+    /*[vertical] iPad mini + iPad*/
+    @media screen and (max-width:767px) {
+      div{
+       padding-top: 2em;
+       margin-left: .4em;
+       margin-right: .4em;
+      }
+
+      .picture{
+        margin-left: auto;
+        margin-right: auto;
+        display: block;
+        width: 8em;
+        height: 8em;
+        margin-top: 8em;
+        margin-bottom: 3em;
+      }
+
+      .heading{
+        font-weight: ;
+        font-family: sans-serif;
+      }
+
+      .line1{
+        font-size: 2em;
+      }
+      .line2{
+        font-weight: bold;
+        font-size: 2em;
+      }
+      .line3{
+
+        font-size: 2em;
+      }
+      .line4{
+        font-size: 2em;
+      }
+      .line5{
+        font-size: 2em;
+      }
+
+      #textArea{
+        margin:0px;
+        padding: 0px;
+        height: 75%;
+     }
+    }
+
+    /*iphone 4 retina + iphone 5*/
+    @media screen and (max-width:640px) {
+      div{
+       padding-top: 2em;
+       margin-left: .4em;
+       margin-right: .4em;
+      }
+
+      .picture{
+        margin-left: auto;
+        margin-right: auto;
+        display: block;
+        width: 8em;
+        height: 8em;
+        margin-top: 8em;
+        margin-bottom: 3em;
+      }
+
+      .heading{
+        font-weight: ;
+        font-family: sans-serif;
+      }
+
+      .line1{
+        font-size: 2em;
+      }
+      .line2{
+        font-weight: bold;
+        font-size: 2em;
+      }
+      .line3{
+
+        font-size: 2em;
+      }
+      .line4{
+        font-size: 2em;
+      }
+      .line5{
+        font-size: 2em;
+      }
+
+
+      #textArea{
+        margin:0px;
+        padding: 0px;
+        height: 75%;
+     }
+    }
+
+    /*iphone*/
+    @media screen and (max-width:320px) {
+
+      div{
+       padding-top: 1em;
+       margin-left: .2em;
+       margin-right: .2em;
+      }
+
+      .picture{
+        margin-left: auto;
+        margin-right: auto;
+        display: block;
+        width: 4em;
+        height: 4em;
+        margin-top: 6em;
+        margin-bottom: 3em;
+      }
+
+      .heading{
+        font-weight: ;
+        font-family: sans-serif;
+      }
+
+
+      .line1{
+        font-size: 1em;
+      }
+      .line2{
+        font-weight: bold;
+        font-size: 1em;
+      }
+      .line3{
+
+        font-size: 1em;
+      }
+      .line4{
+        font-size: 1em;
+      }
+      .line5{
+        font-size: 1em;
+      }
+      #textArea{
+        margin:0px;
+        padding: 0px;
+        height: 50%;
+     }
+    }
+
+      </style>
+    <!-- End le styles-->
+
+
   </head>
-  <body style="padding-left:30px;">
-    <div style="font-size:170px;line-height:150px;margin-top:20px;">Hi there!</div>
-    <div style="font-size:100px;line-height:95px;margin-top:30px;">Podly's not quite ready for mobile yet.</div>
-    <div style="font-size:100px;line-height:95px;margin-top:30px;">Follow us <a href="http://twitter.com/thepodly">@thepodly</a> for updates.</div>
+
+  <body>
+  <div id="wrap">
+      <div id="main">
+        <img src="/static/img/podly_logo2.jpg" class="picture">
+      </div>
+  </div>
+
+    <div id="textArea">
+      <div class="heading">
+
+      </div>
+
+     <div class="line1">
+        Podly isn't ready for mobile yet
+     </div>
+
+     <div class="line2">
+        but it is available on your computer
+     </div>
+
+     <div class="line3">
+        <a href="mailto:?subject=Watch Podly on the computer
+        &body=www.Podly.co  This site makes interactive-info-graphics from the Joe Rogan Experience podcast.">
+          email yourself a link</a>
+          for later
+     </div>
+
+     <div class="line4">
+        or…
+     </div>
+
+     <div class="line5">
+      follow us
+      <a href="https://twitter.com/ThePodly">@thePodly</a>
+     </div>
+    </div>
+
+
+
+
+    <!-- Le javascript
+    ================================================== -->
+
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+
+
   </body>
 </html>
