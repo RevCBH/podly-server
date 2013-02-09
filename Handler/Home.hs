@@ -34,6 +34,16 @@ import Debug.Trace
 
 import Document
 
+newtype Singleton a = Singleton { unSingleton :: a }
+instance A.ToJSON a => A.ToJSON (Singleton a) where
+    toJSON = Array . V.singleton . A.toJSON . unSingleton
+instance A.FromJSON a => A.FromJSON (Singleton a) where
+    parseJSON (Array a) =
+        case V.toList a of
+            [x] -> Singleton <$> A.parseJSON x
+            _ -> fail "Not a single-element array"
+    parseJSON _ = fail "Not an array"
+
 handleHomeR :: Handler RepHtml
 handleHomeR = do
   (Entity _ episode):_ <- runDB $ selectList [EpisodePublished ==. StatePublished] [Desc EpisodeNumber]
@@ -58,6 +68,9 @@ handleHomeR = do
   runNgModule cfg $ do
     cmdSetNodeInstance <- addCommand $ \() -> do
       notFound
+      return $ Singleton ("OK" :: String)
+    cmdSignupEmail <- addCommand $ \(Singleton email) -> do
+      runDB $ insert $ Email email Nothing Nothing
       return $ Singleton ("OK" :: String)
 
     $(addLib "filters")
@@ -167,17 +180,6 @@ getSearchR = do
         ep = pickEp $ head xs
         ns = foldr (:) [] $ map (\(_,_,x) -> x) xs
     in SearchResult w ep ns
-
-newtype Singleton a = Singleton { unSingleton :: a }
-instance A.ToJSON a => A.ToJSON (Singleton a) where
-    toJSON = Array . V.singleton . A.toJSON . unSingleton
-instance A.FromJSON a => A.FromJSON (Singleton a) where
-    parseJSON (Array a) =
-        case V.toList a of
-            [x] -> Singleton <$> A.parseJSON x
-            _ -> fail "Not a single-element array"
-    parseJSON _ = fail "Not an array"
-
 
 --tryInsertEpisode :: Episode -> Handler (Entity Episode)
 --tryInsertEpisode episode = do

@@ -28,3 +28,12 @@
       <span style="font-size:18px;vertical-align:middle;">{{episodePages.current}}/{{episodePages.max}}</span>
       <a ng-click="loadEpisodePage(episodePages.current + 1)" class="btn btn-mini" style="font-size:13px;">
         <i class="icon-arrow-right">&nbsp;</i>
+
+<ul class="navFloater">
+  <li>Subscribe for updates
+  <li>
+    <form ng-submit="subscribeUser()">
+      <div class="input-prepend input-append">
+        <span class="add-on input-mini ng-binding" type="text" disabled=""><i class="icon-envelope"></i>
+        <input style="width:162px" class="span2 ng-pristine ng-valid" type="text" placeholder="Enter your email" ng-model="signupEmail">
+        <a class="btn" ng-click="subscribeUser()"><i class="icon-plus"></i></a>

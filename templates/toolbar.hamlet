@@ -13,10 +13,10 @@
           <!-- TODO - move this to somewhere sensible -->
           <script type="text/javascript">jQuery("#toolbar-logout-link").tooltip();</script>
       $nothing
-        <ul #socialNavTop .nav .pull-right>
+        <!-- <ul #socialNavTop .nav .pull-right> -->
           <!--Twitter 'Follow ThePodly'-->
-          <li>
-              <a href="https://twitter.com/thePodly" class="socialite twitter-follow" data-show-count="false">Follow @thePodly</a>
+          <!-- <li> -->
+              <!-- <a href="https://twitter.com/thePodly" class="socialite twitter-follow" data-show-count="false">Follow @thePodly</a> -->
           <!--End Twitter 'Follow ThePodly'-->
 <script>
   \$(document).ready(function(){

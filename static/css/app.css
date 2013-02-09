@@ -604,3 +604,21 @@ td .in-place-display {
   white-space: nowrap;
   text-overflow: ellipsis;
 }
+
+.navFloater {
+  position: fixed;
+  top: 0px;
+  right: 182px;
+  z-index: 2000;
+}
+
+.navFloater li {
+  display: inline-block;
+}
+
+.navFloater li:first-child {
+  color: white;
+  margin-right: 10px;
+  position: relative;
+  top: 10px;
+}

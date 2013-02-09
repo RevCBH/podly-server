@@ -170,5 +170,8 @@ return ($scope, $routeParams, $http, scrollManager, MediaPlayer, PublishedState)
         return
       else
         window.startAt = x.time
-
     document.location = url
+
+  $scope.subscribeUser = ->
+    $http.post "%{cmdSignupEmail}", [$scope.signupEmail]
+    $scope.signupEmail = null
