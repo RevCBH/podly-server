@@ -7,20 +7,24 @@
   <div ng-include="'/partials/player.html'" onload="loadMedia()">
 
 <!--Episode Nav Bar-->
-<div id="episodeNavBar" style="visibility: hidden;">
-  <form class="navbar-search">
-    <input type="text" class="search-query" placeholder="Search any episode">
+<div id="episodeNavBar">
+  <form class="navbar-search" ng-submit="doSearch()">
+    <input type="text" class="search-query" placeholder="Search any episode" ng-model="episodeSearchValue">
 
 <div class="episodeList">
-  <h5>Episodes
-  <ul class="nav nav-tabs nav-stacked red">
-    <li ng-repeat="ep in episodePages.episodes" ng-class="{active: ep.number == episode.number}">
-      <a href="#/player/{{ep.podcast}}/{{ep.number}}">{{ep.number}} - {{ep.title}}</a>
-  <div class="pagination pagination-small" ng-hide="episodePages.max < 2" style="text-align:center;">
-    <ul>
-      <li ng-class="{active: episodePages.current <= 1}">
-        <a ng-click="loadEpisodePage(episodePages.current - 1)">Prev</a>
-      <li ng-repeat="n in 1 | range:episodePages.max" ng-class="{active: n == episodePages.current}">
-        <a ng-click="loadEpisodePage(n)">{{n}}</a>
-      <li ng-class="{active: episodePages.current >= episodePages.max}">
-        <a ng-click="loadEpisodePage(episodePages.current + 1)">Next</a>
+  <div id="search-results-div" ng-show="displaySearchResults">
+    <h5>Search Results <a ng-click="displaySearchResults = false"><span class="label label-info"><i class="icon-remove icon-white">&nbsp;</i>close</span></a>
+    <ul class="nav nav-tabs nav-stacked red">
+      <li ng-repeat="x in searchResults">
+        <a ng-click="loadSearchResult(x)" title="{{x.title}}" ng-class="{episodeSummaryLink: x.number, nodeSummaryLink: x.relId}"><div class="icon" ng-show="x.nodeType" style="float:left;"><img ng-src="/static/img/{{x.nodeType.icon}}"></div><div class="titleOverflow"><span ng-show="x.number" style="font-weight:bold;display:inline-block;margin-right:9px">{{x.number}} </span><span style="font-weight:bold" ng-show="x.nodeType">{{x.nodeType.title}}<br></span ng-class="{episodeResultTitle: x.number, nodeResultTitle: x.relId}"><span>{{x.title}}</span></div></a>
+  <div id="episodes-div" ng-hide="displaySearchResults">
+    <h5>Episodes
+    <ul class="nav nav-tabs nav-stacked red">
+      <li ng-repeat="ep in episodePages.episodes" ng-class="{active: ep.number == episode.number}">
+        <a class="titleOverflow" href="#/player/{{ep.podcast}}/{{ep.number}}" title="{{ep.title}}"><span style="font-weight:bold;display:inline-block;margin-right:9px">{{ep.number}} </span>{{ep.title}}</a>
+    <div ng-hide="episodePages.max < 2" style="text-align:center;">
+      <a ng-click="loadEpisodePage(episodePages.current - 1)" class="btn btn-mini" style="font-size:13px;">
+        <i class="icon-arrow-left">&nbsp;</i>
+      <span style="font-size:18px;vertical-align:middle;">{{episodePages.current}}/{{episodePages.max}}</span>
+      <a ng-click="loadEpisodePage(episodePages.current + 1)" class="btn btn-mini" style="font-size:13px;">
+        <i class="icon-arrow-right">&nbsp;</i>

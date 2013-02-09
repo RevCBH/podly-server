@@ -380,11 +380,11 @@ a.wordLinks:hover
   margin-right: 12px;
   /*padding-right: -20px;*/
 }
-.episodeList li a{
+/*.episodeList li a{
 
   background-color: white;
 
-}
+}*/
 
 /*
 Nav Bar Brand
@@ -585,4 +585,22 @@ td .in-place-display {
   background-color: #fff;
   position: fixed;
   z-index: 10000;
+}
+/* Need verbose version to override specificity from bootstrap.css*/
+.nav-tabs.nav-stacked > li > a.episodeSummaryLink {
+  background-color: #ddd;
+  padding-right: 8px;
+}
+
+/* Need verbose version to override specificity from bootstrap.css*/
+.nav-tabs.nav-stacked > li > a.nodeSummaryLink {
+  padding: 3px;
+  padding-left: 12px;
+  padding-right: 8px;
+}
+
+.titleOverflow {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }

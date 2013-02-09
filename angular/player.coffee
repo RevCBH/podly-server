@@ -26,7 +26,8 @@ return ($scope, $routeParams, $http, scrollManager, MediaPlayer, PublishedState)
     startAt = %{startAt}
     window.firstLoad = true
   else
-    startAt = 0
+    startAt = window.startAt # HACK
+    window.startAt = 0
 
   $scope.mediaPlayer = new MediaPlayer('#videoContainerCell', $scope, {start: startAt})
   $scope.episode = {title: "loading...", number: $routeParams.episodeNumber}
@@ -138,3 +139,36 @@ return ($scope, $routeParams, $http, scrollManager, MediaPlayer, PublishedState)
       'episode.id': $scope.episode._id
       'episode.number': $scope.episode.number
       'podcast': $scope.episode.podcast
+
+  $scope.searchResults = []
+  $scope.displaySearchResults = false
+  $scope.doSearch = ->
+    distinctBy = (f, xs) -> _.uniq(xs, false, f)
+    p = (name) -> (x) -> x[name]
+    # distinctBy p("title"), x.nodes
+    take = (n, xs) -> _.take(xs, n)
+    map = (f, xs) -> _.map(xs, f)
+
+    q = $http.get "/search?q=#{$scope.episodeSearchValue}"
+    q.success (data) ->
+      f = (x) ->
+        ns = take(5, distinctBy(p("title"), x.nodes))
+        [x.episode, map(((n) -> n.episode = x.episode; n), ns)]
+      $scope.searchResults = _.flatten map(f, data)
+      # $scope.searchResults = _(_(data).map (x) -> [x.episode, _(x.nodes).take(5)]).flatten()
+      $scope.displaySearchResults = true
+      $scope.episodeSearchValue = null
+
+  $scope.loadSearchResult = (x) ->
+    return unless x
+    ep = x.episode || x
+    url = encodeURI("#/player/#{ep.podcast}/#{ep.number}")
+    if x.relId
+      if url is document.location.hash
+        $scope.seek x
+        $scope.displaySearchResults = false
+        return
+      else
+        window.startAt = x.time
+
+    document.location = url

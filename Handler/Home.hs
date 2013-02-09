@@ -14,15 +14,20 @@ import qualified Data.ByteString.Lazy.Char8 as L8
 import qualified Data.ByteString.Char8 as B8
 import qualified Data.Vector as V
 import qualified Data.Aeson as A
+import Data.String.Utils (splitWs, join)
 import Data.Text (pack, unpack)
-import Data.List (nub)
-import Data.Maybe (fromJust)
+import Data.List (nub, groupBy, sortBy, head)
+import Data.Maybe (fromJust, catMaybes)
 import qualified Data.Map as Map
 import Text.Coffee (coffeeFile)
-import Control.Monad (liftM)
+import Control.Monad (liftM, sequence)
+import Control.Monad.IO.Class (MonadIO)
+import Control.Monad.Trans.Resource (MonadThrow, MonadUnsafeIO)
+import Control.Monad.Logger (MonadLogger)
 import Control.Monad.Trans.Maybe
 import Text.Hamlet (hamletFile)
-import Database.Persist.GenericSql (rawSql)
+import Database.Persist.GenericSql (rawSql, Single(..))
+import Database.Persist.GenericSql.Raw (SqlPersist)
 import qualified Database.Persist.Store as DSP
 
 import Debug.Trace
@@ -108,22 +113,60 @@ getPartialsPlayerR :: Handler RepHtml
 getPartialsPlayerR = do
   pc <- widgetToPageContent $ do
     -- $(widgetFile "partials/player")
-    addHamlet $(hamletFile "templates/partials/player.hamlet")
-    addJuliusBody $(coffeeFile "templates/partials/player.coffee")
+    toWidget $(hamletFile "templates/partials/player.hamlet")
+    toWidgetBody $(coffeeFile "templates/partials/player.coffee")
   hamletToRepHtml [hamlet|
     ^{pageBody pc}
   |]
   -- hamletToRepHtml $(hamletFile "templates/partials/player.hamlet")
 
+-- TODO - search operators? quote support?
+data SearchResult = SearchResult Double (Entity Episode) [NodeDocument]
+instance ToJSON SearchResult where
+  toJSON (SearchResult weight episode nodes) = object
+    [ "weight" .= weight,
+      "episode" .= (toJSON episode),
+      "nodes" .= (toJSON nodes)]
+
+searchEpisodes txt = do
+  let plain = DSP.PersistText txt
+  let tsquery = DSP.PersistText $ pack $ join "|" $ splitWs $ unpack txt
+  --let searchQuery = "SELECT ??, ??, ts_rank_cd(to_tsvector(node_instance.title || ' ' || episode.title), to_tsquery(?)) as \"query_rank\", ts_rank_cd(to_tsvector(node_instance.title || ' ' || episode.title), plainto_tsquery(?)) as \"plain_rank\" FROM episode, node_instance WHERE to_tsvector(node_instance.title || ' ' || episode.title) @@ to_tsquery(?) AND episode.id = node_instance.episode_id ORDER BY ts_rank_cd(to_tsvector(node_instance.title || ' ' || episode.title), plainto_tsquery(?)) DESC, ts_rank_cd(to_tsvector(node_instance.title || ' ' || episode.title), to_tsquery(?)) DESC"
+  let searchQuery = "SELECT ??, ??, ts_rank_cd(to_tsvector(node_instance.title), to_tsquery(?)) as \"query_rank\", ts_rank_cd(to_tsvector(node_instance.title), plainto_tsquery(?)) as \"plain_rank\" FROM episode, node_instance WHERE to_tsvector(node_instance.title) @@ to_tsquery(?) AND episode.id = node_instance.episode_id ORDER BY ts_rank_cd(to_tsvector(node_instance.title), plainto_tsquery(?)) DESC, ts_rank_cd(to_tsvector(node_instance.title), to_tsquery(?)) DESC"
+  rawSql searchQuery [tsquery, plain, tsquery, plain, tsquery]
+
+reifyTuple :: (MonadIO m, MonadThrow m, MonadUnsafeIO m, MonadLogger m, MonadBaseControl IO m) =>
+     (Entity Episode, Entity NodeInstance, Single Double, Single Double)
+     -> MaybeT (SqlPersist m) (Double, Entity Episode, NodeDocument)
+reifyTuple (ep, ni, (Single qw), (Single pw)) = do
+  nodeDoc <- documentFromNodeInstance ni
+  return (qw + pw, ep, nodeDoc)
+
 getSearchR :: Handler RepJson
 getSearchR = do
-  query <- liftM DSP.PersistText $ maybe404 $ lookupGetParam "q"
-  let niQ = "SELECT ?? FROM node_instance WHERE to_tsvector(title) @@ plainto_tsquery( ? )"
-  let epQ = "SELECT ?? FROM episode WHERE to_tsvector(title) @@ plainto_tsquery( ? )"
-  nodes <- runDB $ rawSql niQ [query]
-  --episodes <- runDB $ rawSql epQ [query]
-  nodeDocs <- runDB . runMaybeT $ mapM documentFromNodeInstance nodes
-  jsonToRepJson nodeDocs
+  plain <- maybe404 $ lookupGetParam "q"
+  resultTuples <- runDB $ searchEpisodes plain
+  resultList <- liftM catMaybes $ sequence $ map (runDB . runMaybeT . reifyTuple) resultTuples
+  jsonToRepJson $ map makeResult $ sortGroups . groupResults $ resultList
+ where
+  pickEp (_,x,_) = x :: Entity Episode
+  pickEntityId (Entity tid _) = tid
+  withSel s f a b = f (s a) (s b)
+  withEpisodes = withSel pickEp
+  withWeights = withSel (\(x,_,_) -> x)
+  entityIdsEq = withSel pickEntityId (==)
+  cmpEntityIds = withSel pickEntityId compare
+  episodesEq x = withEpisodes entityIdsEq x
+  cmpEpisodes x = withEpisodes cmpEntityIds x
+  sumWeights = foldl1 (+) . map (\(x,_,_) -> x)
+  cmpGroupWeights a b = (sumWeights a) `compare` (sumWeights b)
+  groupResults xs = (groupBy episodesEq) . (sortBy cmpEpisodes) $ xs
+  sortGroups = reverse . sortBy cmpGroupWeights
+  makeResult xs =
+    let w = sumWeights xs
+        ep = pickEp $ head xs
+        ns = foldr (:) [] $ map (\(_,_,x) -> x) xs
+    in SearchResult w ep ns
 
 newtype Singleton a = Singleton { unSingleton :: a }
 instance A.ToJSON a => A.ToJSON (Singleton a) where

@@ -105,6 +105,9 @@ library
                  , mtl
                  , wai
                  , network
+                 , MissingH
+                 , resourcet
+                 , monad-logger
                  , regex-posix
                  , regex-pcre-builtin
                  , unordered-containers
