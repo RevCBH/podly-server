@@ -81,6 +81,7 @@ background-repeat: no-repeat;
 {
   /*min-width: 640px;*/
   height: 365px;
+  background-color: black;
 }
 
 #nowPlayingTitle{
