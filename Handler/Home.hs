@@ -122,11 +122,11 @@ getPartialsPlayerR = do
 
 -- TODO - search operators? quote support?
 data SearchResult = SearchResult Double (Entity Episode) [NodeDocument]
-instance ToJSON SearchResult where
+instance A.ToJSON SearchResult where
   toJSON (SearchResult weight episode nodes) = object
     [ "weight" .= weight,
-      "episode" .= (toJSON episode),
-      "nodes" .= (toJSON nodes)]
+      "episode" .= (A.toJSON episode),
+      "nodes" .= (A.toJSON nodes)]
 
 searchEpisodes txt = do
   let plain = DSP.PersistText txt
