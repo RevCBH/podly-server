@@ -73,6 +73,7 @@ handleHomeR = do
       runDB $ insert $ Email email Nothing Nothing
       return $ Singleton ("OK" :: String)
 
+    $(addLib "util")
     $(addLib "filters")
     $(addLib "models")
     $(addLib "media")
@@ -113,6 +114,7 @@ handleEmbedPlayerR epId = do
       notFound
       return $ Singleton ("OK" :: String)
 
+    $(addLib "util")
     $(addLib "filters")
     $(addLib "models")
     $(addLib "media")
@@ -320,6 +322,7 @@ handleAdminR = do
     cmdGetUserForEmail <- addCommand $ \(Singleton email) -> runDB $ getBy404 $ UniqueUser email
 
     addExtLib "ui"
+    $(addLib "util")
     $(addLib "filters")
     $(addLib "models")
     $(addLib "media")

@@ -40,7 +40,7 @@
           <div class="wordyBits">
             <div class="category">{{node.nodeType.title | categoryTitle}}
             <div class="wordLinks">
-              <a href="{{node.url}}" target="_blank" ng-click="trackExit(node)">{{node.title}}
+              <a href="{{node.url}}" stop-event="click" target="_blank" ng-click="trackExit(node)">{{node.title}}
           <!--End Wordy Bits -->
           <div class="twitterNodeShare">
             <a href="https://twitter.com/share" class="socialite twitter-share" data-text="{{tweetText(node)}}" data-url="{{linkToNode(node)}}" data-via="ThePodly" data-size="large" data-related="JoeRoganExp" data-count="none" data-hashtags="podly,{{node.nodeType.title}}"></a>
