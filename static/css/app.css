@@ -173,6 +173,23 @@ background-repeat: no-repeat;
   background-color: white;
 }
 
+#listOfNodes::-webkit-scrollbar {
+    -webkit-appearance: none;
+    width: 11px;
+    height: 11px;
+}
+
+#listOfNodes::-webkit-scrollbar-thumb {
+    border-radius: 8px;
+    border: 0px solid white;
+    background-color: rgba(0, 0, 0, .5);
+}
+
+#listOfNodes::-webkit-scrollbar-track {
+  background-color: #ddd;
+  border-radius: 8px;
+}
+
 #listOfNodes td {
   padding-bottom: 4px;
   padding-left: 12px;
