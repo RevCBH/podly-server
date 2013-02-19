@@ -8,12 +8,14 @@ import Podly.Affiliate
 import Data.Aeson (Result(..), FromJSON(..), fromJSON, ToJSON(..))
 import Data.Aeson.TH (deriveJSON)
 import Data.Maybe
+import qualified Data.Traversable as DT
 import qualified Data.ByteString.Char8 as BS
 import Data.Time(Day, UTCTime(..), secondsToDiffTime)
 import Data.Time.Clock (getCurrentTime, addUTCTime)
 import qualified Data.Time.Format as TF
 import System.Locale (defaultTimeLocale)
 import Data.Text (pack, unpack)
+import qualified Data.Text as T
 import Control.Monad (liftM)
 import Network.HTTP.Types (notModified304)
 import Network.HTTP.Types.Header (hIfModifiedSince)
@@ -91,6 +93,49 @@ getEpisodeR :: EpisodeId -> Handler RepJson -- RepHtmlJson?
 getEpisodeR tid = do
    episode <- runDB $ get404 tid
    renderJsonEpisode $ Entity tid episode
+
+
+data EpisodeEphemeral = EpisodeEphemeral {
+  epEphem_id :: EpisodeId,
+  epEphemNumber :: Int,
+  epEphemTitle :: Text,
+  epEphemPreviewImage :: Maybe Text }
+ deriving (Show, Generic)
+$(deriveJSON (removePrefix "epEphem") ''EpisodeEphemeral)
+
+data EmbedPlayerConfig = EmbedPlayerConfig {
+  plrCfgGetMoreText :: Text}
+ deriving (Show, Generic)
+$(deriveJSON (removePrefix "plrCfg") ''EmbedPlayerConfig)
+
+data EpisodeMeta = EpisodeMeta {
+  epMetaPrev :: Maybe EpisodeEphemeral,
+  epMetaNext :: Maybe EpisodeEphemeral,
+  epMetaEmbedPlayerConfig :: EmbedPlayerConfig}
+ deriving (Show, Generic)
+$(deriveJSON (removePrefix "epMeta") ''EpisodeMeta)
+
+getEpisodeMetaR :: EpisodeId -> Handler RepJson
+getEpisodeMetaR tid = do
+  (prev, next) <- runDB $ getPrevNext
+  jsonToRepJson $ EpisodeMeta prev next
+    (EmbedPlayerConfig "MOAR!")
+ where
+  mkEphem (Entity tid episode) = do
+    src <- getBy $ UniqueMediaKindForEpisode tid VideoYouTube
+    let previewImage = flip fmap src $ \(Entity _ x) -> T.concat ["http://img.youtube.com/vi/", mediaSourceResource x, "/0.jpg"]
+    let f = EpisodeEphemeral tid <$> episodeNumber <*> episodeTitle
+    return $ f episode previewImage
+  getPrevNext = do
+    episode <- get404 $ tid
+    -- map mkEphem over the results (at most one), convert list to Maybe, move Maybe inside DB monad
+    let sel op sort = DT.sequence . listToMaybe . map mkEphem =<< selectList
+          [EpisodePodcast ==. episodePodcast episode,
+           op EpisodeNumber $ episodeNumber episode]
+          [sort EpisodeNumber, LimitTo 1]
+    prev <- sel (<.) Desc
+    next <- sel (>.) Asc
+    return (prev, next)
 
 instance FromJSON Day where
     parseJSON val = do

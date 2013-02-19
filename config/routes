@@ -27,6 +27,7 @@
 
 /episodes EpisodesR GET
 /episode/#EpisodeId EpisodeR GET -- Episode by ID
+/episode/#EpisodeId/meta EpisodeMetaR GET -- Episode player metadata (e.g. next/prev episode)
 -- /podcasts/#Text/episodes.new NewEpisodeR GET
 
 -- nodes
