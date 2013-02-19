@@ -26,6 +26,7 @@
 -- episodes
 
 /episodes EpisodesR GET
+/episode/#EpisodeId EpisodeR GET -- Episode by ID
 -- /podcasts/#Text/episodes.new NewEpisodeR GET
 
 -- nodes

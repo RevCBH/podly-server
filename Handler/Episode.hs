@@ -66,22 +66,31 @@ ensureStale time = do
         _ -> setCacheHeaders
     Nothing -> setCacheHeaders
 
--- TODO - access control?
-getPodcastEpisodeR :: Text -> Int -> Handler RepJson -- RepHtmlJson
-getPodcastEpisodeR name number = do
-    entity@(Entity episodeId episode) <- runDB $ getBy404 $ UniqueEpisodeNumber name number
-    ensureStale $ episodeLastModified episode
-    episodeDoc <- runDB $ documentFromEpisode entity
-    nodes <- mapM updateNodeUrl $ docEpisodeNodes episodeDoc --episodeDoc
 
-    jsonToRepJson $ episodeDoc { docEpisodeNodes = nodes }
-  where
-    updateNodeUrl n = do
-      case docNodeUrl n of
-        Just url -> do
-          newUrl <- rewriteLink $ unpack url
-          return n {docNodeUrl = Just $ pack newUrl}
-        Nothing -> return n
+-- TODO - access control?
+renderJsonEpisode :: Entity Episode -> Handler RepJson
+renderJsonEpisode entity@(Entity episodeId episode) = do
+  ensureStale $ episodeLastModified episode
+  episodeDoc <- runDB $ documentFromEpisode entity
+  nodes <- mapM updateNodeUrl $ docEpisodeNodes episodeDoc --episodeDoc
+
+  jsonToRepJson $ episodeDoc { docEpisodeNodes = nodes }
+ where
+  updateNodeUrl n = do
+    case docNodeUrl n of
+      Just url -> do
+        newUrl <- rewriteLink $ unpack url
+        return n {docNodeUrl = Just $ pack newUrl}
+      Nothing -> return n
+
+getPodcastEpisodeR :: Text -> Int -> Handler RepJson -- RepHtmlJson
+getPodcastEpisodeR name number =
+    renderJsonEpisode =<< (runDB $ getBy404 $ UniqueEpisodeNumber name number)
+
+getEpisodeR :: EpisodeId -> Handler RepJson -- RepHtmlJson?
+getEpisodeR tid = do
+   episode <- runDB $ get404 tid
+   renderJsonEpisode $ Entity tid episode
 
 instance FromJSON Day where
     parseJSON val = do
