@@ -29,6 +29,7 @@ import Text.Hamlet (hamletFile)
 import Database.Persist.GenericSql (rawSql, Single(..))
 import Database.Persist.GenericSql.Raw (SqlPersist)
 import qualified Database.Persist.Store as DSP
+import Text.Regex.PCRE
 
 import Debug.Trace
 
@@ -70,8 +71,12 @@ handleHomeR = do
       notFound
       return $ Singleton ("OK" :: String)
     cmdSignupEmail <- addCommand $ \(Singleton email) -> do
-      runDB $ insert $ Email email Nothing Nothing
-      return $ Singleton ("OK" :: String)
+      if (unpack email) =~ ("[^@]+@[^.]+\\..+" :: String)
+        then do
+          runDB $ insert $ Email email Nothing Nothing
+          return $ Singleton ("OK" :: String)
+        else
+          return $ Singleton ("Error" :: String)
 
     $(addLib "util")
     $(addLib "filters")

@@ -172,6 +172,27 @@ return ($scope, $routeParams, $http, scrollManager, MediaPlayer, PublishedState)
         window.startAt = x.time
     document.location = url
 
-  $scope.subscribeUser = ->
-    $http.post "%{cmdSignupEmail}", [$scope.signupEmail]
-    $scope.signupEmail = null
+  if $.jStorage.get("isSignedUp")
+    $scope.signupMessage = ""
+    $scope.signupBoxHidden = true
+  else
+    $scope.signupMessage = "Subscribe for updates"
+  $scope.subscribeUser = (evt) ->
+    evt.preventDefault() # HACK
+    q = $http.post "%{cmdSignupEmail}", [$scope.signupEmail]
+    q.success (data) ->
+      console.log "data:", data
+      if data?[0] is "OK"
+        $scope.signupMessage = "Success! You're subscribed."
+        $scope.signupEmail = null
+        $scope.signupBoxHidden = true
+        $.jStorage.set("isSignedUp", true)
+      else
+        $scope.signupBoxDisabled = false
+        $scope.signupMessage = "Yo dawg, fix your email!"
+    q.error ->
+      $scope.signupBoxHidden = true
+      $scope.signupBoxDisabled = false
+      $scope.signupMessage = ""
+
+    $scope.signupBoxDisabled = true

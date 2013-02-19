@@ -28,6 +28,8 @@ $newline never
         <script src="/static/js/underscore-min.js"></script>
         <script src="/static/js/jquery.csv-0.71.min.js"></script>
         <script src="/static/js/bootstrap.min.js"></script>
+        <!-- TODO - minifiy -->
+        <script src="/static/js/jstorage.js"></script>
         <script>document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/,'js');</script>
         <!-- start Mixpanel -->
         $maybe mixpanelKey <- extraMixpanel $ appExtra $ settings master
