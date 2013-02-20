@@ -16,6 +16,7 @@ import qualified Data.Vector as V
 import qualified Data.Aeson as A
 import Data.String.Utils (splitWs, join)
 import Data.Text (pack, unpack)
+--import qualified Data.Text as T
 import Data.List (nub, groupBy, sortBy, head)
 import Data.Maybe (fromJust, catMaybes)
 import qualified Data.Map as Map
@@ -83,9 +84,11 @@ handleHomeR = do
     $(addLib "models")
     $(addLib "media")
     $(addLib "scroll")
-    $(addCtrl "/player/:podcastName/:episodeNumber" "player")
+    -- $(addCtrl "/player/:podcastName/:episodeNumber" "player")
+    $(addCtrl "/podcasts/:podcastName/episodes/:episodeNumber" "player")
+    --localhost:3000/podcasts/The Joe Rogan Experience/episodes/275
 
-    setDefaultRoute $ pack $ "/player/The Joe Rogan Experience/" ++ (show $ episodeNumber episode)
+    setDefaultRoute $ pack $ "/podcasts/The Joe Rogan Experience/episodes/" ++ (show $ episodeNumber episode)
 
 getPlayNodeR :: NodeInstanceId -> Handler RepHtml
 getPlayNodeR nid = do
@@ -129,16 +132,24 @@ handleEmbedPlayerR epId = do
 
     setDefaultRoute $ pack $ "/The Joe Rogan Experience/" ++ (show $ episodeNumber episode)
 
+-- TODO - pre-populate partials and dispatch on name
+--getPartialR :: Text -> Handler RepHtml
+--getPartialR name = do
+--  pc <- widgetToPageContent $ do
+--    toWidget $(hamletFile $ mconcat ["templates/partials/", name, ".hamlet"])
+--    toWidgetBody $(coffeeFile $ mconcat ["templates/partials/", name, ".coffee"])
+--  hamletToRepHtml [hamlet|
+--    ^{pageBody pc}
+--  |]
+
 getPartialsPlayerR :: Handler RepHtml
 getPartialsPlayerR = do
   pc <- widgetToPageContent $ do
-    -- $(widgetFile "partials/player")
     toWidget $(hamletFile "templates/partials/player.hamlet")
     toWidgetBody $(coffeeFile "templates/partials/player.coffee")
   hamletToRepHtml [hamlet|
     ^{pageBody pc}
   |]
-  -- hamletToRepHtml $(hamletFile "templates/partials/player.hamlet")
 
 -- TODO - search operators? quote support?
 data SearchResult = SearchResult Double (Entity Episode) [NodeDocument]

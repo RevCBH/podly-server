@@ -15,9 +15,10 @@ import Data.Time.Clock (getCurrentTime, addUTCTime)
 import qualified Data.Time.Format as TF
 import System.Locale (defaultTimeLocale)
 import Data.Text (pack, unpack)
+import Data.Text.Encoding (decodeUtf8)
 import qualified Data.Text as T
 import Control.Monad (liftM)
-import Network.HTTP.Types (notModified304)
+import Network.HTTP.Types (notModified304, headerContentType)
 import Network.HTTP.Types.Header (hIfModifiedSince)
 import Network.Wai (requestHeaders)
 
@@ -85,9 +86,18 @@ renderJsonEpisode entity@(Entity episodeId episode) = do
         return n {docNodeUrl = Just $ pack newUrl}
       Nothing -> return n
 
-getPodcastEpisodeR :: Text -> Int -> Handler RepJson -- RepHtmlJson
-getPodcastEpisodeR name number =
-    renderJsonEpisode =<< (runDB $ getBy404 $ UniqueEpisodeNumber name number)
+-- TODO - move to util?
+acceptContentType :: GHandler s m (Maybe Text)
+acceptContentType =
+  -- request headers -> select content-type -> convert to Text from ByteString
+  fmap decodeUtf8 . lookup "Accept" . requestHeaders . reqWaiRequest <$> getRequest
+
+getPodcastEpisodeR :: Text -> Int -> Handler RepJson
+getPodcastEpisodeR name number = do
+    ct <- acceptContentType
+    case fmap (T.isInfixOf "application/json") ct of
+      Just True -> renderJsonEpisode =<< (runDB $ getBy404 $ UniqueEpisodeNumber name number)
+      _ -> redirect $ mconcat ["/#/podcasts/", name, "/episodes/", pack $ show number]
 
 getEpisodeR :: EpisodeId -> Handler RepJson -- RepHtmlJson?
 getEpisodeR tid = do
