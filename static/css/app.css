@@ -145,6 +145,10 @@ background-repeat: no-repeat;
   margin: 5px 15px 0px 0px;
 }
 
+#episodeNavBar {
+  height: 35px;
+}
+
 .listControlsBottom
 {
   background-color: #cccccc;
@@ -624,19 +628,29 @@ td .in-place-display {
 }
 
 .navFloater {
-  position: fixed;
+  /*position: fixed;
   top: 0px;
-  right: 182px;
+  right: 182px;*/
+  position: relative;
+  top: -85px;
+  left: 36px;
   z-index: 2000;
 }
 
 .navFloater li {
   display: inline-block;
+  position: relative;
+}
+
+.navFloater li:last-child {
+  top: -30px;
 }
 
 .navFloater li:first-child {
   color: white;
   margin-right: 10px;
-  position: relative;
-  top: 10px;
+  /*position: relative;*/
+  left: -151px;
+  top: 0px;
+  /*top: 10px;*/
 }

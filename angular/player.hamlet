@@ -10,6 +10,14 @@
 <div id="episodeNavBar">
   <form class="navbar-search" ng-submit="doSearch()">
     <input type="text" class="search-query" placeholder="Search any episode" ng-model="episodeSearchValue">
+  <ul class="navFloater">
+    <li>{{signupMessage}}
+    <li ng-hide="signupBoxHidden">
+      <form ng-submit="subscribeUser()">
+        <div class="input-prepend input-append">
+          <span class="add-on input-mini ng-binding" type="text" disabled=""><i class="icon-envelope"></i>
+          <input style="width:162px" class="span2 ng-pristine ng-valid" type="text" placeholder="Enter your email" ng-model="signupEmail" ng-disabled="signupBoxDisabled">
+          <a class="btn" ng-click="subscribeUser($event)"><i class="icon-plus"></i></a>
 
 <div class="episodeList">
   <div id="search-results-div" ng-show="displaySearchResults">
@@ -28,12 +36,3 @@
       <span style="font-size:18px;vertical-align:middle;">{{episodePages.current}}/{{episodePages.max}}</span>
       <a ng-click="loadEpisodePage(episodePages.current + 1)" class="btn btn-mini" style="font-size:13px;">
         <i class="icon-arrow-right">&nbsp;</i>
-
-<ul class="navFloater">
-  <li>{{signupMessage}}
-  <li ng-hide="signupBoxHidden">
-    <form ng-submit="subscribeUser()">
-      <div class="input-prepend input-append">
-        <span class="add-on input-mini ng-binding" type="text" disabled=""><i class="icon-envelope"></i>
-        <input style="width:162px" class="span2 ng-pristine ng-valid" type="text" placeholder="Enter your email" ng-model="signupEmail" ng-disabled="signupBoxDisabled">
-        <a class="btn" ng-click="subscribeUser($event)"><i class="icon-plus"></i></a>
