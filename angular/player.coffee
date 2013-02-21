@@ -43,6 +43,7 @@ return ($scope, $routeParams, $location, $http, scrollManager, MediaPlayer, Publ
 
   $scope.loadMedia = ->
     data = $scope.episode
+    window.document.title = "Podly - #{$scope.episode.podcast} ##{$scope.episode.number}"
     source = _(data.mediaSources).find (x) -> x.kind.VideoYouTube
     source ||= _(data.mediaSources).find (x) -> x.kind.VideoVimeo
     source ||= _(data.mediaSources).find (x) -> x.kind.AudioMp3
