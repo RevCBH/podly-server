@@ -4,7 +4,8 @@
 /favicon.ico FaviconR GET
 /robots.txt RobotsR GET
 
-/admin AdminR
+-- /admin AdminR
+/admin/*Texts AdminR
 / HomeR
 /embed/#EpisodeId EmbedPlayerR
 /search SearchR GET

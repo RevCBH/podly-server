@@ -33,3 +33,10 @@ app.filter 'categoryTitle', -> (txt) ->
     'Sponsor'
   else
     txt
+
+app.directive 'showTab', ->
+  link: (scope, element, attrs) ->
+    element.click (e) ->
+      e.preventDefault()
+      e.stopPropagation()
+      $(element).tab('show')

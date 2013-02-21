@@ -1,15 +1,15 @@
 <div episode-editor>
   <div class="affix" style="left:5px; width: 100px">
     <ul class="nav nav-pills nav-stacked well well-small" style="min-width: 100px; background-color: white; margin-bottom: 6px;">
-      <li><a href="#/podcasts/{{episode.podcast}}"><i class="icon-chevron-left"></i> Episodes</a>
+      <li><a href="/admin/podcasts/{{episode.podcast}}"><i class="icon-chevron-left"></i> Episodes</a>
       <li><hr style="margin: 3px 0px;">
       <li class="active">
-        <a href="#display-nodes" data-toggle="tab" ng-click="curTab = 'nodes'">
+        <a href="#display-nodes" show-tab ng-click="curTab = 'nodes'">
           Nodes
-      <li><a href="#episode-properties" data-toggle="tab" ng-click="curTab = 'properties'">Properties</a>
+      <li><a href="#episode-properties" show-tab ng-click="curTab = 'properties'">Properties</a>
       <li ng-show="canManage()">
-        <a href="#manage-permissions" data-toggle="tab" ng-click="curTab = 'manage'">Manage</a>
-      <li><a href="#csv-import-nodes" data-toggle="tab" ng-click="curTab = 'import'">Spreadsheet Import</a>
+        <a href="#manage-permissions" show-tab ng-click="curTab = 'manage'">Manage</a>
+      <li><a href="#csv-import-nodes" show-tab ng-click="curTab = 'import'">Spreadsheet Import</a>
     <ul ng-show="curTab == 'nodes'" class="nav nav-pills nav-stacked well well-small" style="min-width: 100px; background-color: white;">
       <li style="text-align: center;">
         <span style="background-color: #eee;">{{time | formatOffset }}

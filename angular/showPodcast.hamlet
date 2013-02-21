@@ -1,7 +1,7 @@
 <div podcast-detail>
   <h1>{{podcast.name}}
 
-<h2>Episodes <small><a href="#/podcasts/{{podcast.name}}/episodes.new">new</a>
+<h2>Episodes <small><a href="/admin/podcasts/{{podcast.name}}/episodes.new">new</a>
 <table episode-list .table .table-striped .table-small .table-condensed>
   <thead>
     <tr>
@@ -11,7 +11,7 @@
   <tbody>
     <tr ng-repeat="episode in episodes | orderBy:'number':'true'">
       <td .span1>{{episode.number}}
-      <td><a href="#/podcasts/{{podcast.name}}/episodes/{{episode.number}}">{{episode.title}}
+      <td><a href="/admin/podcasts/{{podcast.name}}/episodes/{{episode.number}}">{{episode.title}}
       <td><span class="label label-info">{{episode.published}}
 
 <ul>

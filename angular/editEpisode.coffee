@@ -370,7 +370,7 @@ class NodeRowWrapper extends ModelWrapper
   isNew: => @model._id
   manualMode: false
 
-return ($scope, $routeParams, $http, nodeCsvParser, $compile, PublishedState, MediaPlayer, Permission, Privilege, $filter, mediaService) ->
+return ($scope, $routeParams, $location, $http, nodeCsvParser, $compile, PublishedState, MediaPlayer, Permission, Privilege, $filter, mediaService) ->
   window.sc = $scope
   $scope.csvData = null
 
@@ -508,7 +508,7 @@ return ($scope, $routeParams, $http, nodeCsvParser, $compile, PublishedState, Me
     q.success (data) ->
       # HACK - update url if number changes...
       if named is 'number'
-        window.location.hash = "#/podcasts/#{$routeParams.podcastName}/episodes/#{data[named]}"
+        $location.url("/admin/podcasts/#{$routeParams.podcastName}/episodes/#{data.number}")
       else
         $scope.episode[named] = data[named]
 

@@ -212,8 +212,8 @@ tryInsertNodeType :: NodeType -> Handler (Entity NodeType)
 tryInsertNodeType nodeType = do
   ensureEntity nodeType $ UniqueTypeTitle $ nodeTypeTitle nodeType
 
-handleAdminR :: Handler RepHtml
-handleAdminR = do
+handleAdminR :: Texts -> Handler RepHtml
+handleAdminR _ = do
   (Entity userId user) <- requireAuth
   rights <- requirePermissions userId
   let rightsDoc = L8.unpack $ encode rights
@@ -343,10 +343,10 @@ handleAdminR = do
     $(addLib "models")
     $(addLib "media")
 
-    $(addCtrl "/podcasts" "podcastIndex")
-    $(addCtrl "/podcasts/:podcastName" "showPodcast")
-    $(addCtrl "/podcasts/:podcastName/episodes.new" "newEpisode")
-    $(addCtrl "/podcasts/:podcastName/episodes/:episodeNumber" "editEpisode")
-    $(addCtrl "/users" "admin/users/index")
+    $(addCtrl "/admin/podcasts" "podcastIndex")
+    $(addCtrl "/admin/podcasts/:podcastName" "showPodcast")
+    $(addCtrl "/admin/podcasts/:podcastName/episodes.new" "newEpisode")
+    $(addCtrl "/admin/podcasts/:podcastName/episodes/:episodeNumber" "editEpisode")
+    $(addCtrl "/admin/users" "admin/users/index")
 
-    setDefaultRoute "/podcasts"
+    setDefaultRoute "/admin/podcasts"
