@@ -3,6 +3,7 @@ module Handler.Episode where
 
 import Import
 import Handler.Util
+import Handler.Home (handleHomeR)
 import Podly.Affiliate
 
 import Data.Aeson (Result(..), FromJSON(..), fromJSON, ToJSON(..))
@@ -15,7 +16,6 @@ import Data.Time.Clock (getCurrentTime, addUTCTime)
 import qualified Data.Time.Format as TF
 import System.Locale (defaultTimeLocale)
 import Data.Text (pack, unpack)
-import Data.Text.Encoding (decodeUtf8)
 import qualified Data.Text as T
 import Control.Monad (liftM)
 import Network.HTTP.Types (notModified304, headerContentType)
@@ -86,18 +86,11 @@ renderJsonEpisode entity@(Entity episodeId episode) = do
         return n {docNodeUrl = Just $ pack newUrl}
       Nothing -> return n
 
--- TODO - move to util?
-acceptContentType :: GHandler s m (Maybe Text)
-acceptContentType =
-  -- request headers -> select content-type -> convert to Text from ByteString
-  fmap decodeUtf8 . lookup "Accept" . requestHeaders . reqWaiRequest <$> getRequest
-
-getPodcastEpisodeR :: Text -> Int -> Handler RepJson
+getPodcastEpisodeR :: Text -> Int -> Handler RepHtmlJson
 getPodcastEpisodeR name number = do
-    ct <- acceptContentType
-    case fmap (T.isInfixOf "application/json") ct of
-      Just True -> renderJsonEpisode =<< (runDB $ getBy404 $ UniqueEpisodeNumber name number)
-      _ -> redirect $ mconcat ["/#/podcasts/", name, "/episodes/", pack $ show number]
+    (RepHtml html) <- handleHomeR
+    (RepJson json) <- renderJsonEpisode =<< (runDB $ getBy404 $ UniqueEpisodeNumber name number)
+    return $ RepHtmlJson html json
 
 getEpisodeR :: EpisodeId -> Handler RepJson -- RepHtmlJson?
 getEpisodeR tid = do

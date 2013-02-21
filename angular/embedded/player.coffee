@@ -7,7 +7,8 @@ return ($scope, $routeParams, $http, scrollManager, MediaPlayer, PublishedState)
   $scope.mediaPlayer = new MediaPlayer('#videoContainerCell', $scope, {start: %{startAt}})
   $scope.episode = {title: "loading...", number: $routeParams.episodeNumber}
 
-  q = $http.get "/podcasts/#{$routeParams.podcastName}/episodes/#{$routeParams.episodeNumber}"
+  # ISSUE, HACK - work around chrome caching issue
+  q = $http.get "/podcasts/#{$routeParams.podcastName}/episodes/#{$routeParams.episodeNumber}?chromesux=true"
   q.success (data) ->
     # HACK - should be integrated to model
     data.published = PublishedState.fromJSON(data.published)

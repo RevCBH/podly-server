@@ -3,6 +3,7 @@ module Handler.Util where
 
 import Import
 import Network.Wai (requestHeaders)
+import Data.Text.Encoding (decodeUtf8)
 
 data PostSource = PostForm | PostJson
 
@@ -42,3 +43,8 @@ ensureEntity item constraint = do
 
 maybe404 ::  GHandler sub master (Maybe b) -> GHandler sub master b
 maybe404 action = action >>= maybe notFound return
+
+acceptContentType :: GHandler sub master (Maybe Text)
+acceptContentType =
+  -- request headers -> select content-type -> convert to Text from ByteString
+  fmap decodeUtf8 . lookup "Accept" . requestHeaders . reqWaiRequest <$> getRequest

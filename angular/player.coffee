@@ -18,7 +18,7 @@ app.directive 'podlyVimeo', ($http) ->
 
     scope.loadEpisodePage(1)
 
-return ($scope, $routeParams, $http, scrollManager, MediaPlayer, PublishedState) ->
+return ($scope, $routeParams, $location, $http, scrollManager, MediaPlayer, PublishedState) ->
   window.sc = $scope
   window.sm = scrollManager
 
@@ -32,7 +32,8 @@ return ($scope, $routeParams, $http, scrollManager, MediaPlayer, PublishedState)
   $scope.mediaPlayer = new MediaPlayer('#videoContainerCell', $scope, {start: startAt})
   $scope.episode = {title: "loading...", number: $routeParams.episodeNumber}
 
-  q = $http.get "/podcasts/#{$routeParams.podcastName}/episodes/#{$routeParams.episodeNumber}"
+  # ISSUE, HACK - work around chrome caching issue
+  q = $http.get "/podcasts/#{$routeParams.podcastName}/episodes/#{$routeParams.episodeNumber}?chromesux=true"
   q.success (data) ->
     # HACK - should be integrated to model
     data.published = PublishedState.fromJSON(data.published)
@@ -162,15 +163,15 @@ return ($scope, $routeParams, $http, scrollManager, MediaPlayer, PublishedState)
   $scope.loadSearchResult = (x) ->
     return unless x
     ep = x.episode || x
-    url = encodeURI("#/player/#{ep.podcast}/#{ep.number}")
+    url = "/podcasts/#{ep.podcast}/episodes/#{ep.number}"
     if x.relId
-      if url is document.location.hash
+      if $routeParams.podcastName is ep.podcast and parseInt($routeParams.episodeNumber) is ep.number
         $scope.seek x
         $scope.displaySearchResults = false
         return
       else
         window.startAt = x.time
-    document.location = url
+    $location.path(url)
 
   if $.jStorage.get("isSignedUp")
     $scope.signupMessage = ""

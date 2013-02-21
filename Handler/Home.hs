@@ -16,7 +16,6 @@ import qualified Data.Vector as V
 import qualified Data.Aeson as A
 import Data.String.Utils (splitWs, join)
 import Data.Text (pack, unpack)
---import qualified Data.Text as T
 import Data.List (nub, groupBy, sortBy, head)
 import Data.Maybe (fromJust, catMaybes)
 import qualified Data.Map as Map
@@ -48,7 +47,7 @@ instance A.FromJSON a => A.FromJSON (Singleton a) where
 
 handleHomeR :: Handler RepHtml
 handleHomeR = do
-  (Entity _ episode):_ <- runDB $ selectList [EpisodePublished ==. StatePublished] [Desc EpisodeNumber]
+  (Entity _ episode):_ <- runDB $ selectList [EpisodePublished ==. StatePublished] [Desc EpisodeNumber, LimitTo 1]
   nodeTypes <- runDB $ selectList [] [Asc NodeTypeTitle]
   let nodeTypesJson = L8.unpack $ encode $ map documentFromNodeType nodeTypes
 
@@ -96,7 +95,7 @@ getPlayNodeR nid = do
   ep <- runDB $ get404 (nodeInstanceEpisodeId inst)
   setSession (pack "StartAt") (pack . show $ nodeInstanceTime inst)
   -- HACK
-  redirect $ "/#/player/" ++ (unpack $ episodePodcast ep) ++ "/" ++ (show $ episodeNumber ep)
+  redirect $ "/podcasts/" ++ (unpack $ episodePodcast ep) ++ "/episodes/" ++ (show $ episodeNumber ep)
 
 embeddedLayout :: GWidget sub App () -> GHandler sub App RepHtml
 embeddedLayout widget = do

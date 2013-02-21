@@ -140,7 +140,8 @@ runNgModule cfg ga = do
 ^{renderLibs}
 angular
     .module("#{modname}", [#{declLibs}])
-    .config(["$routeProvider", function($routeProvider) {
+    .config(["$routeProvider", "$locationProvider", function($routeProvider, $locationProvider) {
+        $locationProvider.html5Mode(true);
         $routeProvider ^{awRoutes} ^{defaultRoute} ;
     }]);
 ^{awControllers}

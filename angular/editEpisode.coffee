@@ -388,7 +388,8 @@ return ($scope, $routeParams, $http, nodeCsvParser, $compile, PublishedState, Me
   }
   $scope.rights = {}
 
-  req = $http.get("/podcasts/#{$routeParams.podcastName}/episodes/#{$routeParams.episodeNumber}")
+  # ISSUE, HACK - work around chrome caching issue
+  req = $http.get("/podcasts/#{$routeParams.podcastName}/episodes/#{$routeParams.episodeNumber}?chromesux=true")
   req.success (data) ->
     # HACK - should be integrated to model
     data.published = PublishedState.fromJSON(data.published)
