@@ -176,7 +176,7 @@ getSearchR = do
  where
   pickEp (_,x,_) = x :: Entity Episode
   pickEntityId (Entity tid _) = tid
-  withSel s f a b = f (s a) (s b)
+  withSel s f a b = f (s a) (s b) -- perform operation f after applying selector s to agruments
   withEpisodes = withSel pickEp
   withWeights = withSel (\(x,_,_) -> x)
   entityIdsEq = withSel pickEntityId (==)
@@ -227,7 +227,15 @@ handleAdminR = do
       requireCreateEpisode rights
       --episode <- tryInsertEpisode ep
       -- TODO - ensure episode doesn't exist
-      (Entity tid _) <- runDB $ episodeFromDocument (ep :: EpisodeDocument)
+      let episodeUrl = mconcat ["http://podly.co/podcasts/", docEpisodePodcast ep,
+                                "/episodes/", pack . show $ docEpisodeNumber ep]
+      let startNode = DocNode {
+                        docNodeRelId  = Nothing,
+                        docNodeTitle  = "Play this episode from the beginning",
+                        docNodeUrl    = Just $ episodeUrl,
+                        docNodeTime   = 0,
+                        docNodeNodeType = Just $ DocNodeT Nothing "start.png" "Start" }
+      (Entity tid _) <- runDB . episodeFromDocument $ ep {docEpisodeNodes = startNode : docEpisodeNodes ep}
       --doc <- runDB $ documentFromEpisode episode
       return $ ep {docEpisode_id = Just tid}
 
