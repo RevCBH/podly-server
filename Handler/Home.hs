@@ -51,12 +51,19 @@ handleHomeR = do
   nodeTypes <- runDB $ selectList [] [Asc NodeTypeTitle]
   let nodeTypesJson = L8.unpack $ encode $ map documentFromNodeType nodeTypes
 
-  mStartAt <- lookupSession "StartAt"
-  startAt <- case mStartAt of
-                  Just x -> do
-                    deleteSession "StartAt"
-                    return x
-                  Nothing -> return "0"
+  --mStartAt <- lookupSession "StartAt"
+  --mStartAt <- lookupGetParam ""
+  --startAt <- case mStartAt of
+  --                Just x -> do
+  --                  liftIO $ traceIO "got it"
+  --                  deleteSession "StartAt"
+  --                  return x
+  --                Nothing -> return "0"
+  tParam <- lookupGetParam "t"
+  let startAt = case tParam of
+                  Nothing -> "0"
+                  Just t -> show t
+
   req <- waiRequest
   let proto = if W.isSecure req then "https" else "http" :: String
   --let hostname = B8.unpack $ W.serverName req
@@ -93,9 +100,10 @@ getPlayNodeR :: NodeInstanceId -> Handler RepHtml
 getPlayNodeR nid = do
   inst <- runDB $ get404 nid
   ep <- runDB $ get404 (nodeInstanceEpisodeId inst)
-  setSession (pack "StartAt") (pack . show $ nodeInstanceTime inst)
+  let stAt = (show $ nodeInstanceTime inst)
+  --setSession (pack "StartAt") $ trace ("stAt: " ++ stAt) (pack stAt)
   -- HACK
-  redirect $ "/podcasts/" ++ (unpack $ episodePodcast ep) ++ "/episodes/" ++ (show $ episodeNumber ep)
+  redirect $ "/podcasts/" ++ (unpack $ episodePodcast ep) ++ "/episodes/" ++ (show $ episodeNumber ep) ++ "?t=" ++ stAt
 
 embeddedLayout :: GWidget sub App () -> GHandler sub App RepHtml
 embeddedLayout widget = do

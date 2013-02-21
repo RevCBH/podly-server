@@ -23,7 +23,8 @@ return ($scope, $routeParams, $location, $http, scrollManager, MediaPlayer, Publ
   window.sm = scrollManager
 
   unless window.firstLoad
-    startAt = %{startAt}
+    # startAt = %{startAt}
+    startAt = parseInt($location.search().t || "0")
     window.firstLoad = true
   else
     startAt = window.startAt # HACK
@@ -171,7 +172,7 @@ return ($scope, $routeParams, $location, $http, scrollManager, MediaPlayer, Publ
         return
       else
         window.startAt = x.time
-    $location.path(url)
+    $location.url(url)
 
   if $.jStorage.get("isSignedUp")
     $scope.signupMessage = ""
