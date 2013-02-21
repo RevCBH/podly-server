@@ -635,6 +635,7 @@ td .in-place-display {
   top: -85px;
   left: 36px;
   z-index: 2000;
+  height: 1px;
 }
 
 .navFloater li {
