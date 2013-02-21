@@ -236,7 +236,6 @@ handleAdminR = do
                         docNodeTime   = 0,
                         docNodeNodeType = Just $ DocNodeT Nothing "start.png" "Start" }
       (Entity tid _) <- runDB . episodeFromDocument $ ep {docEpisodeNodes = startNode : docEpisodeNodes ep}
-      --doc <- runDB $ documentFromEpisode episode
       return $ ep {docEpisode_id = Just tid}
 
     cmdSetEpisodeTitle <- addCommand $ \(epId, title) ->
