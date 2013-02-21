@@ -51,14 +51,6 @@ handleHomeR = do
   nodeTypes <- runDB $ selectList [] [Asc NodeTypeTitle]
   let nodeTypesJson = L8.unpack $ encode $ map documentFromNodeType nodeTypes
 
-  --mStartAt <- lookupSession "StartAt"
-  --mStartAt <- lookupGetParam ""
-  --startAt <- case mStartAt of
-  --                Just x -> do
-  --                  liftIO $ traceIO "got it"
-  --                  deleteSession "StartAt"
-  --                  return x
-  --                Nothing -> return "0"
   tParam <- lookupGetParam "t"
   let startAt = case tParam of
                   Nothing -> "0"
@@ -86,13 +78,10 @@ handleHomeR = do
           return $ Singleton ("Error" :: String)
 
     $(addLib "util")
-    $(addLib "filters")
     $(addLib "models")
     $(addLib "media")
     $(addLib "scroll")
-    -- $(addCtrl "/player/:podcastName/:episodeNumber" "player")
     $(addCtrl "/podcasts/:podcastName/episodes/:episodeNumber" "player")
-    --localhost:3000/podcasts/The Joe Rogan Experience/episodes/275
 
     setDefaultRoute $ pack $ "/podcasts/The Joe Rogan Experience/episodes/" ++ (show $ episodeNumber episode)
 
@@ -101,7 +90,6 @@ getPlayNodeR nid = do
   inst <- runDB $ get404 nid
   ep <- runDB $ get404 (nodeInstanceEpisodeId inst)
   let stAt = (show $ nodeInstanceTime inst)
-  --setSession (pack "StartAt") $ trace ("stAt: " ++ stAt) (pack stAt)
   -- HACK
   redirect $ "/podcasts/" ++ (unpack $ episodePodcast ep) ++ "/episodes/" ++ (show $ episodeNumber ep) ++ "?t=" ++ stAt
 
@@ -130,7 +118,6 @@ handleEmbedPlayerR epId = do
       return $ Singleton ("OK" :: String)
 
     $(addLib "util")
-    $(addLib "filters")
     $(addLib "models")
     $(addLib "media")
     $(addLib "scroll")
@@ -346,7 +333,6 @@ handleAdminR = do
 
     addExtLib "ui"
     $(addLib "util")
-    $(addLib "filters")
     $(addLib "models")
     $(addLib "media")
 
