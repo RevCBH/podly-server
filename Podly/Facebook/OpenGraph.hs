@@ -1,7 +1,8 @@
 module Podly.Facebook.OpenGraph where
 
-import Import
-import Data.Text (pack)
+import Import hiding (concatMap)
+import Data.Text (pack, concatMap, singleton)
+--import qualified Data.Text as T
 import Text.Blaze ((!))
 import Text.Blaze.Internal (customAttribute, AttributeValue, textValue)
 import Text.Blaze.Html5 (meta)
@@ -20,11 +21,17 @@ mkTag :: AttributeValue -> Text -> Html
 mkTag name value =  -- mconcat ["<meta property=\"og:", name, "\" content=\"", content, "\" />"]
   meta ! customAttribute "property" (mappend "og:" name) ! (content $ textValue value)
 
+escapeUrlChar :: Char -> Text
+escapeUrlChar c =
+  case c of
+    ' ' -> "%20"
+    x -> singleton x
+
 render :: FBOpenGraphElement -> Html
 render (Title x) = mkTag "title" x
 render (Description x) = mkTag "description" x
 render (Type x) = mkTag "type" x
-render (Url x) = mkTag "url" x
+render (Url x) = mkTag "url" (concatMap escapeUrlChar x)
 render (Image x) = mkTag "image" x
 render (SiteName x) = mkTag "site_name" x
 render (Video url h w t) =
