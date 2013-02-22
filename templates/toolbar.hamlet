@@ -6,6 +6,8 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       <a class="brand" href="#">Podly
+      <ul .nav>
+        <li><a href="http://podlyblog.tumblr.com/">Blog</a>
       <div class="nav-collapse collapse">
       $maybe Entity _ auth <- mauth
         <ul .nav .pull-right>
