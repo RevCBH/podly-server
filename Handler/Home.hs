@@ -5,10 +5,12 @@ import Import
 import Yesod.Auth
 import Yesod.Angular
 import Yesod.Default.Config (appExtra)
+import Yesod.Widget (toWidgetHead)
 import qualified Network.Wai as W
 
 import Handler.Util
 import Podly.Auth
+import qualified Podly.Facebook.OpenGraph as OG
 
 import qualified Data.ByteString.Lazy.Char8 as L8
 import qualified Data.ByteString.Char8 as B8
@@ -47,7 +49,7 @@ instance A.FromJSON a => A.FromJSON (Singleton a) where
 
 handleHomeR :: Handler RepHtml
 handleHomeR = do
-  (Entity _ episode):_ <- runDB $ selectList [EpisodePublished ==. StatePublished] [Desc EpisodeNumber, LimitTo 1]
+  (Entity episodeId episode):_ <- runDB $ selectList [EpisodePublished ==. StatePublished] [Desc EpisodeNumber, LimitTo 1]
   nodeTypes <- runDB $ selectList [] [Asc NodeTypeTitle]
   let nodeTypesJson = L8.unpack $ encode $ map documentFromNodeType nodeTypes
 
@@ -65,7 +67,22 @@ handleHomeR = do
   let approot = proto ++ "://" ++ hostname ++ port ++ "/"
 
   let cfg = ModuleConfig (Just "playerMod") Nothing
-  runNgModule cfg $ do
+
+  let ogTitle = mconcat [episodePodcast episode, " #", pack . show $ episodeNumber episode]
+
+  -- TODO - don't do two queries here
+  videoImageUrl <- runDB $ episodePreviewImageUrl episodeId
+  videoUrl <- runDB $ episodeVideoUrl episodeId
+  let meta = [OG.Title ogTitle,
+              OG.Description $ episodeTitle episode,
+              OG.Type "video",
+              OG.Url $ canonicalEpisodeUrl episode,
+              OG.Image $ fromJust videoImageUrl,
+              OG.SiteName "Podly.co",
+              OG.Video (fromJust videoUrl) 10 10 "application/x-shockwave-flash"]
+  let metaWidget = do toWidgetHead $ OG.renderTags meta
+
+  runNgModuleWidget cfg metaWidget $ do
     cmdSetNodeInstance <- addCommand $ \() -> do
       notFound
       return $ Singleton ("OK" :: String)

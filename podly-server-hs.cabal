@@ -39,6 +39,7 @@ library
                      Podly.Auth
                      Podly.Affiliate
                      Podly.Middleware.Mobile
+                     Podly.Facebook.OpenGraph
                      -- Handler.NodeInstance
                      Handler.NodeType
                      Fixtures
@@ -112,6 +113,7 @@ library
                  , regex-pcre-builtin
                  , unordered-containers
                  , blaze-markup
+                 , blaze-html
                  -- , yesod-fay                     >= 0.1
                  -- , fay                           >= 0.9
                  , aeson                         >= 0.6        && < 0.7

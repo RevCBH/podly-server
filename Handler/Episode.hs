@@ -125,8 +125,7 @@ getEpisodeMetaR tid = do
     (EmbedPlayerConfig "MOAR!")
  where
   mkEphem (Entity tid episode) = do
-    src <- getBy $ UniqueMediaKindForEpisode tid VideoYouTube
-    let previewImage = flip fmap src $ \(Entity _ x) -> T.concat ["http://img.youtube.com/vi/", mediaSourceResource x, "/0.jpg"]
+    previewImage <- episodePreviewImageUrl tid
     let f = EpisodeEphemeral tid <$> episodeNumber <*> episodeTitle
     return $ f episode previewImage
   getPrevNext = do

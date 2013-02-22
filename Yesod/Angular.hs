@@ -8,6 +8,7 @@ module Yesod.Angular
     , ModuleConfig (..)
     , runAngular
     , runNgModule
+    , runNgModuleWidget
     , addCommand
     , addCtrl
     , addCtrlRaw
@@ -101,7 +102,14 @@ runNgModule :: YesodAngular master
             => ModuleConfig sub master
             -> GAngular sub master ()
             -> GHandler sub master RepHtml
-runNgModule cfg ga = do
+runNgModule cfg ga = runNgModuleWidget cfg ([whamlet| |]) ga
+
+runNgModuleWidget ::YesodAngular master
+                    => ModuleConfig sub master
+                    -> GWidget sub master ()
+                    -> GAngular sub master ()
+                    -> GHandler sub master RepHtml
+runNgModuleWidget cfg modWidget ga = do
     master <- getYesod
     ((), AngularWriter{..}) <- runWriterT ga
     mc <- lookupGetParam "command"
@@ -134,6 +142,8 @@ runNgModule cfg ga = do
         addScriptEither $ urlAngularUi master
         addStylesheetEither $ urlAngularUiCss master
         addScriptEither $ urlSocialite master
+
+        modWidget
 
         [whamlet|<div ng-view>|]
         toWidget [julius|

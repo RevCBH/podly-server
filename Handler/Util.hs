@@ -3,6 +3,7 @@ module Handler.Util where
 
 import Import
 import Network.Wai (requestHeaders)
+import Data.Text (pack, unpack)
 import Data.Text.Encoding (decodeUtf8)
 
 data PostSource = PostForm | PostJson
@@ -48,3 +49,24 @@ acceptContentType :: GHandler sub master (Maybe Text)
 acceptContentType =
   -- request headers -> select content-type -> convert to Text from ByteString
   fmap decodeUtf8 . lookup "Accept" . requestHeaders . reqWaiRequest <$> getRequest
+
+canonicalEpisodeUrl :: Episode -> Text
+canonicalEpisodeUrl episode =
+  -- TODO make approot non-static
+  let approot = "http://podly.co/"
+  in mconcat [pack approot, "podcasts/", episodePodcast episode, "/episodes/", pack . show $ episodeNumber episode]
+
+--episodePreviewImageUrl :: PersistUnique backend m =>
+--                          Key backend (EpisodeGeneric backend) -> backend m (Maybe Text)
+--youtubePreviewImageUrl src =
+--  flip fmap src $ \(Entity _ x) -> mconcat ["http://img.youtube.com/vi/", mediaSourceResource x, "/0.jpg"]
+
+episodePreviewImageUrl episodeId = do
+  src <- getBy $ UniqueMediaKindForEpisode episodeId VideoYouTube
+  return $ flip fmap src $ \(Entity _ x) -> mconcat ["http://img.youtube.com/vi/", mediaSourceResource x, "/0.jpg"]
+
+--episodeVideoUrl :: PersistUnique backend m =>
+--                   Key backend (EpisodeGeneric backend) -> backend m (Maybe Text)
+episodeVideoUrl episodeId = do
+  src <- getBy $ UniqueMediaKindForEpisode episodeId VideoYouTube
+  return $ flip fmap src $ \(Entity _ x) -> mconcat ["http://www.youtube.com/v/", mediaSourceResource x, "?version=3&autohide=1"]
