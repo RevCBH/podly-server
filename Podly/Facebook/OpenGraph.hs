@@ -18,7 +18,7 @@ data FBOpenGraphElement =
   | Video {videoUrl :: Text, videoWidth :: Int, videoHeight :: Int, videoType :: Text}
 
 mkTag :: AttributeValue -> Text -> Html
-mkTag name value =  -- mconcat ["<meta property=\"og:", name, "\" content=\"", content, "\" />"]
+mkTag name value =
   meta ! customAttribute "property" (mappend "og:" name) ! (content $ textValue value)
 
 escapeUrlChar :: Char -> Text
@@ -42,15 +42,3 @@ render (Video url h w t) =
 
 renderTags :: [FBOpenGraphElement] -> Html
 renderTags = mconcat . map render
-
--- <meta property="og:type" content="video" />
--- <meta property="og:url" content="http://ahrengot.com/playground/circular-scrubbing"/>
--- <meta property="og:image" content="http://ahrengot.com/playground/circular-scrubbing/thumb.jpg"/>
--- <meta property="og:site_name" content="Ahrengot's Playground"/>
--- <meta property="fb:admins" content="100000936142315"/>
---
--- <!-- Video player specific OG tags -->
--- <meta property="og:video" content="http://ahrengot.com/playground/circular-scrubbing/video-player.swf?url=http://ahrengot.com/playground/circular-scrubbing/assets/video/example.mp4" />
--- <meta property="og:video:width" content="374" />
--- <meta property="og:video:height" content="202" />
--- <meta property="og:video:type" content="application/x-shockwave-flash" />
