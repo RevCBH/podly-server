@@ -79,7 +79,7 @@ handleHomeR = do
               OG.Url $ canonicalEpisodeUrl episode,
               OG.Image $ fromJust videoImageUrl,
               OG.SiteName "Podly.co",
-              OG.Video (fromJust videoUrl) 10 10 "application/x-shockwave-flash"]
+              OG.Video (fromJust videoUrl) 320 180 "application/x-shockwave-flash"]
   let metaWidget = do toWidgetHead $ OG.renderTags meta
 
   runNgModuleWidget cfg metaWidget $ do
