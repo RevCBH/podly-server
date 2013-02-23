@@ -21,10 +21,13 @@ import Control.Monad (liftM, filterM)
 import Control.Monad.Trans.Maybe
 import Data.Time.Clock (getCurrentTime)
 
---type MaybeDB = (PersistStore backend m) => MaybeT (backend m)
--- DEBUG start
-import Debug.Trace
--- DEBUG end
+--import Debug.Trace
+
+-- Type signature imports
+import qualified Database.Persist.GenericSql.Raw
+import qualified Control.Monad.Trans.Resource
+import qualified Control.Monad.IO.Class
+import qualified Control.Monad.Logger
 
 data NodeTypeDocument = DocNodeT {
   docNodeType_id :: Maybe NodeTypeId,
@@ -70,29 +73,39 @@ data EpisodeDocument = DocEpisode {
 
 $(deriveJSON (removePrefix "docEpisode") ''EpisodeDocument)
 
-type DB a = PersistUnique backend m => backend m (a backend)
-type DBK a backend = Key backend (a backend)
-type DBKey a = DB (DBK a)
+-- Type synonyms for use in signatures
+type MaybeDb x = forall (m :: * -> *). (Control.Monad.Trans.Resource.MonadThrow m,
+                                          Control.Monad.IO.Class.MonadIO m,
+                                          Control.Monad.Trans.Resource.MonadUnsafeIO m,
+                                          Control.Monad.Logger.MonadLogger m, MonadBaseControl IO m) =>
+                                          MaybeT
+                                            (Database.Persist.GenericSql.Raw.SqlPersist m)
+                                            x
+type DbVal x = forall (m :: * -> *). (Control.Monad.Trans.Resource.MonadThrow m,
+                                      Control.Monad.IO.Class.MonadIO m,
+                                      Control.Monad.Trans.Resource.MonadUnsafeIO m,
+                                      Control.Monad.Logger.MonadLogger m, MonadBaseControl IO m) =>
+                                        Database.Persist.GenericSql.Raw.SqlPersist m x
+type DbKey x = Key Database.Persist.GenericSql.Raw.SqlPersist x
 
---documentFromNodeType :: Entity (NodeTypeGeneric t) -> NodeTypeDocument
+documentFromNodeType :: Entity NodeType -> NodeTypeDocument
 documentFromNodeType (Entity tid (NodeType title icon)) = DocNodeT (Just tid) icon title
 
---documentFromNodeInstance :: PersistStore t m => Entity (NodeInstanceGeneric t) -> t m (Maybe NodeDocument)
---documentFromNodeInstance :: Entity NodeInstance -> MaybeDB NodeDocument
-
-maybeDocFromMaybeNodeTypeId Nothing = return Nothing
-maybeDocFromMaybeNodeTypeId (Just ntid) = do
-  nt <- MaybeT . get $ ntid
-  return . Just . documentFromNodeType $ (Entity ntid nt)
-
-documentFromNodeInstance (Entity relId (NodeInstance title mUrl mNodeTypeId episodeId time)) = do
+documentFromNodeInstance :: Entity NodeInstance -> MaybeDb NodeDocument
+documentFromNodeInstance (Entity relId (NodeInstance title mUrl mNodeTypeId _ time)) = do
   mNtDoc <- maybeDocFromMaybeNodeTypeId mNodeTypeId
   return $ DocNode (Just relId) title mUrl time $ mNtDoc
+ where
+  maybeDocFromMaybeNodeTypeId Nothing = return Nothing
+  maybeDocFromMaybeNodeTypeId (Just ntid) = do
+    nt <- MaybeT . get $ ntid
+    return . Just . documentFromNodeType $ (Entity ntid nt)
 
-documentFromMediaSource (Entity tid (MediaSource _ kind offset resource)) = do
+documentFromMediaSource :: Entity MediaSource -> MediaSourceDocument
+documentFromMediaSource (Entity _ (MediaSource _ kind offset resource)) =
   DocMediaSource kind resource offset
 
---documentFromEpisode :: PersistQuery backend m => Entity (EpisodeGeneric backend) -> backend m EpisodeDocument
+documentFromEpisode :: Entity Episode -> DbVal EpisodeDocument
 documentFromEpisode episode = do
   let Entity tid (Episode podcast title number slug airDate published duration lastModified) = episode
   instancesWithIds <- selectList [NodeInstanceEpisodeId ==. tid] [Asc NodeInstanceTime]
@@ -102,66 +115,15 @@ documentFromEpisode episode = do
   mediaSources <- mapM (return . documentFromMediaSource) =<< selectList [MediaSourceEpisodeId ==. tid] []
   return $ DocEpisode (Just tid) podcast number airDate title slug duration published (Just lastModified) mediaSources justNodes
 
---nodeTypeIdFromDoc :: NodeTypeDocument -> DBKey NodeTypeGeneric
+nodeTypeIdFromDoc :: PersistUnique backend m =>
+                     NodeTypeDocument -> backend m (Key backend (NodeTypeGeneric backend))
 nodeTypeIdFromDoc doc = do
   mNT <- getBy $ UniqueTypeTitle $ docNodeTypeTitle doc
   case mNT of
     Nothing -> insert $ NodeType (docNodeTypeTitle doc) (docNodeTypeIcon doc)
     Just (Entity tid _) -> return tid
 
---nodeIdAndTimeFromDoc :: NodeDocument -> (DBKey NodeGeneric, String)
---nodeIdAndTimeFromDoc :: PersistUnique backend m => NodeDocument -> backend m (Key backend (NodeGeneric backend), Key backend (NodeTypeGeneric backend), Int)
---nodeInstanceIdAndTimeFromDoc (DocNode relId _ _ _ time ntDoc) = do
---  typeId <- nodeTypeIdFromDoc ntDoc
---  return (relId, typeId, time)
-
-nodeInstanceIdFromNodeInEpisode :: PersistUnique backend m =>
-  Int
-  -> Text -- title
-  -> Maybe Text -- url
-  -> Key backend (EpisodeGeneric backend)
-  -- -> Key backend (NodeGeneric backend)
-  -> Maybe (Key backend (NodeTypeGeneric backend))
-  -> backend m (Key backend (NodeInstanceGeneric backend))
-nodeInstanceIdFromNodeInEpisode time title mUrl episodeId mNodeTypeId = do
-  mNI <- getBy $ UniqueInstanceEpisodeTime episodeId time
-  case mNI of
-    Nothing -> insert $ NodeInstance title mUrl mNodeTypeId episodeId time
-    Just (Entity tid _) -> return tid
-
---episodeAndIdFromDoc :: PersistUnique backend m =>
---  EpisodeDocument
---  -> backend m (Key backend (EpisodeGeneric backend), EpisodeGeneric backend)
-episodeAndIdFromDoc (DocEpisode _ podcast number airDate title slug duration published _ _ _) = do
-  mPodcast <- getBy $ UniquePodcastName podcast
-  case mPodcast of
-    Nothing -> do
-      _ <- insert $ Podcast {podcastName = podcast, podcastDescription = Nothing,
-                             podcastImage = Nothing, podcastCategory = Nothing}
-      return ()
-    _ -> return ()
-  mEpisode <- getBy $ UniqueEpisodeNumber podcast number
-  case mEpisode of
-    Nothing -> do
-      curT <- liftIO getCurrentTime
-      let ep = Episode podcast title number slug airDate published duration curT
-      tid <- insert ep
-      return (tid, ep)
-    Just (Entity tid ep) -> return (tid, ep)
-
-    {-
-    NodeInstance
-    title Text
-    url Text
-    nodeTypeId NodeTypeId
-    episodeId EpisodeId Eq
-    time Int
-    UniqueInstanceEpisodeTime episodeId time
-    -}
-
-maybeMaybeNodeTypeIdFromDoc Nothing = return Nothing
-maybeMaybeNodeTypeIdFromDoc (Just doc) = return . Just =<< nodeTypeIdFromDoc doc
-
+syncInstance :: DbKey Episode -> NodeDocument -> DbVal (Entity NodeInstance)
 syncInstance episodeId (DocNode mRelId title mUrl time mNodeTypeDoc) = do
   mNodeTypeId <- maybeMaybeNodeTypeIdFromDoc mNodeTypeDoc
   let getNewInstanceId = insert $ NodeInstance title mUrl mNodeTypeId episodeId time
@@ -187,40 +149,43 @@ syncInstance episodeId (DocNode mRelId title mUrl time mNodeTypeDoc) = do
               return $ Just ins
 
   return (Entity relId $ fromJust mIns)
+ where
+  maybeMaybeNodeTypeIdFromDoc Nothing = return Nothing
+  maybeMaybeNodeTypeIdFromDoc (Just doc) = return . Just =<< nodeTypeIdFromDoc doc
 
-  --mInstance <- get relId
-
-syncMediaSource episodeId (DocMediaSource kind resource offset) = do
-  mSource <- getBy $ UniqueMediaKindForEpisode episodeId kind
-  case mSource of
-    Just (Entity tid source) -> do
-      -- TODO - update plan ?
-      update tid [MediaSourceResource =. resource, MediaSourceOffset =. offset]
-      source' <- get tid
-      return $ Entity tid $ fromJust source'
-    Nothing -> do
-      let source = MediaSource episodeId kind offset resource
-      tid <- insert source
-      return $ Entity tid source
-
---episodeFromDocument :: EpisodeDocument -> DB EpisodeGeneric
+episodeFromDocument :: EpisodeDocument -> DbVal (Entity Episode)
 episodeFromDocument doc = do
-  (episodeId, episode) <- episodeAndIdFromDoc doc
+  (Entity episodeId episode) <- episodeAndIdFromDoc doc
   mapM_ (syncInstance episodeId) $ docEpisodeNodes doc
   mapM_ (syncMediaSource episodeId) $ docEpisodeMediaSources doc
 
   return $ Entity episodeId episode
- --where
- -- syncInstance (DocNode relId title url _ time nodeTypeDoc) =
-
-  --reifyInstance episodeId (mRelId, nodeTypeId, time) =
-  --  nodeInstanceIdFromNodeInEpisode time episodeId nodeId nodeTypeId
-
---data NodeDocument = DocNode {
---  docNodeRelId :: Maybe NodeInstanceId,
---  docNodeTitle :: Text,
---  docNodeUrl :: Text,
---  docNodeLinkTitle :: Text,
---  docNodeTime :: Int,
---  docNodeNodeType :: NodeTypeDocument
---} deriving (Show, Generic)
+ where
+  syncMediaSource episodeId (DocMediaSource kind resource offset) = do
+    mSource <- getBy $ UniqueMediaKindForEpisode episodeId kind
+    case mSource of
+      Just (Entity tid _) -> do
+        -- TODO - update plan ?
+        update tid [MediaSourceResource =. resource, MediaSourceOffset =. offset]
+        source' <- get tid
+        return $ Entity tid $ fromJust source'
+      Nothing -> do
+        let source = MediaSource episodeId kind offset resource
+        tid <- insert source
+        return $ Entity tid source
+  episodeAndIdFromDoc (DocEpisode _ podcast number airDate title slug duration published _ _ _) = do
+    mPodcast <- getBy $ UniquePodcastName podcast
+    case mPodcast of
+      Nothing -> do
+        _ <- insert $ Podcast {podcastName = podcast, podcastDescription = Nothing,
+                               podcastImage = Nothing, podcastCategory = Nothing}
+        return ()
+      _ -> return ()
+    mEpisode <- getBy $ UniqueEpisodeNumber podcast number
+    case mEpisode of
+      Nothing -> do
+        curT <- liftIO getCurrentTime
+        let ep = Episode podcast title number slug airDate published duration curT
+        tid <- insert ep
+        return (Entity tid ep)
+      Just entity -> return entity

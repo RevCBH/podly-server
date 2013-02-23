@@ -27,9 +27,9 @@ import           Data.Maybe                 (fromMaybe, Maybe(..), catMaybes, ma
 import           Data.Monoid                (First (..), Monoid (..))
 import           Data.Text                  (Text)
 import           Text.Hamlet                (HtmlUrl, hamletFile)
-import           Text.Julius                (JavascriptUrl, julius, juliusFile)
-import           Text.Coffee                (coffeeFile, coffeeFileReload)
-import           Text.Coffee.Bare           (coffeeBareFile, coffeeBareFileReload)
+import           Text.Julius                (JavascriptUrl, julius)
+import           Text.Coffee                (coffeeFile)
+import           Text.Coffee.Bare           (coffeeBareFile)
 import           Yesod.Core                 (GHandler, GWidget, RepHtml,
                                              RepHtml (RepHtml), Route, Yesod,
                                              addScriptEither, addStylesheetEither, defaultLayout,

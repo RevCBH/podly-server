@@ -33,16 +33,18 @@ library
                      Handler.Util
                      Handler.Home
                      Handler.Test
-                     Handler.Node
+                     -- Handler.Node
                      Handler.Episode
                      Util.TH
                      Podly.Auth
                      Podly.Affiliate
                      Podly.Middleware.Mobile
                      Podly.Facebook.OpenGraph
+                     Podly.Facebook.OpenGraph.Entities
+                     Podly.Urls
                      -- Handler.NodeInstance
                      Handler.NodeType
-                     Fixtures
+                     -- Fixtures
                      Document
 
     if flag(dev) || flag(library-only)

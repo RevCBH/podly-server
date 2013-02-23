@@ -1,4 +1,4 @@
-{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveGeneric, RankNTypes #-}
 module Model where
 
 import Prelude
@@ -12,6 +12,9 @@ import Data.Aeson.TH (deriveJSON)
 import Control.Applicative ((<$>), (<*>))
 
 import GHC.Generics (Generic)
+
+-- Type sig imports
+import qualified Control.Monad.IO.Class
 
 data MediaKind =
   AudioMp3
@@ -98,6 +101,9 @@ instance ToJSON (Entity Episode) where
       "airDate" .= (toJSON airDate),
       "lastModified" .= (toJSON lastModified)]
 
+touchEpisode :: forall (backend :: (* -> *) -> * -> *) (m :: * -> *) (backend1 :: (* -> *) -> * -> *).
+                           (Control.Monad.IO.Class.MonadIO (backend m), PersistQuery backend m) =>
+                           Key backend (EpisodeGeneric backend1) -> backend m ()
 touchEpisode episodeId = do
   curT <- liftIO getCurrentTime
   update episodeId [EpisodeLastModified =. curT]

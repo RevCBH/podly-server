@@ -1,4 +1,4 @@
-module Podly.Facebook.OpenGraph where
+module Podly.Facebook.OpenGraph (FBOpenGraphElement(..), renderTags) where
 
 import Import hiding (concatMap)
 import Data.Text (pack, concatMap, singleton)

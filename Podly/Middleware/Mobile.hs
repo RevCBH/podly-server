@@ -2,12 +2,11 @@ module Podly.Middleware.Mobile (interceptMobile) where
 
 import Import
 import qualified Data.ByteString as B
-import qualified Data.ByteString.Char8 as B8
 import Network.Wai
 import Network.HTTP.Types (status200)
 import Text.Regex.PCRE
 
-import Debug.Trace
+--import Debug.Trace
 
 interceptMobile :: Middleware
 interceptMobile app req =

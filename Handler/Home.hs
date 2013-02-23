@@ -1,28 +1,26 @@
-{-# LANGUAGE TupleSections, OverloadedStrings #-}
+{-# LANGUAGE TupleSections, OverloadedStrings, RankNTypes #-}
 module Handler.Home where
 
 import Import
-import Yesod.Auth
 import Yesod.Angular
 import Yesod.Default.Config (appExtra)
-import Yesod.Widget (toWidgetHead)
 import qualified Network.Wai as W
 
 import Handler.Util
 import Podly.Auth
-import qualified Podly.Facebook.OpenGraph as OG
+--import qualified Podly.Facebook.OpenGraph as OG
+import qualified Podly.Facebook.OpenGraph.Entities as OG
 
 import qualified Data.ByteString.Lazy.Char8 as L8
-import qualified Data.ByteString.Char8 as B8
 import qualified Data.Vector as V
 import qualified Data.Aeson as A
 import Data.String.Utils (splitWs, join)
 import Data.Text (pack, unpack)
 import Data.List (nub, groupBy, sortBy, head)
-import Data.Maybe (fromJust, catMaybes)
+import Data.Maybe (catMaybes)
 import qualified Data.Map as Map
 import Text.Coffee (coffeeFile)
-import Control.Monad (liftM, sequence)
+import Control.Monad (liftM)
 import Control.Monad.IO.Class (MonadIO)
 import Control.Monad.Trans.Resource (MonadThrow, MonadUnsafeIO)
 import Control.Monad.Logger (MonadLogger)
@@ -33,9 +31,12 @@ import Database.Persist.GenericSql.Raw (SqlPersist)
 import qualified Database.Persist.Store as DSP
 import Text.Regex.PCRE
 
-import Debug.Trace
+--import Debug.Trace
 
 import Document
+
+-- Imports for type signatures
+import qualified Database.Persist.GenericSql
 
 newtype Singleton a = Singleton { unSingleton :: a }
 instance A.ToJSON a => A.ToJSON (Singleton a) where
@@ -49,7 +50,7 @@ instance A.FromJSON a => A.FromJSON (Singleton a) where
 
 handleHomeR :: Handler RepHtml
 handleHomeR = do
-  (Entity episodeId episode):_ <- runDB $ selectList [EpisodePublished ==. StatePublished] [Desc EpisodeNumber, LimitTo 1]
+  entity@(Entity _ episode):_ <- runDB $ selectList [EpisodePublished ==. StatePublished] [Desc EpisodeNumber, LimitTo 1]
   nodeTypes <- runDB $ selectList [] [Asc NodeTypeTitle]
   let nodeTypesJson = L8.unpack $ encode $ map documentFromNodeType nodeTypes
 
@@ -64,32 +65,20 @@ handleHomeR = do
   let hostname = "podly.co"
   --let port = if (W.serverPort req) `elem` [80, 443] then "" else (":" ++ show (W.serverPort req))
   let port = ""
-  let approot = proto ++ "://" ++ hostname ++ port ++ "/"
-
+  let _approot = proto ++ "://" ++ hostname ++ port ++ "/"
   let cfg = ModuleConfig (Just "playerMod") Nothing
 
-  let ogTitle = mconcat [episodePodcast episode, " #", pack . show $ episodeNumber episode]
-
-  -- TODO - don't do two queries here
-  videoImageUrl <- runDB $ episodePreviewImageUrl episodeId
-  videoUrl <- runDB $ episodeVideoUrl episodeId
-  let meta = [OG.Title ogTitle,
-              OG.Description $ episodeTitle episode,
-              OG.Type "video",
-              OG.Url $ canonicalEpisodeUrl episode,
-              OG.Image $ fromJust videoImageUrl,
-              OG.SiteName "Podly.co",
-              OG.Video (fromJust videoUrl) 360 640 "application/x-shockwave-flash"]
-  let metaWidget = do toWidgetHead $ OG.renderTags meta
+  episodeDoc <- runDB $ documentFromEpisode entity
+  let metaWidget = toWidgetHead $ OG.tags episodeDoc
 
   runNgModuleWidget cfg metaWidget $ do
     cmdSetNodeInstance <- addCommand $ \() -> do
-      notFound
+      _ <- notFound
       return $ Singleton ("OK" :: String)
     cmdSignupEmail <- addCommand $ \(Singleton email) -> do
       if (unpack email) =~ ("[^@]+@[^.]+\\..+" :: String)
         then do
-          runDB $ insert $ Email email Nothing Nothing
+          _ <- runDB $ insert $ Email email Nothing Nothing
           return $ Singleton ("OK" :: String)
         else
           return $ Singleton ("Error" :: String)
@@ -127,11 +116,11 @@ handleEmbedPlayerR epId = do
                   Nothing -> "0"
                   Just t -> show t
 
-  let approot = "http://podly.co/" :: String
+  let _approot = "http://podly.co/" :: String
   let cfg = ModuleConfig (Just "playerMod") (Just embeddedLayout)
   runNgModule cfg $ do
     cmdSetNodeInstance <- addCommand $ \() -> do
-      notFound
+      _ <- notFound
       return $ Singleton ("OK" :: String)
 
     $(addLib "util")
@@ -170,6 +159,11 @@ instance A.ToJSON SearchResult where
       "episode" .= (A.toJSON episode),
       "nodes" .= (A.toJSON nodes)]
 
+searchEpisodes :: forall a (m :: * -> *).
+                   (MonadIO m, MonadUnsafeIO m, MonadThrow m, MonadLogger m,
+                    MonadBaseControl IO m, Database.Persist.GenericSql.RawSql a) =>
+                   Text -> SqlPersist m [a]
+
 searchEpisodes txt = do
   let plain = DSP.PersistText txt
   let tsquery = DSP.PersistText $ pack $ join "|" $ splitWs $ unpack txt
@@ -195,7 +189,7 @@ getSearchR = do
   pickEntityId (Entity tid _) = tid
   withSel s f a b = f (s a) (s b) -- perform operation f after applying selector s to agruments
   withEpisodes = withSel pickEp
-  withWeights = withSel (\(x,_,_) -> x)
+  --withWeights = withSel (\(x,_,_) -> x)
   entityIdsEq = withSel pickEntityId (==)
   cmpEntityIds = withSel pickEntityId compare
   episodesEq x = withEpisodes entityIdsEq x
@@ -295,7 +289,7 @@ handleAdminR _ = do
     cmdAddMediaSource <- addCommand $ \(epId, DocMediaSource kind res offset) -> do
       requireManageEpisode rights epId
       runDB $ do
-        insert $ MediaSource epId kind offset res
+        _ <- insert $ MediaSource epId kind offset res
         touchEpisode epId
       return $ Singleton ("OK" :: String)
 
@@ -321,34 +315,34 @@ handleAdminR _ = do
       let mkGrant = (HasEpisodeGrant <$> episodeGrantEpisodeId <*> episodeGrantPrivilege) . selEntity
       -- Collect HasEpisodeGrants grouped by userIds
       let appendGrant x (i, xs) = (i, (mkGrant x : xs))
-      let rights = foldr (\x m -> Map.adjust (appendGrant x) (episodeGrantUserId $ selEntity x) m) userTbl grants
+      let _rights = foldr (\x m -> Map.adjust (appendGrant x) (episodeGrantUserId $ selEntity x) m) userTbl grants
       -- Convert to JSON compatible format
       let mapPair f g = map (\(a, b) -> (f a, g b))
       let txtId = pack . L8.unpack . encode
       let objPair (i, xs) = object ["ident" .= i, "grants" .= xs]
-      return $ object $ mapPair txtId objPair $ Map.assocs rights
+      return $ object $ mapPair txtId objPair $ Map.assocs _rights
 
-    cmdGrant <- addCommand $ \(userId, perm) ->
+    cmdGrant <- addCommand $ \(_userId, perm) ->
       case perm of
         HasRole role -> do
           requireGrant role rights
-          _ <- runDB $ insert $ Role userId role
+          _ <- runDB $ insert $ Role _userId role
           return $ Singleton ("OK" :: String)
         HasEpisodeGrant epId role -> do
           requireGrantOnEp role epId rights
-          _ <- runDB $ insert $ EpisodeGrant userId role epId
+          _ <- runDB $ insert $ EpisodeGrant _userId role epId
           runDB $ touchEpisode epId
           return $ Singleton ("OK" :: String)
 
-    cmdRevoke <- addCommand $ \(userId, perm) ->
+    cmdRevoke <- addCommand $ \(_userId, perm) ->
       case perm of
         HasRole role -> do
           requireGrant role rights
-          runDB $ deleteWhere [RoleUserId ==. userId, RolePrivilege ==. role]
+          runDB $ deleteWhere [RoleUserId ==. _userId, RolePrivilege ==. role]
           return $ Singleton ("OK" :: String)
         HasEpisodeGrant epId role -> do
           requireGrantOnEp role epId rights
-          runDB $ deleteWhere [EpisodeGrantUserId ==. userId,
+          runDB $ deleteWhere [EpisodeGrantUserId ==. _userId,
                                EpisodeGrantPrivilege ==. role,
                                EpisodeGrantEpisodeId ==. epId]
           return $ Singleton ("OK" :: String)

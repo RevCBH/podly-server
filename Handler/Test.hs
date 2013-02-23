@@ -2,104 +2,86 @@
 module Handler.Test where
 
 import Import
-import Data.Aeson (Result(..), ToJSON(..), FromJSON(..), fromJSON)
-import Data.Aeson.TH (deriveJSON)
-import Data.Maybe
-import Data.Time(addUTCTime, getCurrentTime, Day, UTCTime(..), secondsToDiffTime)
-import Data.Text (pack)
-import Text.Coffee (coffeeFile)
+--import Data.Aeson (Result(..))
+--import Data.Text (pack)
 import qualified Data.HashMap.Strict as Map
-import Control.Monad (filterM, liftM, liftM2)
-import Data.List (head)
---import qualified Data.Map as Map'
+--import Control.Monad (filterM, liftM, liftM2)
+--import Data.List (head)
+--import Podly.Auth
 
-import Fixtures
-import Document
-import Handler.Util
-import Podly.Auth
+--import System.Directory hiding (getPermissions)
 
-import Yesod.Form.Jquery
+--getUsersR :: Handler RepJson
+--getUsersR = do
+--    (Entity userId user) <- requireAuth
+--    rights <- requirePermissions userId
+--    requireManageUsers rights
+--    users <- runDB $ selectList [] [Asc UserIdent]
+--    json <- runDB $ mapM userWithPerms users
 
-import System.Directory hiding (getPermissions)
+--    jsonToRepJson json
+--  where
+--    userWithPerms entity@(Entity uid _) = do
+--        perms <- getPermissions uid
+--        let (Object uJson) = toJSON entity
+--        return $ object $ mconcat [Map.toList uJson, ["permissions" .= perms]]
 
-getUsersR :: Handler RepJson
-getUsersR = do
-    (Entity userId user) <- requireAuth
-    rights <- requirePermissions userId
-    requireManageUsers rights
-    users <- runDB $ selectList [] [Asc UserIdent]
-    json <- runDB $ mapM userWithPerms users
+--iconNames :: IO [Text]
+--iconNames = do
+--    xs <- getDirectoryContents =<< imgRoot
+--    iconFolders <- filterM isImageDirectory $ filter isNotDotFile xs
+--    icons <- mapM iconsInFolder iconFolders
+--    return $ map pack $ concat icons
+--  where
+--    imgRoot = liftM (++ "/static/img/") getCurrentDirectory
+--    isNotDotFile = not . (== '.') . head
+--    isImageDirectory = (>>= doesDirectoryExist) . (liftM2 (++) imgRoot . return)
+--    iconsInFolder x = do
+--        r <- imgRoot
+--        files <- filterM (return . isNotDotFile) =<< getDirectoryContents (r ++ x)
+--        let x' = (x ++ "/")
+--        return $ map (x' ++ ) files
 
-    jsonToRepJson json
-  where
-    userWithPerms entity@(Entity uid _) = do
-        perms <- getPermissions uid
-        let (Object uJson) = toJSON entity
-        return $ object $ mconcat [Map.toList uJson, ["permissions" .= perms]]
+--getFirstRunR :: Handler RepHtml
+--getFirstRunR = do
+--    mRole <- liftM maybeHead $ runDB $ selectList [RolePrivilege ==. AsAdmin] []
+--    case mRole of
+--        Just _ -> notFound
+--        Nothing -> do
+--            runDB $ do
+--                deleteWhere ([] :: [Filter Icon])
+--                xs <- liftIO iconNames
+--                mapM_ insert $ map Icon xs
 
+--            (Entity userId user) <- requireAuth
+--            runDB $ insert $ Role userId AsAdmin
+--            runDB $ insert $ Role userId AsPublisher
+--            runDB $ insert $ Role userId AsEditor
 
-postEchoJsonR :: Handler RepJson
-postEchoJsonR = do
-    res <- parseJsonBody
-    case res of
-        Success (val :: Value) -> jsonToRepJson val
-        Error msg -> jsonToRepJson $ object ["error" .= msg]
+--            defaultLayout [whamlet|<h1>Granted #{userIdent user} Admin privileges</h1>|]
+--  where
+--    maybeHead (x:_) = Just x
+--    maybeHead _ = Nothing
 
-iconNames :: IO [Text]
-iconNames = do
-    xs <- getDirectoryContents =<< imgRoot
-    iconFolders <- filterM isImageDirectory $ filter isNotDotFile xs
-    icons <- mapM iconsInFolder iconFolders
-    return $ map pack $ concat icons
-  where
-    imgRoot = liftM (++ "/static/img/") getCurrentDirectory
-    isNotDotFile = not . (== '.') . head
-    isImageDirectory = (>>= doesDirectoryExist) . (liftM2 (++) imgRoot . return)
-    iconsInFolder x = do
-        r <- imgRoot
-        files <- filterM (return . isNotDotFile) =<< getDirectoryContents (r ++ x)
-        let x' = (x ++ "/")
-        return $ map (x' ++ ) files
+--getNukeR :: Handler RepJson
+--getNukeR = do
+--    runDB $ deleteWhere ([] :: [Filter Icon])
+--    runDB $ deleteWhere ([] :: [Filter NodeInstance])
+--    -- runDB $ deleteWhere ([] :: [Filter Node])
+--    runDB $ deleteWhere ([] :: [Filter NodeType])
+--    runDB $ deleteWhere ([] :: [Filter Episode])
+--    runDB $ deleteWhere ([] :: [Filter Podcast])
 
-getFirstRunR :: Handler RepHtml
-getFirstRunR = do
-    mRole <- liftM maybeHead $ runDB $ selectList [RolePrivilege ==. AsAdmin] []
-    case mRole of
-        Just _ -> notFound
-        Nothing -> do
-            runDB $ do
-                deleteWhere ([] :: [Filter Icon])
-                xs <- liftIO iconNames
-                mapM_ insert $ map Icon xs
+--    runDB $ do
+--        xs <- liftIO iconNames
+--        mapM_ insert $ map Icon xs
 
-            (Entity userId user) <- requireAuth
-            runDB $ insert $ Role userId AsAdmin
-            runDB $ insert $ Role userId AsPublisher
-            runDB $ insert $ Role userId AsEditor
+--    --loadNodeTypes "node_types"
+--    --runDB $ loadEpisodes "episodes"
 
-            defaultLayout [whamlet|<h1>Granted #{userIdent user} Admin privileges</h1>|]
-  where
-    maybeHead (x:_) = Just x
-    maybeHead _ = Nothing
+--    jsonToRepJson ("OK" :: String)
 
-getNukeR :: Handler RepJson
-getNukeR = do
-    runDB $ deleteWhere ([] :: [Filter Icon])
-    runDB $ deleteWhere ([] :: [Filter NodeInstance])
-    -- runDB $ deleteWhere ([] :: [Filter Node])
-    runDB $ deleteWhere ([] :: [Filter NodeType])
-    runDB $ deleteWhere ([] :: [Filter Episode])
-    runDB $ deleteWhere ([] :: [Filter Podcast])
-
-    runDB $ do
-        xs <- liftIO iconNames
-        mapM_ insert $ map Icon xs
-
-    --loadNodeTypes "node_types"
-    --runDB $ loadEpisodes "episodes"
-
-    jsonToRepJson ("OK" :: String)
-
+countEpisodesFor :: Entity Podcast -> Handler Int
 countEpisodesFor (Entity _ podcast) = do
     runDB $ count $ [EpisodePodcast ==. podcastName podcast]
 
@@ -111,9 +93,9 @@ getPodcastIndexR = do
         setTitle $ toHtml ("Podcasts" :: String)
         $(widgetFile "podcasts/index")
     json <- (flip mapM) entities (\entity -> do
-                    count <- countEpisodesFor entity
+                    _count <- countEpisodesFor entity
                     let (Object o) = toJSON entity
-                    return $ Map.insert "episodeCount" (toJSON count) o)
+                    return $ Map.insert "episodeCount" (toJSON _count) o)
     defaultLayoutJson widget json
 
 getPodcastR :: Text -> Handler RepJson

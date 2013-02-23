@@ -4,6 +4,6 @@
   <!-- [<a href=@ {NewEpisodeR name}>new</a>] -->
 <hr>
 <ul>
-  $forall Entity tid x <- episodes
+  $forall Entity _ x <- episodes
     <li>
       <a href=@{PodcastEpisodeR name $ episodeNumber x}>##{episodeNumber x} - #{episodeTitle x}

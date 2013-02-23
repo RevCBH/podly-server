@@ -14,8 +14,7 @@
 
 /partials/player.html PartialsPlayerR GET
 
--- /reset NukeR GET
-/first-run-setup FirstRunR GET
+-- /first-run-setup FirstRunR GET
 
 -- podcasts
 /podcasts PodcastIndexR GET
@@ -42,4 +41,4 @@
 -- /nodetypes.new NewNodeTypeR GET
 
 -- users
-/users UsersR GET
+-- /users UsersR GET

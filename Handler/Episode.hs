@@ -2,23 +2,23 @@
 module Handler.Episode where
 
 import Import
-import Handler.Util
+--import Handler.Util
 import Handler.Home (handleHomeR)
 import Podly.Affiliate
 
-import Data.Aeson (Result(..), FromJSON(..), fromJSON, ToJSON(..))
+import Data.Aeson (Result(..), FromJSON(..), fromJSON)
 import Data.Aeson.TH (deriveJSON)
 import Data.Maybe
 import qualified Data.Traversable as DT
 import qualified Data.ByteString.Char8 as BS
 import Data.Time(Day, UTCTime(..), secondsToDiffTime)
-import Data.Time.Clock (getCurrentTime, addUTCTime)
+import Data.Time.Clock (addUTCTime)
 import qualified Data.Time.Format as TF
 import System.Locale (defaultTimeLocale)
-import Data.Text (pack, unpack)
+--import Data.Text (pack, unpack)
 import qualified Data.Text as T
-import Control.Monad (liftM)
-import Network.HTTP.Types (notModified304, headerContentType)
+--import Control.Monad (liftM)
+import Network.HTTP.Types (notModified304)
 import Network.HTTP.Types.Header (hIfModifiedSince)
 import Network.Wai (requestHeaders)
 
@@ -26,7 +26,7 @@ import Yesod.Form.Jquery
 
 import Document
 
-import Debug.Trace
+--import Debug.Trace
 
 --newNodeInstanceForm :: EpisodeId -> [Entity Node] -> Form NodeInstance
 --newNodeInstanceForm episodeId nodes = renderDivs $ NodeInstance
@@ -37,6 +37,7 @@ import Debug.Trace
 --  where
 --    nodes' = (flip map) nodes (\(Entity tid x) -> (nodeTitle x, tid))
 
+parseHeaderTime :: TF.ParseTime b => String -> [b]
 parseHeaderTime t =
   -- From RFC 2616 Sec 3.3 http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html
   let formats = [
@@ -49,11 +50,12 @@ parseHeaderTime t =
       tryParse x = TF.parseTime defaultTimeLocale x t
   in mapMaybe tryParse formats
 
+ensureStale :: UTCTime -> GHandler sub master ()
 ensureStale time = do
   req <- waiRequest
   let setCacheHeaders = do
-      now <- liftIO getCurrentTime
-      let fmtT = pack . TF.formatTime defaultTimeLocale "%a, %d %b %Y %X %Z"
+      --now <- liftIO getCurrentTime
+      let fmtT = T.pack . TF.formatTime defaultTimeLocale "%a, %d %b %Y %X %Z"
       -- TODO - determine good max-age instead of 1 year
       setHeader "Cache-Control" "public; max-age=31536000"
       --setHeader "Expires" $ fmtT $ addUTCTime 31536000 now
@@ -72,7 +74,7 @@ ensureStale time = do
 
 -- TODO - access control?
 renderJsonEpisode :: Entity Episode -> Handler RepJson
-renderJsonEpisode entity@(Entity episodeId episode) = do
+renderJsonEpisode entity@(Entity _ episode) = do
   ensureStale $ episodeLastModified episode
   episodeDoc <- runDB $ documentFromEpisode entity
   nodes <- mapM updateNodeUrl $ docEpisodeNodes episodeDoc --episodeDoc
@@ -82,8 +84,8 @@ renderJsonEpisode entity@(Entity episodeId episode) = do
   updateNodeUrl n = do
     case docNodeUrl n of
       Just url -> do
-        newUrl <- rewriteLink $ unpack url
-        return n {docNodeUrl = Just $ pack newUrl}
+        newUrl <- rewriteLink $ T.unpack url
+        return n {docNodeUrl = Just $ T.pack newUrl}
       Nothing -> return n
 
 getPodcastEpisodeR :: Text -> Int -> Handler RepHtmlJson
@@ -124,9 +126,9 @@ getEpisodeMetaR tid = do
   jsonToRepJson $ EpisodeMeta prev next
     (EmbedPlayerConfig "MOAR!")
  where
-  mkEphem (Entity tid episode) = do
-    previewImage <- episodePreviewImageUrl tid
-    let f = EpisodeEphemeral tid <$> episodeNumber <*> episodeTitle
+  mkEphem (Entity _tid episode) = do
+    previewImage <- episodePreviewImageUrl _tid -- TODO - unify with canonical URL forms
+    let f = EpisodeEphemeral _tid <$> episodeNumber <*> episodeTitle
     return $ f episode previewImage
   getPrevNext = do
     episode <- get404 $ tid
@@ -138,6 +140,9 @@ getEpisodeMetaR tid = do
     prev <- sel (<.) Desc
     next <- sel (>.) Asc
     return (prev, next)
+  episodePreviewImageUrl episodeId = do
+    src <- getBy $ UniqueMediaKindForEpisode episodeId VideoYouTube
+    return $ flip fmap src $ \(Entity _ x) -> mconcat ["http://img.youtube.com/vi/", mediaSourceResource x, "/0.jpg"]
 
 instance FromJSON Day where
     parseJSON val = do
@@ -236,4 +241,4 @@ getEpisodesR = do
  where
   paramOr name defaultValue = do
     mParam <- lookupGetParam name
-    return $ maybe defaultValue (read . unpack) mParam
+    return $ maybe defaultValue (read . T.unpack) mParam

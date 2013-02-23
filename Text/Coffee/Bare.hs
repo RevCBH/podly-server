@@ -32,7 +32,6 @@ module Text.Coffee.Bare
 import Language.Haskell.TH.Quote (QuasiQuoter (..))
 import Language.Haskell.TH.Syntax
 
-import Control.Monad (return)
 import Data.Maybe (Maybe(..))
 import System.FilePath(FilePath)
 

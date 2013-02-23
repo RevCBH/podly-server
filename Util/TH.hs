@@ -1,8 +1,10 @@
+{-# LANGUAGE PatternGuards #-}
 module Util.TH where
 
 import Prelude
-import Data.List(stripPrefix)
-import Data.Char(toLower)
+import Data.List (stripPrefix)
+import Data.Char (toLower)
+import Data.Maybe (isJust)
 
 infixl 0 |>
 (|>) :: t -> (t -> u) -> u
@@ -17,6 +19,6 @@ removePrefix p str =
   downcaseFirst [] = []
 
 removeFirstPrefix :: [String] -> String -> String
-removeFirstPrefix (p:rest) str | Just restOfString <- stripPrefix p str = removePrefix p str
-removeFirstPrefix (p:rest) str = removeFirstPrefix rest str
+removeFirstPrefix (p:_) str | isJust (stripPrefix p str) = removePrefix p str
+removeFirstPrefix (_:rest) str = removeFirstPrefix rest str
 removeFirstPrefix _ str = error $ "No matching prefix for: " ++ str

@@ -17,7 +17,6 @@ import Network.Wai.Middleware.RequestLogger (logStdout, logStdoutDev)
 import qualified Database.Persist.Store
 import Database.Persist.GenericSql (runMigration)
 import Network.HTTP.Conduit (newManager, def)
-import qualified Data.ByteString.Char8 as S8
 import Podly.Middleware.Mobile
 
 -- Import all relevant handler modules here.
@@ -25,7 +24,7 @@ import Podly.Middleware.Mobile
 import Handler.Home
 import Handler.Test
 import Handler.NodeType
-import Handler.Node
+--import Handler.Node
 import Handler.Episode
 
 -- This line actually creates our YesodDispatch instance. It is the second half

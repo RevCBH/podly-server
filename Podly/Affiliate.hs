@@ -3,11 +3,11 @@ module Podly.Affiliate (rewriteLink) where
 import Import
 import Control.Monad (liftM)
 import Data.Maybe
-import Data.Text (pack, unpack)
+import Data.Text (unpack)
 import Text.Regex.PCRE
 import Network.URI
 
-import Debug.Trace
+--import Debug.Trace
 
 rewriteLink :: String -> Handler String
 rewriteLink lnk = do
@@ -37,7 +37,7 @@ urlQuery :: String -> Maybe String
 urlQuery url = parseURI url >>= return . uriQuery
 
 firstMaybe :: [Maybe a] -> Maybe a
-firstMaybe (Just x:xs) = Just x
+firstMaybe (Just x:_) = Just x
 firstMaybe (Nothing:xs) = firstMaybe xs
 firstMaybe _ = Nothing
 
@@ -47,10 +47,12 @@ maybeMatches pat str =
     then Just str
     else Nothing
 
-maybeEquals :: (Eq a) => a -> a -> Maybe a
-maybeEquals a b =
-  if a == b then Just b else Nothing
+--maybeEquals :: (Eq a) => a -> a -> Maybe a
+--maybeEquals a b =
+--  if a == b then Just b else Nothing
 
+tryMatch :: (RegexContext Regex source1 (String, String, String, [String]), RegexMaker Regex CompOption ExecOption source) =>
+                         Int -> source1 -> source -> Maybe String
 tryMatch idx p pattern =
   let (_, _, _, xs) = p =~ pattern :: (String, String, String, [String])
   in if idx < length xs
@@ -62,21 +64,21 @@ firstMatchAt idx p patterns = firstMaybe $ map (tryMatch idx p) patterns
 
 amazonShortProduct :: String -> Maybe AmazonLink
 amazonShortProduct url = do
-  hostname url >>= maybeMatches "amzn.com"
+  _ <- hostname url >>= maybeMatches "amzn.com"
   p <- urlPath url
   m <- firstMatchAt 1 p ["^(/[ledp]+)?/([^/?]+)"]
   return $ AmazonProduct m
 
 amazonProduct :: String -> Maybe AmazonLink
 amazonProduct url = do
-  hostname url >>= maybeMatches "amazon.com"
+  _ <- hostname url >>= maybeMatches "amazon.com"
   p <- urlPath url
   m <- firstMatchAt 0 p ["/dp/([^/?]+)", "/gp/product/([^/?]+)"]
   return $ AmazonProduct m
 
 amazonEntity :: String -> Maybe AmazonLink
 amazonEntity url = do
-  hostname url >>= maybeMatches "^(www.)?(amazon.com)|(amzn.com)"
+  _ <- hostname url >>= maybeMatches "^(www.)?(amazon.com)|(amzn.com)"
   p <- urlPath url
   m <- firstMatchAt 1 p ["/([^/?]+)/e/([^/?]+)", "/(l)/([^/?]+)"]
   return $ AmazonEntity m
@@ -112,12 +114,12 @@ makeAmazonLink tag url = do
   case x of
     AmazonProduct p -> return $ "http://amzn.com/" ++ p ++ "?tag=" ++ tag
     AmazonEntity e -> return $ "http://amzn.com/l/" ++ e ++ "?tag=" ++ tag
-    AmazonGeneric url -> return $ "http://" ++ url ++ "tag=" ++ tag
+    AmazonGeneric _url -> return $ "http://" ++ _url ++ "tag=" ++ tag
 
 -- TODO - support for multiple a_aid program camaigns, specifically onnit suppliments.
 
 makeAidLink :: String -> String -> String -> Maybe String
 makeAidLink host tag url = do
-  hostname url >>= maybeMatches ("^(www.)?" ++ host ++ "$")
+  _ <- hostname url >>= maybeMatches ("^(www.)?" ++ host ++ "$")
   p <- urlPath url
   return $ "http://" ++ host ++ p ++ "?a_aid=" ++ tag
