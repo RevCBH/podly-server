@@ -8,7 +8,6 @@ import qualified Network.Wai as W
 
 import Handler.Util
 import Podly.Auth
---import qualified Podly.Facebook.OpenGraph as OG
 import qualified Podly.Facebook.OpenGraph.Entities as OG
 
 import qualified Data.ByteString.Lazy.Char8 as L8
@@ -37,6 +36,7 @@ import Document
 
 -- Imports for type signatures
 import qualified Database.Persist.GenericSql
+--
 
 newtype Singleton a = Singleton { unSingleton :: a }
 instance A.ToJSON a => A.ToJSON (Singleton a) where
@@ -50,7 +50,13 @@ instance A.FromJSON a => A.FromJSON (Singleton a) where
 
 handleHomeR :: Handler RepHtml
 handleHomeR = do
-  entity@(Entity _ episode):_ <- runDB $ selectList [EpisodePublished ==. StatePublished] [Desc EpisodeNumber, LimitTo 1]
+  res <- runDB $ selectList [EpisodePublished ==. StatePublished] [Desc EpisodeNumber, LimitTo 1]
+  case res of
+    (episodeEntity : _) -> angularPlayerForEpisode episodeEntity
+    _ -> notFound
+
+angularPlayerForEpisode :: Entity Episode -> Handler RepHtml
+angularPlayerForEpisode entity@(Entity _ episode) = do
   nodeTypes <- runDB $ selectList [] [Asc NodeTypeTitle]
   let nodeTypesJson = L8.unpack $ encode $ map documentFromNodeType nodeTypes
 
@@ -89,7 +95,8 @@ handleHomeR = do
     $(addLib "scroll")
     $(addCtrl "/podcasts/:podcastName/episodes/:episodeNumber" "player")
 
-    setDefaultRoute $ pack $ "/podcasts/The Joe Rogan Experience/episodes/" ++ (show $ episodeNumber episode)
+    setDefaultRoute $ mconcat ["/podcasts/", episodePodcast episode,
+                               "/episodes/", pack . show $ episodeNumber episode]
 
 getPlayNodeR :: NodeInstanceId -> Handler RepHtml
 getPlayNodeR nid = do
@@ -203,21 +210,6 @@ getSearchR = do
         ep = pickEp $ head xs
         ns = foldr (:) [] $ map (\(_,_,x) -> x) xs
     in SearchResult w ep ns
-
---tryInsertEpisode :: Episode -> Handler (Entity Episode)
---tryInsertEpisode episode = do
---  _ <- ensurePodcast $ episodePodcast episode
---  ensureEpisode episode
--- where
---  ensurePodcast name =
---      let item = Podcast name Nothing Nothing Nothing
---          constraint = UniquePodcastName name
---      in ensureEntity item constraint
---  ensureEpisode ep =
---      let constraint = UniqueEpisodeNumber (episodePodcast ep) (episodeNumber ep)
---      in ensureEntity ep constraint
---tryInsertEpisode episode = do
---  episodeFromDocument episode
 
 tryInsertNodeType :: NodeType -> Handler (Entity NodeType)
 tryInsertNodeType nodeType = do

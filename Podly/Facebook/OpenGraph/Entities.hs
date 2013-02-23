@@ -16,11 +16,14 @@ class OpenGraphEntity a where
 instance OpenGraphEntity EpisodeDocument where
   elements episode =
     let ogTitle = mconcat [docEpisodePodcast episode, " #", T.pack . show $ docEpisodeNumber episode]
-        (video : _) = filter (\x -> docSourceKind x == VideoYouTube) $ docEpisodeMediaSources episode
-    in [Title ogTitle,
-        Description $ docEpisodeTitle episode,
-        Type "video",
-        Url $ canonicalUrl episode,
-        Image $ canonicalUrl $ ThumbnailImage video,
-        SiteName "Podly.co",
-        Video (canonicalUrl video) 360 640 "application/x-shockwave-flash"]
+        media = filter (\x -> docSourceKind x == VideoYouTube) $ docEpisodeMediaSources episode
+    in case media of
+      (video : _) ->
+        [Title ogTitle,
+         Description $ docEpisodeTitle episode,
+         Type "video",
+         Url $ canonicalUrl episode,
+         Image $ canonicalUrl $ ThumbnailImage video,
+         SiteName "Podly.co",
+         Video (canonicalUrl video) 360 640 "application/x-shockwave-flash"]
+      _ -> []

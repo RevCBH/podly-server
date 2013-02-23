@@ -3,7 +3,7 @@ module Handler.Episode where
 
 import Import
 --import Handler.Util
-import Handler.Home (handleHomeR)
+import Handler.Home (angularPlayerForEpisode)
 import Podly.Affiliate
 
 import Data.Aeson (Result(..), FromJSON(..), fromJSON)
@@ -27,15 +27,6 @@ import Yesod.Form.Jquery
 import Document
 
 --import Debug.Trace
-
---newNodeInstanceForm :: EpisodeId -> [Entity Node] -> Form NodeInstance
---newNodeInstanceForm episodeId nodes = renderDivs $ NodeInstance
---    <$> areq (selectFieldList nodes') "Node" Nothing
---    <*> areq hiddenField "" Nothing
---    <*> areq hiddenField "" (Just episodeId)
---    <*> areq intField "Time" (Just 0)
---  where
---    nodes' = (flip map) nodes (\(Entity tid x) -> (nodeTitle x, tid))
 
 parseHeaderTime :: TF.ParseTime b => String -> [b]
 parseHeaderTime t =
@@ -90,8 +81,9 @@ renderJsonEpisode entity@(Entity _ episode) = do
 
 getPodcastEpisodeR :: Text -> Int -> Handler RepHtmlJson
 getPodcastEpisodeR name number = do
-    (RepHtml html) <- handleHomeR
-    (RepJson json) <- renderJsonEpisode =<< (runDB $ getBy404 $ UniqueEpisodeNumber name number)
+    episodeEntity <- runDB $ getBy404 $ UniqueEpisodeNumber name number
+    (RepHtml html) <- angularPlayerForEpisode episodeEntity
+    (RepJson json) <- renderJsonEpisode episodeEntity
     return $ RepHtmlJson html json
 
 getEpisodeR :: EpisodeId -> Handler RepJson -- RepHtmlJson?
