@@ -51,7 +51,8 @@ return ($scope, $routeParams, $location, $http, scrollManager, MediaPlayer, Publ
     setTimeout (-> scrollManager.makeTwitterButtons(jQuery '#listOfNodes')), 0
     scrollManager.watch (jQuery '#listOfNodes')
 
-  $scope.$watch "nodeFilter", ->
+  $scope.shared = {nodeFilter: null}
+  $scope.$watch "shared.nodeFilter", ->
     setTimeout (-> scrollManager.makeTwitterButtons(jQuery '#listOfNodes')), 0
 
   $scope.player = undefined
@@ -73,24 +74,24 @@ return ($scope, $routeParams, $location, $http, scrollManager, MediaPlayer, Publ
     p.play()
 
     scrollOpts = null
-    if $scope.nodeFilter?.length > 0
-      $scope.nodeFilter = ""
-      scrollOpts = animate: false
+    if $scope.shared?.nodeFilter?.length > 0
+      $scope.shared.nodeFilter = ""
+      # scrollManager.scrollTo nodeAtTime(time), animate: false
     setTimeout (-> scrollManager.shouldAutoScroll = true), 0
 
   $scope.play = -> guardPlayer (p) -> p.play()
   $scope.pause = -> guardPlayer (p) -> p.pause()
 
   lastNode = null
-  # TODO - rate-limit, caching ?
-  $scope.currentNode = ->
-    t = $scope.time - $scope.mediaPlaybackOffset
+  nodeAtTime = (t) ->
     result = _.chain($scope.episode.nodes).filter((n) -> n.time <= t).last().value()
 
     if (result != lastNode)
       lastNode = result
       $scope.scrollTo result
     result
+  # TODO - rate-limit, caching ?
+  $scope.currentNode = -> nodeAtTime $scope.time - $scope.mediaPlaybackOffset
 
   $scope.currentNodeTitle = -> ($scope.currentNode() or {title: "Now Playing"}).title
   $scope.shouldHideSnapButton = ->

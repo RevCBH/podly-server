@@ -8,7 +8,7 @@ return ($scope, $routeParams, $http, scrollManager, MediaPlayer, PublishedState)
   $scope.episode = {title: "loading...", number: $routeParams.episodeNumber}
 
   # ISSUE, HACK - work around chrome caching issue
-  q = $http.get "/podcasts/#{$routeParams.podcastName}/episodes/#{$routeParams.episodeNumber}?chromesux=true"
+  q = $http.get "/episode/#{$routeParams.episodeId}?chromesux=true"
   q.success (data) ->
     # HACK - should be integrated to model
     data.published = PublishedState.fromJSON(data.published)
@@ -25,7 +25,8 @@ return ($scope, $routeParams, $http, scrollManager, MediaPlayer, PublishedState)
     setTimeout (-> scrollManager.makeTwitterButtons(jQuery '#listOfNodes')), 0
     scrollManager.watch (jQuery '#listOfNodes')
 
-  $scope.$watch "nodeFilter", ->
+  $scope.shared = {nodeFilter: null}
+  $scope.$watch "shared.nodeFilter", ->
     setTimeout (-> scrollManager.makeTwitterButtons(jQuery '#listOfNodes')), 0
 
   $scope.player = undefined
@@ -47,9 +48,9 @@ return ($scope, $routeParams, $http, scrollManager, MediaPlayer, PublishedState)
     p.play()
 
     scrollOpts = null
-    if $scope.nodeFilter?.length > 0
-      $scope.nodeFilter = ""
-      scrollOpts = animate: false
+    if $scope.shared?.nodeFilter?.length > 0
+      $scope.shared.nodeFilter = ""
+      # scrollManager.scrollTo nodeAtTime(time), animate: false
     setTimeout (-> scrollManager.shouldAutoScroll = true), 0
 
   $scope.play = -> guardPlayer (p) -> p.play()

@@ -134,10 +134,10 @@ handleEmbedPlayerR epId = do
     $(addLib "models")
     $(addLib "media")
     $(addLib "scroll")
-    $(addCtrl "/:podcastName/:episodeNumber" "embedded/player")
+    $(addCtrl "/embed/:episodeId" "embedded/player")
     -- $(addCtrl "/:epId" "embedded/player")
 
-    setDefaultRoute $ pack $ "/The Joe Rogan Experience/" ++ (show $ episodeNumber episode)
+    setDefaultRoute $ pack $ "/embed/" ++ (show $ toJSON epId)
 
 -- TODO - pre-populate partials and dispatch on name
 --getPartialR :: Text -> Handler RepHtml

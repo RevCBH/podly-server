@@ -9,7 +9,7 @@
         <a class="btn btn-small" ng-click="scrollToCurrent()" ng-hide="shouldHideSnapButton()">Now Playing
 
         <form class="navbar-search pull-right">
-          <input type="text" class="search-query" placeholder="Search this episode" ng-model="nodeFilter">
+          <input type="text" class="search-query" placeholder="Search this episode" ng-model="shared.nodeFilter">
     <!--End List Controls Top-->
 <!--End Table holding Video & List Controls-->
 
@@ -17,7 +17,7 @@
 <div id="listOfNodes">
   <table class="table table-striped">
     <!--Node Elements Row 1-->
-    <tr ng-repeat="node in episode.nodes | filter:nodeFilter" data-node-id="{{node.relId}}" ng-class="classesForNode(node)">
+    <tr ng-repeat="node in episode.nodes | filter:shared.nodeFilter" data-node-id="{{node.relId}}" ng-class="classesForNode(node)">
       <td>
         <div class="nodeElements" ng-click="seek(node)">
           <!--Play Time-->
