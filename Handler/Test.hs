@@ -2,6 +2,8 @@
 module Handler.Test where
 
 import Import
+-- required when deploying for some reason
+import Data.Aeson (toJSON)
 --import Data.Aeson (Result(..))
 --import Data.Text (pack)
 import qualified Data.HashMap.Strict as Map

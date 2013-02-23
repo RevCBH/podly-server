@@ -24,7 +24,6 @@ import Podly.Middleware.Mobile
 import Handler.Home
 import Handler.Test
 import Handler.NodeType
---import Handler.Node
 import Handler.Episode
 
 -- This line actually creates our YesodDispatch instance. It is the second half
