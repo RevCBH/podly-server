@@ -7,7 +7,7 @@
         <span class="icon-bar"></span>
       <a class="brand" href="#">Podly
       <ul .nav>
-        <li><a href="http://podlyblog.tumblr.com/">Blog</a>
+        <li><a href="http://podlyblog.tumblr.com/" target="_blank">Blog</a>
       <div class="nav-collapse collapse">
       $maybe Entity _ auth <- mauth
         <ul .nav .pull-right>
