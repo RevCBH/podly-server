@@ -137,7 +137,7 @@ handleEmbedPlayerR epId = do
     $(addCtrl "/embed/:episodeId" "embedded/player")
     -- $(addCtrl "/:epId" "embedded/player")
 
-    setDefaultRoute $ pack $ "/embed/" ++ (show $ toJSON epId)
+    setDefaultRoute $ pack $ "/embed/" ++ (show $ A.toJSON epId)
 
 -- TODO - pre-populate partials and dispatch on name
 --getPartialR :: Text -> Handler RepHtml

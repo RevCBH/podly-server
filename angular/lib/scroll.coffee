@@ -46,12 +46,12 @@ app.service 'scrollManager', () ->
   this.getShouldAutoScroll = => this.shouldAutoScroll
 
   beginAutoScroll = (container) ->
-    container.css 'overflow', 'hidden'
+    # container.css 'overflow', 'hidden'
     isAutoScrolling = true
     finishedAutoScrolling = false
 
   endAutoScroll = (container) ->
-    container.css 'overflow', 'auto'
+    # container.css 'overflow', 'auto'
     finishedAutoScrolling = true
 
   this.scrollTo = (opts) ->
