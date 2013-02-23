@@ -6,7 +6,8 @@ import Import
 import Handler.Home (angularPlayerForEpisode)
 import Podly.Affiliate
 
-import Data.Aeson (Result(..), FromJSON(..), fromJSON)
+-- toJSON required when deploying for some reason
+import Data.Aeson (Result(..), FromJSON(..), fromJSON, toJSON)
 import Data.Aeson.TH (deriveJSON)
 import Data.Maybe
 import qualified Data.Traversable as DT
