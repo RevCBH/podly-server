@@ -11,11 +11,9 @@ import Data.Aeson.TH (deriveJSON)
 
 -- Imports for types
 import Database.Persist.GenericSql.Raw (SqlPersist)
-import Control.Monad.IO.Class (MonadIO)
-import Control.Monad.Trans.Resource (MonadUnsafeIO, MonadThrow)
-import Control.Monad.Logger (MonadLogger)
-import Yesod.Auth (YesodAuth, AuthId)
 import Database.Persist.Query.Internal (Update)
+import qualified Database.Persist.GenericSql.Raw
+--
 
 data Permission =
   HasRole {
@@ -127,19 +125,16 @@ requireGrantOnEp role epId perms =
 --  roles = filter permIsRole perms
 --  deny = permissionDenied "You don't have permission to create episodes."
 
-requirePermissions :: (YesodPersist master, YesodPersistBackend master ~ SqlPersist) =>
-                                     Key SqlPersist (UserGeneric SqlPersist)
-                                     -> GHandler sub master [Permission]
+requirePermissions :: Key User -> Handler [Permission]
 requirePermissions userId = do
   perms <- runDB $ getPermissions userId
   if length perms == 0
     then permissionDenied "Insufficient permissions"
     else return perms
 
--- TODO - simplify type if possible, can we consolidate type constraints?
-getPermissions :: forall (m :: * -> *).
-                   (MonadIO m, MonadUnsafeIO m, MonadThrow m, MonadLogger m, MonadBaseControl IO m) =>
-                   Key SqlPersist (UserGeneric SqlPersist) -> SqlPersist m [Permission]
+
+getPermissions :: (PersistQuery m, PersistMonadBackend m ~ Database.Persist.GenericSql.Raw.SqlBackend) =>
+                     Key User -> m [Permission]
 getPermissions userId = do
   roles <-  mapRoles $ selectList [RoleUserId ==. userId] []
   epGrants <- mapEpGrants $ selectList [EpisodeGrantUserId ==. userId] []
@@ -150,26 +145,16 @@ getPermissions userId = do
     let mkGrant (Entity _ x) = HasEpisodeGrant <$> episodeGrantEpisodeId <*> episodeGrantPrivilege $ x
     in liftM (map mkGrant)
 
--- TODO - simplify type if possible
-guardUpdateEpisode :: (YesodPersist master, YesodAuth master, AuthId master ~ Key SqlPersist (UserGeneric SqlPersist), YesodPersistBackend master ~ SqlPersist) =>
-                       ([Permission] -> Key SqlPersist (EpisodeGeneric SqlPersist) -> GHandler sub master a)
-                       -> Key SqlPersist (EpisodeGeneric SqlPersist)
-                       -> [Update (EpisodeGeneric SqlPersist)]
-                       -> (Entity (EpisodeGeneric SqlPersist) -> YesodDB sub master b)
-                       -> GHandler sub master b
+guardUpdateEpisode :: ([Permission] -> Key Episode -> Handler t) -> Key Episode
+                         -> [Update Episode] -> (Entity Episode -> YesodDB App App b) -> Handler b
 guardUpdateEpisode ensure entityId updates toDoc = do
   doc <- guardUpdateEntity ensure entityId updates toDoc
   runDB $ touchEpisode entityId
   return doc
 
--- TODO - simplify type if possible
-guardUpdateEntity :: (PersistEntity entity, YesodPersist master, YesodAuth master, AuthId master ~ Key SqlPersist (UserGeneric SqlPersist),
-                                     YesodPersistBackend master ~ SqlPersist, PersistEntityBackend entity ~ SqlPersist) =>
-                                    ([Permission] -> Key SqlPersist entity -> GHandler sub master a)
-                                    -> Key SqlPersist entity
-                                    -> [Update entity]
-                                    -> (Entity entity -> YesodDB sub master b)
-                                    -> GHandler sub master b
+guardUpdateEntity :: (PersistEntity entity, PersistEntityBackend entity ~ Database.Persist.GenericSql.Raw.SqlBackend) =>
+                      ([Permission] -> Key entity -> Handler t) -> Key entity -> [Update entity]
+                      -> (Entity entity -> YesodDB App App b) -> Handler b
 guardUpdateEntity ensure entityId updates toDoc = do
   (Entity userId _) <- requireAuth
   rights <- requirePermissions userId

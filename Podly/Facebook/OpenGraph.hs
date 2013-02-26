@@ -1,11 +1,12 @@
 module Podly.Facebook.OpenGraph (FBOpenGraphElement(..), renderTags) where
 
-import Import hiding (concatMap)
-import Data.Text (pack, concatMap, singleton)
---import qualified Data.Text as T
+--import Import hiding (concatMap)
+import Prelude hiding (concatMap)
+import Data.Text (Text, pack, concatMap, singleton)
+import Data.Monoid (mappend, mconcat)
 import Text.Blaze ((!))
 import Text.Blaze.Internal (customAttribute, AttributeValue, textValue)
-import Text.Blaze.Html5 (meta)
+import Text.Blaze.Html5 (meta, Html)
 import Text.Blaze.Html5.Attributes (content)
 
 data FBOpenGraphElement =
