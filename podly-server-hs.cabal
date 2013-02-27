@@ -116,7 +116,7 @@ library
                  , regex-pcre-builtin == 0.94.4.5.8.31
                  , unordered-containers == 0.2.3.0
                  , blaze-markup == 0.5.1.4
-                 , blaze-html == 0.5.1.3
+                 , blaze-html >= 0.5.1 && < 0.5.2
                  -- , yesod-fay                     >= 0.1
                  -- , fay                           >= 0.9
                  , aeson                         >= 0.6        && < 0.7
