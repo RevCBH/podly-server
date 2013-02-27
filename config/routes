@@ -7,6 +7,7 @@
 -- /admin AdminR
 /admin/*Texts AdminR
 / HomeR
+/crossdomain.xml CrossdomainR GET
 /embed/#EpisodeId EmbedPlayerR
 /search SearchR GET
 

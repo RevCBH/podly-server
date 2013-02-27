@@ -18,7 +18,7 @@ return ($scope, $routeParams, $http, mediaService, EpisodeDoc) ->
     ($ 'button[type=submit]').attr 'disabled', 'disabled'
 
     # HACK - WTF? why is cmdCreateEpisode surrounded by backtics?
-    cmd = '%{cmdCreateEpisode}'
+    cmd = '%{rawJS cmdCreateEpisode}'
     cmd = cmd.slice(1,-1) if cmd[0] is '`'
     # END HACK
     q = $http.post(cmd, $scope.episode)
@@ -33,7 +33,7 @@ return ($scope, $routeParams, $http, mediaService, EpisodeDoc) ->
   $scope.isValid = ->
     $scope.mediaSource && true
 
-    # $http.post("%{cmdSum}", [1, 2]).success (data) ->
+    # $http.post("%{rawJS cmdSum}", [1, 2]).success (data) ->
       # console.log "+:", data
     # console.log "em:", data
     # $http

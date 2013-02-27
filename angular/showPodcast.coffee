@@ -15,6 +15,5 @@ return ($scope, $routeParams, $http, Permission) ->
     name: $routeParams.podcastName
 
   $scope.episodes = []
-
-  $scope.rights = _(%{rightsDoc}).map (x) -> Permission.fromJSON(x)
+  $scope.rights = _(`%{rawJS rightsDoc}`).map (x) -> Permission.fromJSON(x)
   window.sc = $scope

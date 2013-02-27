@@ -17,7 +17,8 @@ import Network.Wai.Middleware.RequestLogger (logStdout, logStdoutDev)
 import qualified Database.Persist.Store
 import Database.Persist.GenericSql (runMigration)
 import Network.HTTP.Conduit (newManager, def)
-import Podly.Middleware.Mobile
+import Podly.Middleware.Mobile (interceptMobile)
+import Podly.Middleware.Crossdomain (crossdomainXml)
 
 -- Import all relevant handler modules here.
 -- Don't forget to add new modules to your cabal file!
@@ -39,7 +40,9 @@ makeApplication :: AppConfig DefaultEnv Extra -> IO Application
 makeApplication conf = do
     foundation <- makeFoundation conf
     app <- toWaiAppPlain foundation
-    return $ logWare $ interceptMobile $ autohead app
+    let middlewares = logWare . interceptMobile . crossdomainXml . autohead
+
+    return $ middlewares app
   where
     -- TODO - get gzip working
     --gset = GZ.def {GZ.gzipFiles = GZ.GzipCompress}

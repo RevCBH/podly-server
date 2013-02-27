@@ -180,7 +180,7 @@ class NodeRowWrapper extends ModelBase
     if @isValid()
       console.log "update->cmdSetNodeInstance"
       # TODO - move cmdSetNodeInstance to separate concern
-      q = @$http.post("%{cmdSetNodeInstance}", [@episode._id, @toJSON()])
+      q = @$http.post("%{rawJS cmdSetNodeInstance}", [@episode._id, @toJSON()])
       # TODO - result handling
       q.success (data) =>
         for a in @getAttrs()

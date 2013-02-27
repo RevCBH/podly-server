@@ -4,7 +4,7 @@ return ($scope, $routeParams, $http, scrollManager, MediaPlayer, PublishedState)
   window.sc = $scope
   window.sm = scrollManager
 
-  $scope.mediaPlayer = new MediaPlayer('#videoContainerCell', $scope, {start: %{startAt}})
+  $scope.mediaPlayer = new MediaPlayer('#videoContainerCell', $scope, {start: `%{rawJS $ show startAt}`})
   $scope.episode = {title: "loading...", number: $routeParams.episodeNumber}
 
   # ISSUE, HACK - work around chrome caching issue
@@ -89,7 +89,7 @@ return ($scope, $routeParams, $http, scrollManager, MediaPlayer, PublishedState)
     scrollManager.enable()
     $scope.scrollTo $scope.currentNode()
 
-  $scope.linkToNode = (n) -> "%{_approot}ni/#{n.relId}"
+  $scope.linkToNode = (n) -> `%{toJSON _approot}` + "ni/#{n.relId}"
   $scope.tweetText = (n)->
     # 96 chars avail, 44 taken
     # ISSUE, TODO - don't hardcode the number of available characters

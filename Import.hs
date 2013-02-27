@@ -10,6 +10,7 @@ import           Yesod.Auth           as Import (requireAuth)
 import           Control.Applicative  as Import (pure, (<$>), (<*>))
 import           Data.Text            as Import (Text)
 import           Data.Aeson           as Import (ToJSON, FromJSON, encode, decode)
+import           Text.Julius          as Import (rawJS)
 
 import           Foundation           as Import
 import           Model                as Import

@@ -1,5 +1,5 @@
 ($scope) ->
-  nodeTypes = _(%{nodeTypesJson})
+  nodeTypes = _(`%{rawJS nodeTypesJson}`)
 
   $scope.csvData = ""
   $scope.data = []

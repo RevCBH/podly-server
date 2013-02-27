@@ -27,7 +27,7 @@ import           Data.Maybe                 (fromMaybe, Maybe(..), catMaybes, ma
 import           Data.Monoid                (First (..), Monoid (..))
 import           Data.Text                  (Text)
 import           Text.Hamlet                (HtmlUrl, hamletFile)
-import           Text.Julius                (JavascriptUrl, julius)
+import           Text.Julius                (JavascriptUrl, julius, rawJS)
 import           Text.Coffee                (coffeeFile)
 import           Text.Coffee.Bare           (coffeeBareFile)
 import           Yesod.Core                 (GHandler, GWidget, RepHtml,
@@ -127,7 +127,7 @@ runNgModuleWidget cfg modWidget ga = do
 
     let defaultRoute =
             case awDefaultRoute of
-                First (Just x) -> [julius|.otherwise({redirectTo:"#{x}"})|]
+                First (Just x) -> [julius|.otherwise({redirectTo:"#{rawJS x}"})|]
                 First Nothing -> mempty
 
     let renderLibs = mconcat . catMaybes . Map.elems $ awLibs
@@ -149,7 +149,7 @@ runNgModuleWidget cfg modWidget ga = do
         toWidget [julius|
 ^{renderLibs}
 angular
-    .module("#{modname}", [#{declLibs}])
+    .module("#{rawJS modname}", [#{rawJS declLibs}])
     .config(["$routeProvider", "$locationProvider", function($routeProvider, $locationProvider) {
         $locationProvider.html5Mode(true);
         $routeProvider ^{awRoutes} ^{defaultRoute} ;
@@ -192,8 +192,8 @@ addCtrlRaw name' route template controller = do
     name <- (mappend $ mappend name' "__") <$> lift newIdent
     tell mempty
         { awPartials = Map.singleton name template
-        , awRoutes = [julius|.when("#{route}", {controller:#{name}, templateUrl:"?partial=#{name}"})|]
-        , awControllers = [julius|var #{name} = (function (){^{controller}})();|]
+        , awRoutes = [julius|.when("#{rawJS route}", {controller:#{rawJS name}, templateUrl:"?partial=#{rawJS name}"})|]
+        , awControllers = [julius|var #{rawJS name} = (function (){^{controller}})();|]
         }
 
 setDefaultRoute :: Text -> GAngular sub master ()

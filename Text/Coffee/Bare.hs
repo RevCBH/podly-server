@@ -54,10 +54,11 @@ coffeeBareSettings = do
   return $ jsettings { varChar = '%'
   , preConversion = Just PreConvert {
       preConvert = ReadProcess "coffee" ["-sbp"]
-    , preEscapeBegin = "`"
-    , preEscapeEnd = "`"
+    --, preEscapeBegin = "`"
+    --, preEscapeEnd = "`"
     , preEscapeIgnoreBalanced = "'\"`"
     , preEscapeIgnoreLine = "#"
+    , wrapInsertion = Nothing
     }
   }
 

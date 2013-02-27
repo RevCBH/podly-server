@@ -39,7 +39,7 @@ app.directive 'episodeEditor', ($routeParams, $http, dataService, $compile)->
         scope.originalNewNodeTitle = null
         scope.hideNodeTypeModal()
 
-      q = $http.post("%{cmdCreateNodeType}", scope.newNodeType)
+      q = $http.post("%{rawJS cmdCreateNodeType}", scope.newNodeType)
       q.success (data) ->
         dataService.nodeTypes.push(data)
         dataService.nodeTypes = _(dataService.nodeTypes.uniq false, (x) -> x._id)
@@ -179,7 +179,9 @@ app.directive 'inPlace', ($parse) ->
 
 app.service 'dataService', ($http) ->
   @nodeTypes = _([])
-  @icons = %{L8.unpack $ encode icons}
+  # ISSUE - some more of that toJSON bullshit
+  # @icons = JSON.parse("%{rawJS $ L8.unpack $ encode icons}")
+  @icons = `%{rawJS $ L8.unpack $ encode icons}`
 
   req = $http.get("/nodetypes")
   req.success (data) => @nodeTypes = _(data)
@@ -357,7 +359,7 @@ class NodeRowWrapper extends ModelWrapper
     $('td div.popover-thunk + .popover').prev().popover('destroy')
     window.x = this
     if @isValid()
-      q = @$http.post("%{cmdSetNodeInstance}", [@episode._id, @toJSON()])
+      q = @$http.post("%{rawJS cmdSetNodeInstance}", [@episode._id, @toJSON()])
       # TODO - result handling
       q.success (data) =>
         for a in @getAttrs()
@@ -398,7 +400,7 @@ return ($scope, $routeParams, $location, $http, nodeCsvParser, $compile, Publish
     $scope.mediaPlayer.loadSource(data.mediaSources[0])
     # $scope.mediaPlayer.loadVimeoPlayer(data.mediaSources[0].resource, $('#videoContainerCell'))
 
-    q = $http.post("%{cmdGrantsForEpisode}", [$scope.episode._id])
+    q = $http.post("%{rawJS cmdGrantsForEpisode}", [$scope.episode._id])
     q.success (data) ->
       res = {}
       for k, v of data
@@ -421,7 +423,7 @@ return ($scope, $routeParams, $location, $http, nodeCsvParser, $compile, Publish
   $scope.deleteNode = (node) ->
     original = $scope.episode.nodes.slice(0)
     $scope.episode.nodes = _(original).without(node)
-    q = $http.post("%{cmdDeleteNode}", [node.relId])
+    q = $http.post("%{rawJS cmdDeleteNode}", [node.relId])
     # q.success (data) ->
     q.error -> $scope.episode.nodes = original
 
@@ -500,8 +502,8 @@ return ($scope, $routeParams, $location, $http, nodeCsvParser, $compile, Publish
       "btn-warning"
 
   propertyUpdaters =
-    title: "%{cmdSetEpisodeTitle}"
-    number: "%{cmdSetEpisodeNumber}"
+    title: "%{rawJS cmdSetEpisodeTitle}"
+    number: "%{rawJS cmdSetEpisodeNumber}"
   $scope.saveProperty = (named) ->
     q = $http.post(propertyUpdaters[named], [$scope.episode._id, $scope.episode[named]])
     q.error -> window.location.reload(true)
@@ -534,17 +536,17 @@ return ($scope, $routeParams, $location, $http, nodeCsvParser, $compile, Publish
     # console.log "\tsending ep:", JSON.parse JSON.stringify(ep)
     window.ep = ep
 
-    q = $http.post("%{cmdReplaceNodes}", ep)
+    q = $http.post("%{rawJS cmdReplaceNodes}", ep)
     q.error ->
       $scope.episode = JSON.parse originalEp
       $scope.nodeParseResults = originalResults
 
-  $scope.userRights = _(%{rightsDoc}).map (x) -> Permission.fromJSON(x)
-  user = %{userDoc}
+  $scope.userRights = _(`%{rawJS rightsDoc}`).map (x) -> Permission.fromJSON(x)
+  user = `%{rawJS userDoc}`
 
   $scope.submitEpisode = ->
     $scope.episode.published = PublishedState.StateSubmitted
-    q = $http.post("%{cmdSubmitForReview}", [$scope.episode._id])
+    q = $http.post("%{rawJS cmdSubmitForReview}", [$scope.episode._id])
     q.success (data) ->
       # HACK - should be integrated to model
       data.published = PublishedState.fromJSON(data.published)
@@ -580,21 +582,21 @@ return ($scope, $routeParams, $location, $http, nodeCsvParser, $compile, Publish
     userId = parseInt userId if _.isString(userId)
     grant = $scope.hasPermisson(userId, perm)
     if grant
-      q = $http.post("%{cmdRevoke}", [userId, grant])
+      q = $http.post("%{rawJS cmdRevoke}", [userId, grant])
       q.success ->
         vals = _($scope.rights[userId].grants).without grant
         $scope.rights[userId].grants = vals
         $scope.userRights = vals if userId is user._id
     else
       grant = Permission.HasEpisodeGrant(Privilege[perm], $scope.episode._id)
-      q = $http.post("%{cmdGrant}", [userId, grant])
+      q = $http.post("%{rawJS cmdGrant}", [userId, grant])
       q.success ->
         $scope.rights[userId].grants.push ||= []
         $scope.rights[userId].grants.push grant
         $scope.userRights.push grant if userId is user._id
 
   $scope.addGrantUser = ->
-    q = $http.post("%{cmdGetUserForEmail}", [$scope.grantUserEmail])
+    q = $http.post("%{rawJS cmdGetUserForEmail}", [$scope.grantUserEmail])
 
     q.success (data) ->
       $scope.grantUserEmail = ""
@@ -608,8 +610,8 @@ return ($scope, $routeParams, $location, $http, nodeCsvParser, $compile, Publish
     q = $http.post(action, [$scope.episode._id])
     q.error -> $scope.episode.published = original
 
-  $scope.publishEpisode = -> updatePublishedTo PublishedState.StatePublished, "%{cmdPublishEpisode}"
-  $scope.unpublishEpisode = -> updatePublishedTo PublishedState.StatePending, "%{cmdUnpublishEpisode}"
+  $scope.publishEpisode = -> updatePublishedTo PublishedState.StatePublished, "%{rawJS cmdPublishEpisode}"
+  $scope.unpublishEpisode = -> updatePublishedTo PublishedState.StatePending, "%{rawJS cmdUnpublishEpisode}"
 
   guardPlayer = (f) -> f($scope.player) if $scope.player
 
@@ -636,7 +638,7 @@ return ($scope, $routeParams, $location, $http, nodeCsvParser, $compile, Publish
   $scope.removeMediaSource = (x) ->
     originalValue = JSON.stringify $scope.episode.mediaSources
     $scope.episode.mediaSources = _($scope.episode.mediaSources).without(x)
-    q = $http.post("%{cmdRemoveMediaSource}", [$scope.episode._id, x.kind])
+    q = $http.post("%{rawJS cmdRemoveMediaSource}", [$scope.episode._id, x.kind])
     q.error ->
       $scope.episode.mediaSources = JSON.parse originalValue
 
@@ -644,7 +646,7 @@ return ($scope, $routeParams, $location, $http, nodeCsvParser, $compile, Publish
     return unless $scope.newMediaSource
     originalValue = JSON.stringify $scope.episode.mediaSources
     $scope.episode.mediaSources = _($scope.episode.mediaSources).push($scope.newMediaSource)
-    q = $http.post("%{cmdAddMediaSource}", [$scope.episode._id, $scope.newMediaSource])
+    q = $http.post("%{rawJS cmdAddMediaSource}", [$scope.episode._id, $scope.newMediaSource])
     q.success ->
       $scope.newMediaSource = undefined
       $scope.newMediaSourceUrl = ""

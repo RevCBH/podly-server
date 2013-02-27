@@ -115,7 +115,7 @@ return ($scope, $routeParams, $location, $http, scrollManager, MediaPlayer, Publ
     scrollManager.enable()
     $scope.scrollTo $scope.currentNode()
 
-  $scope.linkToNode = (n) -> "%{_approot}ni/#{n.relId}"
+  $scope.linkToNode = (n) -> `%{toJSON _approot}` + "ni/#{n.relId}"
   $scope.tweetText = (n)->
     # 96 chars avail, 44 taken
     # ISSUE, TODO - don't hardcode the number of available characters
@@ -182,7 +182,7 @@ return ($scope, $routeParams, $location, $http, scrollManager, MediaPlayer, Publ
     $scope.signupMessage = "Subscribe for updates"
   $scope.subscribeUser = (evt) ->
     evt.preventDefault() # HACK
-    q = $http.post "%{cmdSignupEmail}", [$scope.signupEmail]
+    q = $http.post "%{rawJS cmdSignupEmail}", [$scope.signupEmail]
     q.success (data) ->
       console.log "data:", data
       if data?[0] is "OK"

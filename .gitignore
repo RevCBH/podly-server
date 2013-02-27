@@ -1,4 +1,5 @@
 dist/
 yesod-devel/
+cabal-dev/
 static/tmp/
 .DS_Store

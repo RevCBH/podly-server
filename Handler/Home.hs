@@ -48,6 +48,9 @@ instance A.FromJSON a => A.FromJSON (Singleton a) where
             _ -> fail "Not a single-element array"
     parseJSON _ = fail "Not an array"
 
+getCrossdomainR :: Handler RepXml
+getCrossdomainR = undefined
+
 handleHomeR :: Handler RepHtml
 handleHomeR = do
   res <- runDB $ selectList [EpisodePublished ==. StatePublished] [Desc EpisodeNumber, LimitTo 1]
@@ -84,7 +87,7 @@ angularPlayerForEpisode entity@(Entity _ episode) = do
     cmdSignupEmail <- addCommand $ \(Singleton email) -> do
       if (unpack email) =~ ("[^@]+@[^.]+\\..+" :: String)
         then do
-          _ <- runDB $ insert $ Email email Nothing Nothing
+          --_ <- runDB $ insert $ Email email Nothing Nothing
           return $ Singleton ("OK" :: String)
         else
           return $ Singleton ("Error" :: String)
@@ -120,8 +123,8 @@ handleEmbedPlayerR epId = do
   episode <- runDB $ get404 epId
   tParam <- lookupGetParam "t"
   let startAt = case tParam of
-                  Nothing -> "0"
-                  Just t -> show t
+                  Nothing -> 0 :: Int
+                  Just t -> read . unpack $ t
 
   let _approot = "http://podly.co/" :: String
   let cfg = ModuleConfig (Just "playerMod") (Just embeddedLayout)
@@ -135,7 +138,6 @@ handleEmbedPlayerR epId = do
     $(addLib "media")
     $(addLib "scroll")
     $(addCtrl "/embed/:episodeId" "embedded/player")
-    -- $(addCtrl "/:epId" "embedded/player")
 
     setDefaultRoute $ pack $ "/embed/" ++ (show $ A.toJSON epId)
 
