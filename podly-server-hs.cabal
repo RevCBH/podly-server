@@ -104,7 +104,7 @@ library
                  , time == 1.4
                  , aeson == 0.6.1.0
                  , http-types == 0.7.3.0.1
-                 , attoparsec == 0.10.4.0
+                 , attoparsec == 0.10.2.0
                  , old-locale == 1.0.0.4
                  , mtl == 2.1.2
                  , wai == 1.4.0
