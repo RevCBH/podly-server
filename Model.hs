@@ -14,7 +14,9 @@ import Control.Applicative ((<$>), (<*>))
 import GHC.Generics (Generic)
 
 -- Type sig imports
-import qualified Control.Monad.IO.Class
+--import qualified Control.Monad.IO.Class
+import Database.Persist.GenericSql.Raw (SqlBackend)
+--
 
 data MediaKind =
   AudioMp3
@@ -45,7 +47,7 @@ data Privilege =
 derivePersistField "Privilege"
 $(deriveJSON id ''Privilege)
 
-share [mkPersist sqlSettings, mkMigrate "migrateAll"]
+share [mkPersist sqlOnlySettings, mkMigrate "migrateAll"]
     $(persistFileWith lowerCaseSettings "config/models")
 
 instance ToJSON (Entity Event) where
@@ -55,7 +57,7 @@ instance ToJSON (Entity Event) where
       "data" .= data_,
       "created" .= (toJSON created)]
 
-instance FromJSON (NodeTypeGeneric t) where
+instance FromJSON NodeType where
   parseJSON (Object o) = NodeType <$>
     o .: "title"                  <*>
     o .: "icon"
@@ -75,7 +77,7 @@ instance FromJSON (NodeTypeGeneric t) where
 --    o .: "nodeTypeId"
 --  parseJSON _  = error "Object expected when parsing Node"
 
-instance FromJSON (NodeInstanceGeneric t) where
+instance FromJSON NodeInstance where
   parseJSON (Object o) = NodeInstance <$>
     o .: "title"                      <*>
     o .: "url"                        <*>
@@ -101,9 +103,7 @@ instance ToJSON (Entity Episode) where
       "airDate" .= (toJSON airDate),
       "lastModified" .= (toJSON lastModified)]
 
-touchEpisode :: forall (backend :: (* -> *) -> * -> *) (m :: * -> *) (backend1 :: (* -> *) -> * -> *).
-                           (Control.Monad.IO.Class.MonadIO (backend m), PersistQuery backend m) =>
-                           Key backend (EpisodeGeneric backend1) -> backend m ()
+touchEpisode :: (PersistQuery m, PersistMonadBackend m ~ SqlBackend) => Key Episode -> m ()
 touchEpisode episodeId = do
   curT <- liftIO getCurrentTime
   update episodeId [EpisodeLastModified =. curT]

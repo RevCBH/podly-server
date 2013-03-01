@@ -22,6 +22,8 @@ import Web.ClientSession (getKey)
 import Text.Hamlet (hamletFile)
 import Data.Text (Text())
 import Yesod.Angular
+import System.Log.FastLogger (Logger)
+
 
 -- | The site argument for your application. This can be a good place to
 -- keep settings and values requiring initialization before your application
@@ -33,6 +35,7 @@ data App = App
     , connPool :: Database.Persist.Store.PersistConfigPool Settings.PersistConfig -- ^ Database connection pool.
     , httpManager :: Manager
     , persistConfig :: Settings.PersistConfig
+    , appLogger :: Logger
     }
 
 -- Set up i18n messages. See the message folder.
@@ -70,6 +73,7 @@ instance Yesod App where
     -- default session idle timeout is 120 minutes
     makeSessionBackend _ = do
         key <- getKey "config/client_session_key.aes"
+        -- clientSessionBackend2 instead plz
         return . Just $ clientSessionBackend key 120
 
     defaultLayout widget = do
@@ -118,6 +122,8 @@ instance Yesod App where
     shouldLog _ "SQL" _ = False
     shouldLog _ _source level =
         development || level == LevelWarn || level == LevelError
+
+    getLogger = return . appLogger
 
 -- How to run database actions.
 instance YesodPersist App where

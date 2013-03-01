@@ -20,9 +20,6 @@ import Data.Maybe (catMaybes)
 import qualified Data.Map as Map
 import Text.Coffee (coffeeFile)
 import Control.Monad (liftM)
-import Control.Monad.IO.Class (MonadIO)
-import Control.Monad.Trans.Resource (MonadThrow, MonadUnsafeIO)
-import Control.Monad.Logger (MonadLogger)
 import Control.Monad.Trans.Maybe
 import Text.Hamlet (hamletFile)
 import Database.Persist.GenericSql (rawSql, Single(..))
@@ -35,7 +32,10 @@ import Text.Regex.PCRE
 import Document
 
 -- Imports for type signatures
-import qualified Database.Persist.GenericSql
+import Database.Persist.GenericSql (RawSql)
+import Database.Persist.GenericSql.Raw (SqlBackend)
+import Control.Monad.Trans.Resource (MonadResource)
+import Control.Monad.Logger (MonadLogger)
 --
 
 newtype Singleton a = Singleton { unSingleton :: a }
@@ -168,11 +168,7 @@ instance A.ToJSON SearchResult where
       "episode" .= (A.toJSON episode),
       "nodes" .= (A.toJSON nodes)]
 
-searchEpisodes :: forall a (m :: * -> *).
-                   (MonadIO m, MonadUnsafeIO m, MonadThrow m, MonadLogger m,
-                    MonadBaseControl IO m, Database.Persist.GenericSql.RawSql a) =>
-                   Text -> SqlPersist m [a]
-
+searchEpisodes :: (MonadResource m, MonadLogger m, RawSql a) => Text -> SqlPersist m [a]
 searchEpisodes txt = do
   let plain = DSP.PersistText txt
   let tsquery = DSP.PersistText $ pack $ join "|" $ splitWs $ unpack txt
@@ -180,9 +176,8 @@ searchEpisodes txt = do
   let searchQuery = "SELECT ??, ??, ts_rank_cd(to_tsvector(node_instance.title), to_tsquery(?)) as \"query_rank\", ts_rank_cd(to_tsvector(node_instance.title), plainto_tsquery(?)) as \"plain_rank\" FROM episode, node_instance WHERE to_tsvector(node_instance.title) @@ to_tsquery(?) AND episode.id = node_instance.episode_id ORDER BY ts_rank_cd(to_tsvector(node_instance.title), plainto_tsquery(?)) DESC, ts_rank_cd(to_tsvector(node_instance.title), to_tsquery(?)) DESC"
   rawSql searchQuery [tsquery, plain, tsquery, plain, tsquery]
 
-reifyTuple :: (MonadIO m, MonadThrow m, MonadUnsafeIO m, MonadLogger m, MonadBaseControl IO m) =>
-     (Entity Episode, Entity NodeInstance, Single Double, Single Double)
-     -> MaybeT (SqlPersist m) (Double, Entity Episode, NodeDocument)
+reifyTuple :: (Num t, PersistStore m, PersistMonadBackend m ~ SqlBackend) =>
+                 (t1, Entity NodeInstance, Single t, Single t) -> MaybeT m (t, t1, NodeDocument)
 reifyTuple (ep, ni, (Single qw), (Single pw)) = do
   nodeDoc <- documentFromNodeInstance ni
   return (qw + pw, ep, nodeDoc)

@@ -24,10 +24,8 @@ import Data.Time.Clock (getCurrentTime)
 --import Debug.Trace
 
 -- Type signature imports
-import qualified Database.Persist.GenericSql.Raw
-import qualified Control.Monad.Trans.Resource
-import qualified Control.Monad.IO.Class
-import qualified Control.Monad.Logger
+import Database.Persist.GenericSql.Raw (SqlBackend)
+--
 
 data NodeTypeDocument = DocNodeT {
   docNodeType_id :: Maybe NodeTypeId,
@@ -74,19 +72,9 @@ data EpisodeDocument = DocEpisode {
 $(deriveJSON (removePrefix "docEpisode") ''EpisodeDocument)
 
 -- Type synonyms for use in signatures
-type MaybeDb x = forall (m :: * -> *). (Control.Monad.Trans.Resource.MonadThrow m,
-                                          Control.Monad.IO.Class.MonadIO m,
-                                          Control.Monad.Trans.Resource.MonadUnsafeIO m,
-                                          Control.Monad.Logger.MonadLogger m, MonadBaseControl IO m) =>
-                                          MaybeT
-                                            (Database.Persist.GenericSql.Raw.SqlPersist m)
-                                            x
-type DbVal x = forall (m :: * -> *). (Control.Monad.Trans.Resource.MonadThrow m,
-                                      Control.Monad.IO.Class.MonadIO m,
-                                      Control.Monad.Trans.Resource.MonadUnsafeIO m,
-                                      Control.Monad.Logger.MonadLogger m, MonadBaseControl IO m) =>
-                                        Database.Persist.GenericSql.Raw.SqlPersist m x
-type DbKey x = Key Database.Persist.GenericSql.Raw.SqlPersist x
+type MaybeDb x = (PersistStore m, PersistMonadBackend m ~ SqlBackend) => MaybeT m x
+type DbVal x = (PersistQuery m, PersistMonadBackend m ~ SqlBackend) => m x
+--type DbKey x = Key Database.Persist.GenericSql.Raw.SqlPersist x
 
 documentFromNodeType :: Entity NodeType -> NodeTypeDocument
 documentFromNodeType (Entity tid (NodeType title icon)) = DocNodeT (Just tid) icon title
@@ -115,15 +103,18 @@ documentFromEpisode episode = do
   mediaSources <- mapM (return . documentFromMediaSource) =<< selectList [MediaSourceEpisodeId ==. tid] []
   return $ DocEpisode (Just tid) podcast number airDate title slug duration published (Just lastModified) mediaSources justNodes
 
-nodeTypeIdFromDoc :: PersistUnique backend m =>
-                     NodeTypeDocument -> backend m (Key backend (NodeTypeGeneric backend))
+
+nodeTypeIdFromDoc :: (PersistUnique m, PersistMonadBackend m ~ SqlBackend) =>
+                      NodeTypeDocument -> m (Key NodeType)
 nodeTypeIdFromDoc doc = do
   mNT <- getBy $ UniqueTypeTitle $ docNodeTypeTitle doc
   case mNT of
     Nothing -> insert $ NodeType (docNodeTypeTitle doc) (docNodeTypeIcon doc)
     Just (Entity tid _) -> return tid
 
-syncInstance :: DbKey Episode -> NodeDocument -> DbVal (Entity NodeInstance)
+--syncInstance :: Key Episode -> NodeDocument -> DbVal (Entity NodeInstance)
+syncInstance :: (PersistQuery m, PersistUnique m, PersistMonadBackend m ~ SqlBackend) =>
+                               Key Episode -> NodeDocument -> m (Entity NodeInstance)
 syncInstance episodeId (DocNode mRelId title mUrl time mNodeTypeDoc) = do
   mNodeTypeId <- maybeMaybeNodeTypeIdFromDoc mNodeTypeDoc
   let getNewInstanceId = insert $ NodeInstance title mUrl mNodeTypeId episodeId time
@@ -153,7 +144,9 @@ syncInstance episodeId (DocNode mRelId title mUrl time mNodeTypeDoc) = do
   maybeMaybeNodeTypeIdFromDoc Nothing = return Nothing
   maybeMaybeNodeTypeIdFromDoc (Just doc) = return . Just =<< nodeTypeIdFromDoc doc
 
-episodeFromDocument :: EpisodeDocument -> DbVal (Entity Episode)
+--episodeFromDocument :: EpisodeDocument -> DbVal (Entity Episode)
+episodeFromDocument :: (PersistQuery m, PersistUnique m, PersistMonadBackend m ~ SqlBackend) =>
+                        EpisodeDocument -> m (Entity Episode)
 episodeFromDocument doc = do
   (Entity episodeId episode) <- episodeAndIdFromDoc doc
   mapM_ (syncInstance episodeId) $ docEpisodeNodes doc

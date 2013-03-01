@@ -25,14 +25,12 @@ fromJsonOrFormPost form = do
         FormSuccess result' -> return (PostForm, result')
         _ -> notFound
 
-ensureEntity :: forall master sub val.
-                               (PersistEntity val,
-                                PersistUnique (YesodPersistBackend master) (GHandler sub master),
-                                YesodPersist master,
-                                PersistEntityBackend val ~ YesodPersistBackend master) =>
-                               val
-                               -> Unique val (YesodPersistBackend master)
-                               -> GHandler sub master (Entity val)
+ensureEntity :: (PersistEntity val, YesodPersist master,
+                  PersistUnique (YesodPersistBackend master (GHandler sub master)),
+                  PersistMonadBackend
+                    (YesodPersistBackend master (GHandler sub master))
+                  ~ PersistEntityBackend val) =>
+                 val -> Unique val -> GHandler sub master (Entity val)
 ensureEntity item constraint = do
   mEntity <- runDB $ getBy $ constraint
   case mEntity of

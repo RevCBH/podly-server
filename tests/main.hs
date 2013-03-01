@@ -16,4 +16,6 @@ main = do
     conf <- loadConfig $ (configSettings Testing) { csParseExtra = parseExtra }
     foundation <- makeFoundation conf
     app <- toWaiAppPlain foundation
-    runTests app (connPool foundation) homeSpecs
+    runTests app (connPool foundation) $ do
+      describe "Home" homeSpecs
+      describe "Player" playerSpecs

@@ -87,4 +87,5 @@
 
 
 # Heroku configuration that runs your app
-web: ./dist/build/podly-server-hs/podly-server-hs production -p $PORT
+# web: ./dist/build/podly-server-hs/podly-server-hs production -p $PORT
+web: ./podly-server-hs production -p $PORT
