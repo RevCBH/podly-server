@@ -165,7 +165,9 @@ return ($scope, $routeParams, $location, $http, scrollManager, MediaPlayer, Publ
   $scope.loadSearchResult = (x) ->
     return unless x
     ep = x.episode || x
-    url = "/podcasts/#{ep.podcast}/episodes/#{ep.number}"
+
+    # ISSUE - Hack for podcast name
+    url = "/podcasts/#{$routeParams.podcastName}/episodes/#{ep.number}"
     if x.relId
       if $routeParams.podcastName is ep.podcast and parseInt($routeParams.episodeNumber) is ep.number
         $scope.seek x
