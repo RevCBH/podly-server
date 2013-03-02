@@ -174,8 +174,7 @@ searchEpisodes :: (MonadResource m, MonadLogger m, RawSql a) => Text -> SqlPersi
 searchEpisodes txt = do
   let plain = DSP.PersistText txt
   let tsquery = DSP.PersistText $ pack $ join "|" $ splitWs $ unpack txt
-  --let searchQuery = "SELECT ??, ??, ts_rank_cd(to_tsvector(node_instance.title || ' ' || episode.title), to_tsquery(?)) as \"query_rank\", ts_rank_cd(to_tsvector(node_instance.title || ' ' || episode.title), plainto_tsquery(?)) as \"plain_rank\" FROM episode, node_instance WHERE to_tsvector(node_instance.title || ' ' || episode.title) @@ to_tsquery(?) AND episode.id = node_instance.episode_id ORDER BY ts_rank_cd(to_tsvector(node_instance.title || ' ' || episode.title), plainto_tsquery(?)) DESC, ts_rank_cd(to_tsvector(node_instance.title || ' ' || episode.title), to_tsquery(?)) DESC"
-  let searchQuery = "SELECT ??, ??, ts_rank_cd(to_tsvector(node_instance.title), to_tsquery(?)) as \"query_rank\", ts_rank_cd(to_tsvector(node_instance.title), plainto_tsquery(?)) as \"plain_rank\" FROM episode, node_instance WHERE to_tsvector(node_instance.title) @@ to_tsquery(?) AND episode.id = node_instance.episode_id ORDER BY ts_rank_cd(to_tsvector(node_instance.title), plainto_tsquery(?)) DESC, ts_rank_cd(to_tsvector(node_instance.title), to_tsquery(?)) DESC"
+  let searchQuery = "SELECT ??, ??, ts_rank_cd(to_tsvector(node_instance.title), to_tsquery(?)) as \"query_rank\", ts_rank_cd(to_tsvector(node_instance.title), plainto_tsquery(?)) as \"plain_rank\" FROM episode, node_instance WHERE to_tsvector(node_instance.title) @@ to_tsquery(?) AND episode.published = 'StatePublished' AND episode.id = node_instance.episode_id ORDER BY ts_rank_cd(to_tsvector(node_instance.title), plainto_tsquery(?)) DESC, ts_rank_cd(to_tsvector(node_instance.title), to_tsquery(?)) DESC"
   rawSql searchQuery [tsquery, plain, tsquery, plain, tsquery]
 
 reifyTuple :: (Num t, PersistStore m, PersistMonadBackend m ~ SqlBackend) =>
