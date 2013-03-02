@@ -36,13 +36,14 @@ NodeType
 
 Podcast
     name Text
+    shortName Text Maybe
     description Text Maybe
     category Text Maybe
     image Text Maybe
     UniquePodcastName name
 
 Episode
-    podcast Text
+    podcastId PodcastId
     title Text
     number Int
     slug Text Maybe
@@ -50,7 +51,7 @@ Episode
     published PublishedState
     duration Int Maybe
     lastModified UTCTime default=LOCALTIMESTAMP
-    UniqueEpisodeNumber podcast number
+    UniqueEpisodeNumber podcastId number
     deriving Show
 
 MediaSource

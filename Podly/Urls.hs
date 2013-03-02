@@ -1,3 +1,5 @@
+{-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE OverlappingInstances #-}
 module Podly.Urls where
 
 import Import
@@ -9,17 +11,22 @@ import Document
 class CanonicalUrl a where
   canonicalUrl ::  a -> Text
 
-instance CanonicalUrl Episode where
-  canonicalUrl episode =
-    -- TODO make _approot non-static
-    let _approot = "http://podly.co/"
-    in mconcat [T.pack _approot, "podcasts/", episodePodcast episode, "/episodes/", T.pack . show $ episodeNumber episode]
+class RelativeUrl a where
+  relativeUrl :: a -> Text
 
-instance CanonicalUrl EpisodeDocument where
-  canonicalUrl episode =
-      -- TODO make _approot non-static
-    let _approot = "http://podly.co/"
-    in mconcat [T.pack _approot, "podcasts/", docEpisodePodcast episode, "/episodes/", T.pack . show $ docEpisodeNumber episode]
+instance (RelativeUrl a) => CanonicalUrl a where
+  canonicalUrl a =
+    -- TODO make _approot non-static
+    let _approot = "http://podly.co"
+    in mconcat [T.pack _approot, relativeUrl a]
+
+instance RelativeUrl (Podcast, Episode) where
+  relativeUrl (podcast, episode) =
+    mconcat ["/podcasts/", podcastName podcast, "/episodes/", T.pack . show $ episodeNumber episode]
+
+instance RelativeUrl EpisodeDocument where
+  relativeUrl episode =
+    mconcat ["/podcasts/", docEpisodePodcast episode, "/episodes/", T.pack . show $ docEpisodeNumber episode]
 
 newtype ThumbnailImage a = ThumbnailImage a
 

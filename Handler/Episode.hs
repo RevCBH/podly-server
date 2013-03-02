@@ -7,7 +7,7 @@ import Handler.Home (angularPlayerForEpisode)
 import Podly.Affiliate
 
 -- toJSON required when deploying for some reason
-import Data.Aeson (Result(..), FromJSON(..), fromJSON, toJSON)
+import Data.Aeson (Result(..), FromJSON(..), fromJSON)
 import Data.Aeson.TH (deriveJSON)
 import Data.Maybe
 import qualified Data.Traversable as DT
@@ -82,7 +82,8 @@ renderJsonEpisode entity@(Entity _ episode) = do
 
 getPodcastEpisodeR :: Text -> Int -> Handler RepHtmlJson
 getPodcastEpisodeR name number = do
-    episodeEntity <- runDB $ getBy404 $ UniqueEpisodeNumber name number
+    (Entity podcastId _) <- runDB $ getBy404 $ UniquePodcastName name
+    episodeEntity <- runDB $ getBy404 $ UniqueEpisodeNumber podcastId number
     (RepHtml html) <- angularPlayerForEpisode episodeEntity
     (RepJson json) <- renderJsonEpisode episodeEntity
     return $ RepHtmlJson html json
@@ -93,11 +94,19 @@ getEpisodeR tid = do
    renderJsonEpisode $ Entity tid episode
 
 
+data EpisodeThumbnail = EpisodeThumbnail {
+  epThumbUrl :: Text,
+  epThumbWidth :: Int,
+  epThumbHeight :: Int}
+ deriving (Show, Generic)
+$(deriveJSON (removePrefix "epThumb") ''EpisodeThumbnail)
+
 data EpisodeEphemeral = EpisodeEphemeral {
   epEphem_id :: EpisodeId,
   epEphemNumber :: Int,
   epEphemTitle :: Text,
-  epEphemPreviewImage :: Maybe Text }
+  epEphemHeaderText :: Text,
+  epEphemPreviewImage :: Maybe EpisodeThumbnail }
  deriving (Show, Generic)
 $(deriveJSON (removePrefix "epEphem") ''EpisodeEphemeral)
 
@@ -119,19 +128,25 @@ getEpisodeMetaR tid = do
   jsonToRepJson $ EpisodeMeta prev next
     (EmbedPlayerConfig "MOAR!")
  where
-  mkEphem (Entity _tid episode) = do
-    previewImage <- episodePreviewImageUrl _tid -- TODO - unify with canonical URL forms
+  mkEphem headerText (Entity _tid episode) = do
+    -- TODO - unify with canonical URL forms
+    previewImage <- episodePreviewImageUrl _tid
+    let epThumb = do
+          url <- previewImage
+          -- TODO - don't hardcode dimensions
+          return $ EpisodeThumbnail url 480 360
+
     let f = EpisodeEphemeral _tid <$> episodeNumber <*> episodeTitle
-    return $ f episode previewImage
+    return $ f episode headerText epThumb
   getPrevNext = do
     episode <- get404 $ tid
     -- map mkEphem over the results (at most one), convert list to Maybe, move Maybe inside DB monad
-    let sel op sort = DT.sequence . listToMaybe . map mkEphem =<< selectList
-          [EpisodePodcast ==. episodePodcast episode,
+    let sel op sort headerText = DT.sequence . listToMaybe . map (mkEphem headerText) =<< selectList
+          [EpisodePodcastId ==. episodePodcastId episode,
            op EpisodeNumber $ episodeNumber episode]
           [sort EpisodeNumber, LimitTo 1]
-    prev <- sel (<.) Desc
-    next <- sel (>.) Asc
+    prev <- sel (<.) Desc "Previous Episode"
+    next <- sel (>.) Asc "Next Episode"
     return (prev, next)
   episodePreviewImageUrl episodeId = do
     src <- getBy $ UniqueMediaKindForEpisode episodeId VideoYouTube

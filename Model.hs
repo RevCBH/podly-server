@@ -120,9 +120,10 @@ touchEpisode episodeId = do
 --  parseJSON _  = error "Object expected when parsing Episode"
 
 instance ToJSON (Entity Podcast) where
-  toJSON (Entity tid (Podcast name description category image)) = object
+  toJSON (Entity tid (Podcast name shortName description category image)) = object
     [ "_id" .= tid,
       "name" .= name,
+      "shortName" .= shortName,
       "description" .= description,
       "category" .= category,
       "image" .= image]

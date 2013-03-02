@@ -60,6 +60,7 @@ handleHomeR = do
 
 angularPlayerForEpisode :: Entity Episode -> Handler RepHtml
 angularPlayerForEpisode entity@(Entity _ episode) = do
+  podcast <- runDB $ get404 $ episodePodcastId episode
   nodeTypes <- runDB $ selectList [] [Asc NodeTypeTitle]
   let nodeTypesJson = L8.unpack $ encode $ map documentFromNodeType nodeTypes
 
@@ -98,16 +99,17 @@ angularPlayerForEpisode entity@(Entity _ episode) = do
     $(addLib "scroll")
     $(addCtrl "/podcasts/:podcastName/episodes/:episodeNumber" "player")
 
-    setDefaultRoute $ mconcat ["/podcasts/", episodePodcast episode,
+    setDefaultRoute $ mconcat ["/podcasts/", podcastName podcast,
                                "/episodes/", pack . show $ episodeNumber episode]
 
 getPlayNodeR :: NodeInstanceId -> Handler RepHtml
 getPlayNodeR nid = do
   inst <- runDB $ get404 nid
   ep <- runDB $ get404 (nodeInstanceEpisodeId inst)
+  podcast <- runDB $ get404 $ episodePodcastId ep
   let stAt = (show $ nodeInstanceTime inst)
   -- HACK
-  redirect $ "/podcasts/" ++ (unpack $ episodePodcast ep) ++ "/episodes/" ++ (show $ episodeNumber ep) ++ "?t=" ++ stAt
+  redirect $ "/podcasts/" ++ (unpack $ podcastName podcast) ++ "/episodes/" ++ (show $ episodeNumber ep) ++ "?t=" ++ stAt
 
 embeddedLayout :: GWidget sub App () -> GHandler sub App RepHtml
 embeddedLayout widget = do
@@ -262,7 +264,8 @@ handleAdminR _ = do
       return doc
 
     cmdReplaceNodes <- addCommand $ \ep -> do
-      (Entity tid _) <- runDB $ getBy404 $ UniqueEpisodeNumber (docEpisodePodcast ep) (docEpisodeNumber ep)
+      (Entity podcastId _) <- runDB $ getBy404 $ UniquePodcastName $ docEpisodePodcast ep
+      (Entity tid _) <- runDB $ getBy404 $ UniqueEpisodeNumber podcastId (docEpisodeNumber ep)
       requireEditEpisode rights tid
       runDB $ deleteWhere [NodeInstanceEpisodeId ==. tid]
       (Entity _ episode) <- runDB $ episodeFromDocument ep

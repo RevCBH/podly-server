@@ -58,6 +58,7 @@ $(deriveJSON (removePrefix "docSource") ''MediaSourceDocument)
 data EpisodeDocument = DocEpisode {
   docEpisode_id :: Maybe EpisodeId,
   docEpisodePodcast :: Text,
+  docEpisodePodcastShortName :: Maybe Text,
   docEpisodeNumber :: Int,
   docEpisodeAirDate :: Maybe UTCTime,
   docEpisodeTitle :: Text,
@@ -95,13 +96,14 @@ documentFromMediaSource (Entity _ (MediaSource _ kind offset resource)) =
 
 documentFromEpisode :: Entity Episode -> DbVal EpisodeDocument
 documentFromEpisode episode = do
-  let Entity tid (Episode podcast title number slug airDate published duration lastModified) = episode
+  let Entity tid (Episode podcastId title number slug airDate published duration lastModified) = episode
   instancesWithIds <- selectList [NodeInstanceEpisodeId ==. tid] [Asc NodeInstanceTime]
   mNodes <- mapM (runMaybeT . documentFromNodeInstance) instancesWithIds
   nodes <- filterM (return . isJust) mNodes
   justNodes <- mapM (return . fromJust) nodes
   mediaSources <- mapM (return . documentFromMediaSource) =<< selectList [MediaSourceEpisodeId ==. tid] []
-  return $ DocEpisode (Just tid) podcast number airDate title slug duration published (Just lastModified) mediaSources justNodes
+  podcast <- liftM fromJust $ get podcastId
+  return $ DocEpisode (Just tid) (podcastName podcast) (podcastShortName podcast) number airDate title slug duration published (Just lastModified) mediaSources justNodes
 
 
 nodeTypeIdFromDoc :: (PersistUnique m, PersistMonadBackend m ~ SqlBackend) =>
@@ -166,19 +168,19 @@ episodeFromDocument doc = do
         let source = MediaSource episodeId kind offset resource
         tid <- insert source
         return $ Entity tid source
-  episodeAndIdFromDoc (DocEpisode _ podcast number airDate title slug duration published _ _ _) = do
+  episodeAndIdFromDoc (DocEpisode _ podcast podcastSN number airDate title slug duration published _ _ _) = do
     mPodcast <- getBy $ UniquePodcastName podcast
-    case mPodcast of
-      Nothing -> do
-        _ <- insert $ Podcast {podcastName = podcast, podcastDescription = Nothing,
-                               podcastImage = Nothing, podcastCategory = Nothing}
-        return ()
-      _ -> return ()
-    mEpisode <- getBy $ UniqueEpisodeNumber podcast number
+    podcastId <- case mPodcast of
+                      Nothing -> do
+                        insert $ Podcast {podcastName = podcast, podcastShortName = podcastSN, podcastDescription = Nothing,
+                                          podcastImage = Nothing, podcastCategory = Nothing}
+                      (Just (Entity pcid _)) -> return pcid
+
+    mEpisode <- getBy $ UniqueEpisodeNumber podcastId number
     case mEpisode of
       Nothing -> do
         curT <- liftIO getCurrentTime
-        let ep = Episode podcast title number slug airDate published duration curT
+        let ep = Episode podcastId title number slug airDate published duration curT
         tid <- insert ep
         return (Entity tid ep)
       Just entity -> return entity

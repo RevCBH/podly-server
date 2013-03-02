@@ -3,7 +3,7 @@ module Handler.Test where
 
 import Import
 -- required when deploying for some reason
-import Data.Aeson (toJSON)
+--import Data.Aeson (toJSON)
 --import Data.Aeson (Result(..))
 --import Data.Text (pack)
 import qualified Data.HashMap.Strict as Map
@@ -84,8 +84,8 @@ import qualified Data.HashMap.Strict as Map
 --    jsonToRepJson ("OK" :: String)
 
 countEpisodesFor :: Entity Podcast -> Handler Int
-countEpisodesFor (Entity _ podcast) = do
-    runDB $ count $ [EpisodePodcast ==. podcastName podcast]
+countEpisodesFor (Entity podcastId _) = do
+    runDB $ count $ [EpisodePodcastId ==. podcastId]
 
 getPodcastIndexR :: Handler RepHtmlJson
 getPodcastIndexR = do
@@ -107,7 +107,8 @@ getPodcastR name = do
 
 getPodcastEpisodeIndexR :: Text -> Handler RepHtmlJson
 getPodcastEpisodeIndexR name = do
-    episodes <- runDB $ selectList [EpisodePodcast ==. name] [Asc EpisodeNumber]
+    (Entity podcastId _) <- runDB $ getBy404 $ UniquePodcastName name
+    episodes <- runDB $ selectList [EpisodePodcastId ==. podcastId] [Asc EpisodeNumber]
     let widget = do
         setTitle $ toHtml $ name <> " - Episodes"
         $(widgetFile "podcasts/show")

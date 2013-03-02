@@ -1,5 +1,5 @@
 <h1>Podcasts
 <ul>
-  $forall Podcast named _ _ _ <- podcasts
+  $forall Podcast named _ _ _ _ <- podcasts
     <li>
       <a href=@{PodcastR named}>#{named}
