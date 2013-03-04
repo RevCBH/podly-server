@@ -112,7 +112,8 @@ $(deriveJSON (removePrefix "epEphem") ''EpisodeEphemeral)
 
 data EmbedPlayerConfig = EmbedPlayerConfig {
   plrCfgGetMoreText :: Text,
-  plrCfgBannerText :: Text}
+  plrCfgBannerText :: Text,
+  plrCfgBannerUrl :: Text}
  deriving (Show, Generic)
 $(deriveJSON (removePrefix "plrCfg") ''EmbedPlayerConfig)
 
@@ -128,7 +129,8 @@ getEpisodeMetaR tid = do
   (prev, next) <- runDB $ getPrevNext
   jsonToRepJson $ EpisodeMeta prev next
     (EmbedPlayerConfig {plrCfgGetMoreText = "Get More Episodes",
-                        plrCfgBannerText = "Podly: Wikipedia for podcasts. See more at Podly.co"})
+                        plrCfgBannerText = "Podly: Wikipedia for podcasts. See more at Podly.co",
+                        plrCfgBannerUrl = "http://podly.co"})
  where
   mkEphem headerText (Entity _tid episode) = do
     -- TODO - unify with canonical URL forms
