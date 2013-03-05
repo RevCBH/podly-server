@@ -5,6 +5,7 @@ import Import
 --import Handler.Util
 import Handler.Home (angularPlayerForEpisode)
 import Podly.Affiliate
+import qualified Podly.Metadata as Meta
 
 -- toJSON required when deploying for some reason
 import Data.Aeson (Result(..), FromJSON(..), fromJSON)
@@ -93,7 +94,7 @@ getEpisodeR tid = do
    episode <- runDB $ get404 tid
    renderJsonEpisode $ Entity tid episode
 
-
+{-
 data EpisodeThumbnail = EpisodeThumbnail {
   epThumbUrl :: Text,
   epThumbWidth :: Int,
@@ -123,14 +124,16 @@ data EpisodeMeta = EpisodeMeta {
   epMetaEmbedPlayerConfig :: EmbedPlayerConfig}
  deriving (Show, Generic)
 $(deriveJSON (removePrefix "epMeta") ''EpisodeMeta)
+-}
 
 getEpisodeMetaR :: EpisodeId -> Handler RepJson
 getEpisodeMetaR tid = do
   (prev, next) <- runDB $ getPrevNext
-  jsonToRepJson $ EpisodeMeta prev next
-    (EmbedPlayerConfig {plrCfgGetMoreText = "Get More Episodes",
-                        plrCfgBannerText = "Podly: Wikipedia for podcasts. See more at Podly.co",
-                        plrCfgBannerUrl = "http://podly.co"})
+  let playerCfg = Meta.EmbedPlayerConfig {
+                    Meta.plrCfgGetMoreText = "Get More Episodes",
+                    Meta.plrCfgBannerText = "Podly: Wikipedia for podcasts. See more at Podly.co",
+                    Meta.plrCfgBannerUrl = "http://podly.co"}
+  jsonToRepJson $ Meta.EpisodeEphemeral prev next playerCfg epSocial
  where
   mkEphem headerText (Entity _tid episode) = do
     -- TODO - unify with canonical URL forms
@@ -138,10 +141,16 @@ getEpisodeMetaR tid = do
     let epThumb = do
           url <- previewImage
           -- TODO - don't hardcode dimensions
-          return $ EpisodeThumbnail url 480 360
+          return $ Meta.Image url 480 360
 
-    let f = EpisodeEphemeral _tid <$> episodeNumber <*> episodeTitle
+    let f = Meta.Episode _tid <$> episodeNumber <*> episodeTitle
     return $ f episode headerText epThumb
+  epSocial =
+    Meta.EpisodeSocial {
+      Meta.epSocTwitter = "Thee Tweetr @thePodly",
+      Meta.epSocEmail = Meta.EmailMessage {
+        Meta.emailSubject = "Awesome Podly!",
+        Meta.emailBody = "For serious: http://podly.co"}}
   getPrevNext = do
     episode <- get404 $ tid
     -- map mkEphem over the results (at most one), convert list to Maybe, move Maybe inside DB monad

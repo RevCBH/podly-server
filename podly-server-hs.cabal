@@ -38,6 +38,7 @@ library
                      Util.TH
                      Podly.Auth
                      Podly.Affiliate
+                     Podly.Metadata
                      Podly.Middleware.Crossdomain
                      Podly.Middleware.Mobile
                      Podly.Facebook.OpenGraph
