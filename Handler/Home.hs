@@ -13,10 +13,11 @@ import qualified Podly.Facebook.OpenGraph.Entities as OG
 import qualified Data.ByteString.Lazy.Char8 as L8
 import qualified Data.Vector as V
 import qualified Data.Aeson as A
+import Data.Aeson.Types (parseMaybe)
 import Data.String.Utils (splitWs, join)
 import Data.Text (pack, unpack)
 import Data.List (nub, groupBy, sortBy, head)
-import Data.Maybe (catMaybes)
+import Data.Maybe (catMaybes, fromMaybe)
 import qualified Data.Map as Map
 import Text.Coffee (coffeeFile)
 import Control.Monad (liftM)
@@ -48,8 +49,15 @@ instance A.FromJSON a => A.FromJSON (Singleton a) where
             _ -> fail "Not a single-element array"
     parseJSON _ = fail "Not an array"
 
-getCrossdomainR :: Handler RepXml
-getCrossdomainR = undefined
+
+trySignupEmail :: Text -> Handler (Singleton String)
+trySignupEmail email = do
+  if (unpack email) =~ ("[^@]+@[^.]+\\..+" :: String)
+        then do
+          _ <- runDB $ insert $ Email email Nothing Nothing
+          return $ Singleton ("OK" :: String)
+        else
+          return $ Singleton ("Error" :: String)
 
 handleHomeR :: Handler RepHtml
 handleHomeR = do
@@ -85,13 +93,8 @@ angularPlayerForEpisode entity@(Entity _ episode) = do
     cmdSetNodeInstance <- addCommand $ \() -> do
       _ <- notFound
       return $ Singleton ("OK" :: String)
-    cmdSignupEmail <- addCommand $ \(Singleton email) -> do
-      if (unpack email) =~ ("[^@]+@[^.]+\\..+" :: String)
-        then do
-          --_ <- runDB $ insert $ Email email Nothing Nothing
-          return $ Singleton ("OK" :: String)
-        else
-          return $ Singleton ("Error" :: String)
+    cmdSignupEmail <- addCommand $ \(Singleton email) -> trySignupEmail email
+    --let cmdSignupEmail = undefined
 
     $(addLib "util")
     $(addLib "models")
@@ -212,6 +215,12 @@ getSearchR = do
 tryInsertNodeType :: NodeType -> Handler (Entity NodeType)
 tryInsertNodeType nodeType = do
   ensureEntity nodeType $ UniqueTypeTitle $ nodeTypeTitle nodeType
+
+postSubscribeR :: Handler RepJson
+postSubscribeR = do
+  body <- parseJsonBody_
+  let email = fromMaybe "" $ parseMaybe (A..: "email") body
+  jsonToRepJson =<< trySignupEmail email
 
 handleAdminR :: Texts -> Handler RepHtml
 handleAdminR _ = do
