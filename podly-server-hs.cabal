@@ -33,7 +33,7 @@ library
                      Handler.Util
                      Handler.Home
                      Handler.Test
-                     -- Handler.Node
+                     Handler.Node
                      Handler.Episode
                      Util.TH
                      Podly.Auth

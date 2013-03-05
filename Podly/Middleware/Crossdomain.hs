@@ -1,7 +1,6 @@
 module Podly.Middleware.Crossdomain (crossdomainXml) where
 
 import Import
-import qualified Data.ByteString as B
 import Network.Wai (Middleware, pathInfo, Response(ResponseFile))
 import Network.HTTP.Types (status200)
 

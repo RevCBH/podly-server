@@ -28,6 +28,7 @@ import Podly.Middleware.Crossdomain (crossdomainXml)
 -- Don't forget to add new modules to your cabal file!
 import Handler.Home
 import Handler.Test
+import Handler.Node
 import Handler.NodeType
 import Handler.Episode
 

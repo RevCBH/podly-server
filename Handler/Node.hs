@@ -1,11 +1,21 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Handler.Node where
 
---import Import
+import Import
+import qualified Podly.Metadata as Meta
 
 --import Data.List (nub)
 
 --import Handler.Util
+
+getNodeMetaR :: NodeInstanceId -> Handler RepJson
+getNodeMetaR relId = do
+  let social = Meta.EpisodeSocial {
+                Meta.epSocTwitter = "Thee Tweetr @thePodly",
+                Meta.epSocEmail = Meta.EmailMessage {
+                  Meta.emailSubject = "Awesome Podly!",
+                  Meta.emailBody = "For serious: http://podly.co"}}
+  jsonToRepJson $ object ["share" .= social]
 
 --getNodesR :: Handler RepHtml
 --getNodesR = do
