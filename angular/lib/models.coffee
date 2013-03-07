@@ -109,12 +109,13 @@ app.constant 'Permission', Permission
 # app.constant 'User', User
 
 class EpisodeDoc extends ModelBase
-  @attr 'podcast', 'title', 'number', 'searchSlug', 'airDate', 'published', 'duration'
+  @attr 'podcast', 'podcastShortName', 'title', 'number', 'searchSlug', 'airDate', 'published', 'duration'
   @attr 'mediaSources', 'nodes', '_id', 'lastModified'
 
   constructor: (@model, defPodcastName=null) ->
     @model._id ||= null
     @model.podcast ||= defPodcastName
+    @model.podcastShortName ||= defPodcastName
     @model.airDate ||= null
     @model.searchSlug ||= null
     @model.duration ||= null

@@ -1,6 +1,6 @@
 app = angular.module('admin')
 
-return ($scope, $routeParams, $http, mediaService, EpisodeDoc) ->
+return ($scope, $location, $routeParams, $http, mediaService, EpisodeDoc) ->
   $scope.episode = new EpisodeDoc(podcast: $routeParams.podcastName)
   # window.sc = $scope
 
@@ -25,8 +25,8 @@ return ($scope, $routeParams, $http, mediaService, EpisodeDoc) ->
     q.success (data) ->
       $scope.episode = data
       # HACK ISSUE - Need to reload page for video to show up...
-      window.location.hash = "#/podcasts/#{$routeParams.podcastName}/episodes/#{data.number}"
-      window.location.reload(true)
+      $location.url "/admin/podcasts/#{$routeParams.podcastName}/episodes/#{data.number}"
+      # window.location.reload(true)
     q.error ->
       console.log "submit/error"
 
