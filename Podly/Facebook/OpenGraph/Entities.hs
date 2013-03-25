@@ -16,7 +16,7 @@ class OpenGraphEntity a where
 
 fbEmbedUrlForEpisodeDocument :: EpisodeDocument -> Text
 fbEmbedUrlForEpisodeDocument episode =
-  mconcat ["http://podly.co/static/fb-player.swf?episodeId=" :: Text,
+  mconcat ["https://podly.herokuapp.com/static/fb-player.swf?episodeId=" :: Text,
            T.pack . fromRight . fromPersistValue . unKey . fromJust $ docEpisode_id episode]
  where
   fromRight (Right x) = x
