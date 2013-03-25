@@ -73,6 +73,10 @@ angularPlayerForEpisode entity@(Entity _ episode) = do
   let nodeTypesJson = L8.unpack $ encode $ map documentFromNodeType nodeTypes
 
   tParam <- lookupGetParam "t"
+  let startTime = case tParam of
+                  Nothing -> 0 :: Double
+                  Just t -> read $ unpack t
+
   let startAt = case tParam of
                   Nothing -> "0"
                   Just t -> show t
@@ -87,7 +91,7 @@ angularPlayerForEpisode entity@(Entity _ episode) = do
   let cfg = ModuleConfig (Just "playerMod") Nothing
 
   episodeDoc <- runDB $ documentFromEpisode entity
-  let metaWidget = toWidgetHead $ OG.tags episodeDoc
+  let metaWidget = toWidgetHead $ OG.tags (episodeDoc, startTime)
 
   runNgModuleWidget cfg metaWidget $ do
     cmdSetNodeInstance <- addCommand $ \() -> do

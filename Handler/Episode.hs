@@ -258,6 +258,7 @@ getEpisodesR = do
         "pageInfo" .= pageInfo,
         "episodes" .= episodes]
 
+  setHeader "Access-Control-Allow-Origin" "*"
   defaultLayoutJson widget json
  where
   paramOr name defaultValue = do
