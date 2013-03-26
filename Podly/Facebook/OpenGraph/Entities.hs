@@ -37,14 +37,12 @@ instance OpenGraphEntity EpisodeDocument where
          Video (fbEmbedUrlForEpisodeDocument episode) 398 438 "application/x-shockwave-flash"]
       _ -> []
 
--- WARNING, HACK - this depends on the ordering of OG tags in the above instance (OpenGraphEntity EpisodeDocument)
-instance (Show a, Ord a, Num a) => OpenGraphEntity (EpisodeDocument, a) where
+instance OpenGraphEntity (EpisodeDocument, Maybe Text) where
   elements (episode, time) =
-    if time > 0
-      then
-        case (reverse $ elements episode) of
-          (videoTag : xs) ->
-            let newUrl = mconcat [videoUrl videoTag, T.pack "&timeId=", T.pack $ show time]
-            in reverse $ (videoTag {videoUrl = newUrl}) : xs
-          _ -> []
-      else elements episode
+    let updateUrls t x = case x of
+                          Url url -> Url $ mconcat [url, T.pack "?t=", t]
+                          v@(Video vUrl _ _ _) -> v {videoUrl = mconcat [vUrl, T.pack "&timeId=", t] }
+                          _ -> x
+    in case (elements episode, time) of
+      (xs, Just t) -> map (updateUrls t) xs
+      (xs, Nothing) -> xs
